@@ -1,3 +1,6 @@
 [submodule "style"]
 	path = style
 	url = https://github.com/jcai849/style.git
+[submodule "docs"]
+	path = docs
+	url = https://github.com/jcai849/docs.git
