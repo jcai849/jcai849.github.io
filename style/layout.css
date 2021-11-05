@@ -12,6 +12,7 @@ h1, h2 {
 header h1 {
     text-align: right;
     padding: 0.25em;
+    margin-bottom: unset;
 }
 
 main {

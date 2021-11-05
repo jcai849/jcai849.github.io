@@ -13,11 +13,11 @@ header h1 {
 
 body {
     font-family: 'IBM Plex Mono', monospace;
-    #font-family: 'IBM Plex Sans', sans-serif;
+    /* font-family: 'IBM Plex Sans', sans-serif; */
 }
 
 ul {
-    list-style-type: none; 
+    list-style-type: none;
 }
 
 footer {
