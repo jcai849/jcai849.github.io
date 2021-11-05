@@ -1,8 +1,0 @@
-[submodule "style"]
-	path = style
-	url = https://github.com/jcai849/style.git
-	branch = master
-[submodule "docs"]
-	path = docs
-	url = https://github.com/jcai849/docs.git
-	branch = master
