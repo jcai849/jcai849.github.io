@@ -1,0 +1,12 @@
+#!/bin/sh
+
+cat <<EOF
+---
+title: Index
+author: Jason Cairns
+---
+
+EOF
+for DOC in "$@"; do
+    printf "- [${DOC}](${DOC})\n"
+done

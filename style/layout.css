@@ -1,0 +1,38 @@
+html {
+    max-width: 40em;
+    margin: auto;
+}
+
+h1, h2 {
+    padding: 0.25em;
+    width: fit-content;
+    margin-bottom: 2em;
+}
+
+header h1 {
+    text-align: right;
+    padding: 0.25em;
+}
+
+main {
+    margin-top: 2em;
+}
+
+main, nav {
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+ol, ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 1em;
+}
+
+li {
+    padding: 0.125rem 0;
+}
+
+footer {
+    text-align: center;
+}
