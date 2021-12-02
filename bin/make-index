@@ -1,0 +1,14 @@
+#!/bin/sh
+
+cat <<EOF
+---
+title: Index
+author: Jason Cairns
+---
+
+EOF
+for DOC in "$@"; do
+    DATE=`sed -En 's|<p class="date">([^<]*)</p>|\1|p' $DOC`
+    TITLE=`sed -En 's|<h1 class="title">([^<]*)</h1>|\1|p' $DOC`
+    printf "- [$DATE $TITLE](${DOC})\n"
+done | sort -r
