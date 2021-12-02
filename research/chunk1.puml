@@ -1,0 +1,19 @@
+@startuml
+abstract data {
+	{abstract} -id
+	{abstract} +data() : <data>
+}
+
+class fixedData {
+	-id
+	+data() : <data>
+}
+
+class computedData {
+	-id
+	+data() : <data>
+}
+
+data <|-- fixedData
+data <|-- computedData
+@enduml

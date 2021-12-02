@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-09-07" />
+  <title>Report on Current Chunk Architecture</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Report on Current Chunk Architecture</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-09-07</p>
+</header>
+<p>N.B. There were originally some TiKz figures that have since been lost; the document may make less sense without them.</p>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>The purpose of this report is to outline the workings of the present architecture at the chunk layer. This follows the experiments recorded in <a href="init-chunk-msg-q-exp.html">Initial chunk message queue experiments</a>, with the final experiment providing the basis for modifications allowing a self-sufficient distObj package, along with the modifications recommended by <a href="chunk-id-orig.html">Chunk ID Origination</a>.</p>
+<p>The functionality of the package can be demonstrated through installing distObj and it’s prerequisites, and, with a running <code>redis-server</code>, evaluating <code class="sourceCode r"><span class="fu">demo</span>(<span class="st">&quot;chunk-server&quot;</span>, <span class="at">package=</span><span class="st">&quot;distObj&quot;</span>)</code> in one R process, and <code class="sourceCode r"><span class="fu">demo</span>(<span class="st">&quot;chunk-client&quot;</span>, <span class="at">package=</span><span class="st">&quot;distObj&quot;</span>)</code> in another process on the same host, stepping through the <code>chunk-client</code> demo to control operation, with the results appearing similar to those recorded in tbl. <a href="#tbl:chunk-comm">1</a>.</p>
+<h1 data-number="2" id="overview"><span class="header-section-number">2</span> Overview</h1>
+<p>The central units of this distributed system are a client, a queue server, and a chunk server. The client contains chunk references, which can be passed as arguments to <code class="sourceCode r">do.call.chunkRef</code>, alongside some function, in order to begin the process of evaluation, and if assignment is desired, producing a new chunk reference to continue computation with on the client end while the evaluation continues on the other units. <code>do.call.chunkRef</code> composes a message based on the request, pushing that to the queue identified by the chunk ID contained in the chunk reference, with the queue existing on some central queue server. The chunk server concurrently monitors all queues identified by the chunk ID’s of the chunks that the chunk server stores in a local chunk table. It pops the message off the related queue, and has <code>do.call.chunk</code> evaluate the function on the chunk, with various options determined by the content of the received message. The chunk server pushes some response message to the queue associated with that particular job through a unique job ID, which may be picked up later by the client later.</p>
+<h1 data-number="3" id="object-formats"><span class="header-section-number">3</span> Object Formats</h1>
+<p>The fields belonging to a <code>chunkRef</code> object are the following:</p>
+<dl>
+<dt><code>CHUNK_ID</code></dt>
+<dd>The name of the queue to post messages to, as well as the name of the chunk existing on the server to perform operations upon.
+</dd>
+<dt><code>JOB_ID</code></dt>
+<dd>The name of the queue to pop a response from.
+</dd>
+<dt><code>RESOLUTION</code></dt>
+<dd>The status of whether a response has been heard from the server, taking the values <code>UNRESOLVED'',</code>RESOLVED’’, or a condition object signalling an error.
+</dd>
+<dt><code>PREVIEW</code></dt>
+<dd>A small preview of thcomplete object for use in printing.
+</dd>
+</dl>
+<p>Messages all belong to the <code>msg</code> class, and are currently categorised as either requests, or responses, with the following fields:</p>
+<p>Request:</p>
+<dl>
+<dt><code>OP</code></dt>
+<dd>Directive for server to carry out, e.g. <code>ASSIGN</code>.
+</dd>
+<dt><code>FUN</code></dt>
+<dd>Function object or character naming function to perform on the chunk.
+</dd>
+<dt><code>CHUNK</code></dt>
+<dd>Chunk Reference for the server to attain information from.
+</dd>
+<dt><code>JOB_ID</code></dt>
+<dd>The name of the queue to push a response to.
+</dd>
+<dt><code>DIST_ARGS</code></dt>
+<dd>Additional distributed arguments to the function.
+</dd>
+<dt><code>STATIC_ARGS</code></dt>
+<dd>Additional static arguments to thfunction.
+</dd>
+</dl>
+<p>Response:</p>
+<dl>
+<dt><code>RESOLUTION</code></dt>
+<dd>Resolution status; either <code>RESOLVED</code>, or a condition object detailing failure due to error.
+</dd>
+<dt><code>PREVIEW</code></dt>
+<dd>A small snapshot of the completed object for use in printing chunk references.
+</dd>
+</dl>
+<h1 data-number="4" id="demonstration-of-communication"><span class="header-section-number">4</span> Demonstration of Communication</h1>
+<p>tbl. <a href="#tbl:chunk-comm">1</a> shows a demonstration of verbose communication between a client and a server. In this demo, the server was started immediately prior to the client, being backgrounded, and initial setup was performed in both as per the listings referred to prior.</p>
+<div id="tbl:chunk-comm">
+<table>
+<caption>Table 1: Communication between a client and server</caption>
+<thead>
+<tr class="header">
+<th>Time (secs)</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>Assigned chunk to ID: chunk1 in chunk table</td>
+</tr>
+<tr class="even">
+<td>`x &lt;</td>
+<td>- do.call.chunkRef(what=“expm1”, chunkArg=chunk1)`{.R}</td>
+</tr>
+<tr class="odd">
+<td>0.001664</td>
+<td>Attained job ID: J1</td>
+</tr>
+<tr class="even">
+<td>0.002719</td>
+<td>Attained Chunk ID: C1</td>
+</tr>
+<tr class="odd">
+<td>0.00292</td>
+<td>Requesting to perform function expm1 on chunk chunk1 with assignment</td>
+</tr>
+<tr class="even">
+<td>0.003521</td>
+<td>writing message: ASSIGN expm1 &lt;environment: 0x55cc164cb8c8&gt; NULL NULL J1 C1 to queue belonging to chunk” chunk1 ”</td>
+</tr>
+<tr class="odd">
+<td>0.0051</td>
+<td>Producing new chunk reference with chunk ID: C1 and job ID: J1</td>
+</tr>
+<tr class="even">
+<td>`y &lt;</td>
+<td>- do.call.chunkRef(“as.Date”, x)`{.R}</td>
+</tr>
+<tr class="odd">
+<td>0.005679</td>
+<td>Attained job ID: J2</td>
+</tr>
+<tr class="even">
+<td>0.005986</td>
+<td>Attained Chunk ID: C2</td>
+</tr>
+<tr class="odd">
+<td>0.006159</td>
+<td>Requesting to perform function as.Date on chunk C1 with assignment</td>
+</tr>
+<tr class="even">
+<td>0.006622</td>
+<td>writing message: ASSIGN as.Date &lt;environment: 0x55cc165d0808&gt; NULL NULL J2 C2 to queue belonging to chunk” C1 ”</td>
+</tr>
+<tr class="odd">
+<td>0.007351</td>
+<td>Producing new chunk reference with chunk ID: C2 and job ID: J2</td>
+</tr>
+<tr class="even">
+<td>`exp</td>
+<td>m1(1:10)`{.R}</td>
+</tr>
+<tr class="odd">
+<td><code>x</code>{</td>
+<td>.R}</td>
+</tr>
+<tr class="even">
+<td>0.007811</td>
+<td>Chunk not yet resolved. Resolving…</td>
+</tr>
+<tr class="odd">
+<td>0.008025</td>
+<td>Awaiting message on queues: J1</td>
+</tr>
+<tr class="even">
+<td>0.028962</td>
+<td>Awaiting message on queues: chunk1</td>
+</tr>
+<tr class="odd">
+<td>0.029668</td>
+<td>Received message: ASSIGN expm1 &lt;environment: 0x55a7a47917e0&gt; NULL NULL J1 C1</td>
+</tr>
+<tr class="even">
+<td>0.030912</td>
+<td>Requested to perform function expm1</td>
+</tr>
+<tr class="odd">
+<td>0.031777</td>
+<td>writing message: RESOLVED 1.718282, 6.389056, …, to queue belonging to chunk” J1 ”</td>
+</tr>
+<tr class="even">
+<td>0.03237</td>
+<td>Assigned chunk to ID: C1 in chunk table</td>
+</tr>
+<tr class="odd">
+<td>0.032679</td>
+<td>Awaiting message on queues: C1 chunk1</td>
+</tr>
+<tr class="even">
+<td>0.032695</td>
+<td>Received message: RESOLVED 1.718282, 6.389056, …</td>
+</tr>
+<tr class="odd">
+<td>0.033206</td>
+<td>Received message: ASSIGN as.Date &lt;environment: 0x55a7a4863308&gt; NULL NULL J2 C2</td>
+</tr>
+<tr class="even">
+<td>`do.</td>
+<td>call.chunkRef(“identity”, x, assign=FALSE)`{.R}</td>
+</tr>
+<tr class="odd">
+<td>0.033662</td>
+<td>Attained job ID: J3</td>
+</tr>
+<tr class="even">
+<td>0.033825</td>
+<td>Requested to perform function as.Date</td>
+</tr>
+<tr class="odd">
+<td>0.033893</td>
+<td>Requesting to perform function identity on chunk C1 with no assignment</td>
+</tr>
+<tr class="even">
+<td>0.034363</td>
+<td>writing message: DOFUN identity &lt;environment: 0x55cc165d0808&gt; NULL NULL J3 NULL to queue belonging to chunk” C1 ”</td>
+</tr>
+<tr class="odd">
+<td>0.034363</td>
+<td>Error occured: ‘origin’ must be supplied</td>
+</tr>
+<tr class="even">
+<td>0.034655</td>
+<td>writing message: ‘origin’ must be supplied, as.Date.numeric(c(…)) to queue belonging to chunk” J2 ”</td>
+</tr>
+<tr class="odd">
+<td>0.03519</td>
+<td>Awaiting message on queues: J3</td>
+</tr>
+<tr class="even">
+<td>0.035544</td>
+<td>Assigned chunk to ID: C2 in chunk table</td>
+</tr>
+<tr class="odd">
+<td>0.035747</td>
+<td>Awaiting message on queues: C1 C2 chunk1</td>
+</tr>
+<tr class="even">
+<td>0.036224</td>
+<td>Received message: DOFUN identity &lt;environment: 0x55a7a48ed380&gt; NULL NULL J3 NULL</td>
+</tr>
+<tr class="odd">
+<td>0.036737</td>
+<td>Requested to perform function identity</td>
+</tr>
+<tr class="even">
+<td>0.037004</td>
+<td>writing message: 1.718282, 6.389056, …, to queue belonging to chunk” J3 ”</td>
+</tr>
+<tr class="odd">
+<td>0.03742</td>
+<td>Awaiting message on queues: C1 C2 chunk1</td>
+</tr>
+<tr class="even">
+<td>0.037675</td>
+<td>Received message: 1.718282, 6.389056, …</td>
+</tr>
+<tr class="odd">
+<td>`res</td>
+<td>olve(y)`{.R}</td>
+</tr>
+<tr class="even">
+<td>0.038197</td>
+<td>Chunk not yet resolved. Resolving…</td>
+</tr>
+<tr class="odd">
+<td>0.038325</td>
+<td>Awaiting message on queues: J2</td>
+</tr>
+<tr class="even">
+<td>0.038825</td>
+<td>Received message: ‘origin’ must be supplied, as.Date.numeric(c(…))</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 data-number="5" id="next-steps"><span class="header-section-number">5</span> Next Steps</h1>
+<p>The next step is to experiment with aggregates of chunks, as distributed objects. A significant component of this involves point-to-point chunk movement, between multiple servers. The package <code>osrv</code> looks to satisfy much of the infrastructure required for this, with particular experiments to be dedicated specifically to establishing a fast and reliable mechanism for co-ordination and data movement in the system.</p>
+</body>
+</html>

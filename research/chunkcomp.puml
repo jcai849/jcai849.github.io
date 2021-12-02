@@ -1,0 +1,45 @@
+@startuml
+
+class dobj {
+    -data
+    -doState
+    {abstract} +data() : <data>
+    {abstract} +do(function, ...chunk) : chunk
+}
+
+class compositedobj {
+children : list
++data() : <data>
++do(function, ...chunk) : chunk
++getChildren()
++addChild()
++removeChild()
+}
+
+class chunk {
++data() : <data>
++do(function, ...chunk) : chunk
+}
+
+
+dobj o-- compositedobj
+dobj <|-- compositedobj
+dobj <|-- chunk
+
+compositedobj <|-- colBlockMat
+chunk <|-- colChunk
+colBlockMat o-- colChunk
+
+compositedobj <|-- rowBlockMat
+chunk <|-- rowChunk
+rowBlockMat o-- rowChunk
+
+compositedobj <|-- olistDobj
+compositedobj <|-- uolistDobj
+compositedobj <|-- setDobj
+
+olistDobj o-- chunk
+uolistDobj o-- chunk
+setDobj o-- chunk
+
+@enduml

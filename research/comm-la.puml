@@ -1,0 +1,34 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam style strictuml
+skinparam LifelineStrategy nosolid
+skinparam sequenceMessageAlign center
+title Work Request,\nPrerequisite Available Locally to the Requested Node
+
+box "Node x" #ffffff
+participant Client as client
+end box
+box "Node y" #ffffff
+participant Store as store
+participant Worker as worker
+end box
+
+client -> store ++: Request work
+activate client
+store -> store ++--: Set work state: PEND
+store --> client: ACK
+deactivate client
+store -> store ++: Get prereq state
+return AVAIL
+store -> worker **: Launch work
+deactivate store
+activate worker
+return Data
+destroy worker
+activate store
+store -> store ++: Store data
+store -> store ++--: Set data state: AVAIL
+deactivate store
+deactivate store
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+
+class chunk {
+        {abstract} +data() : <data>
+        {abstract} +do(function, ...chunk) : chunk
+}
+
+abstract class data {
+	-id
+        +data()
+}
+
+class dataComputed {
+	-id
+	-dataAddr
+        +data() : <data>
+}
+
+class dataFixed {
+	-id
+	-data : <data>
+        +data() : <data>
+}
+
+chunk o-- data
+data <|-- dataFixed
+data <|-- dataComputed
+
+@enduml

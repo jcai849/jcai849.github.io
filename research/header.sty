@@ -1,0 +1,55 @@
+\ProvidesPackage{header}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{csquotes}
+\usepackage{multicol}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{listingsutf8}
+\usepackage{xcolor}
+
+\definecolor{GnBu-1}{cmyk}{6,0,8,0}
+\definecolor{GnBu-2}{cmyk}{27,0,23,0}
+\definecolor{GnBu-3}{cmyk}{52,0,15,0}
+\definecolor{GnBu-4}{cmyk}{75,12,0,0}
+\definecolor{GnBu-5}{cmyk}{100,35,0,0}
+
+\lstset{
+frame=single,
+basicstyle=\ttfamily,
+keywordstyle=\bfseries,
+commentstyle=\rmfamily,
+stringstyle=\sffamily,
+numbers=left,
+numberstyle=\tiny,
+keepspaces=true,
+breakatwhitespace=false,
+captionpos=b
+}
+
+\usepackage{modtex}
+
+\author{Jason Cairns}
+\newcommand{\R}{\textbf{R}}
+\newcommand{\tbb}[1][R]{$\mathbb{#1}$}
+\newcommand{\pkg}[1]{\textbf{#1}}
+\newcommand{\lsr}{\pkg{largeScaleR}}
+\newcommand{\bigO}[1]{$\mathcal{O}(#1)$}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=green,
+    filecolor=magenta,
+    urlcolor=cyan,
+    pdfpagemode=FullScreen
+}

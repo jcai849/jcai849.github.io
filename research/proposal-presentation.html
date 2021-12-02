@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2021-05-18" />
+  <title>A Platform for Large-scale Statistical Modelling using R</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">A Platform for Large-scale Statistical Modelling using R</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2021-05-18</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<ul>
+<li><strong>Real-time</strong> <strong>flexible</strong> and <strong>extensible</strong> platform for <strong>modelling</strong> with <strong>larger-than-memory</strong> datasets in <strong>R</strong></li>
+</ul>
+<pre><code>Package:            largeScaleR
+Type:               Package
+Title:              Provides a Distributed Framework 
+                    for Statistical Modelling
+Version:            0.4</code></pre>
+<h1 data-number="2" id="motivation"><span class="header-section-number">2</span> Motivation</h1>
+<ul>
+<li>Larger-than-Memory datasets</li>
+<li><em>e.g.</em> taxicab: Monthly updated dataset of Taxi trips from TLC</li>
+<li>~2.5Gb/month since 2009 (~1/3Tb)</li>
+<li>Naive result: crash/thrash. Why?</li>
+</ul>
+<h1 data-number="3" id="specifications"><span class="header-section-number">3</span> Specifications</h1>
+<ul>
+<li>A platform enabling creation of novel models for larger-than-memory datasets</li>
+<li><strong>Interactive</strong></li>
+<li>Simple to use and setup; minimal difference to using existing system</li>
+<li>Fast</li>
+<li>Robust</li>
+<li><strong>Extensible</strong></li>
+</ul>
+<h1 data-number="4" id="local-approaches"><span class="header-section-number">4</span> Local Approaches</h1>
+<h2 data-number="4.1" id="using-r"><span class="header-section-number">4.1</span> Using R</h2>
+<ul>
+<li>disk.frame</li>
+<li>multicore</li>
+</ul>
+<h1 data-number="5" id="disk.frame"><span class="header-section-number">5</span> disk.frame</h1>
+<p>File-backed dataframes</p>
+<p><img src="doc/diskframe.svg" /></p>
+<h1 data-number="6" id="distributed-approaches"><span class="header-section-number">6</span> Distributed Approaches</h1>
+<h2 data-number="6.1" id="outside-of-r"><span class="header-section-number">6.1</span> Outside of R</h2>
+<ul>
+<li>MPI: C, C++, Fortran; de-facto standard for HPC; explicit point-to-point communications</li>
+<li>Hadoop (HDFS, <em>MapReduce</em>)</li>
+<li>Spark (RDS): Scala; response to Hadoop; RDD, Dataset API</li>
+<li>Dask: Python; Task scheduling, distributed data structures</li>
+</ul>
+<h1 data-number="7" id="mapreduce-with-hadoop"><span class="header-section-number">7</span> MapReduce with Hadoop</h1>
+<p><img src="doc/mapreduce.svg" /></p>
+<h1 data-number="8" id="distributed-approaches-1"><span class="header-section-number">8</span> Distributed Approaches</h1>
+<h2 data-number="8.1" id="using-r-1"><span class="header-section-number">8.1</span> Using R</h2>
+<ul>
+<li>SNOW</li>
+<li>pbdR, pbdDMAT: R frontend to MPI</li>
+<li>SparklyR: R frontend to Spark</li>
+</ul>
+<h1 data-number="9" id="snow"><span class="header-section-number">9</span> SNOW</h1>
+<p>Split list and map over multiple processes</p>
+<p><img src="doc/snow.svg" /></p>
+<h1 data-number="10" id="preliminary-results"><span class="header-section-number">10</span> Preliminary Results</h1>
+<ul>
+<li>Initial package development</li>
+<li>Cluster initialisation</li>
+<li>Object distribution</li>
+<li>Distributed Object interaction</li>
+</ul>
+<hr />
+<p><img src="doc/distobjref.svg" /></p>
+<h1 data-number="11" id="preliminary-results-in-detail"><span class="header-section-number">11</span> Preliminary Results in Detail</h1>
+<ul>
+<li>Queue communication</li>
+<li>Worker evaluation</li>
+</ul>
+<hr />
+<p><img src="doc/distobjcomm.svg" /></p>
+<h1 data-number="12" id="preliminary-results-in-detail-1"><span class="header-section-number">12</span> Preliminary Results in Detail</h1>
+<ul>
+<li><code>distribute()</code></li>
+<li><code>do.dcall(what, args)</code></li>
+<li><code>emerge()</code></li>
+<li>Generics</li>
+</ul>
+<h1 data-number="13" id="main-demonstration"><span class="header-section-number">13</span> Main Demonstration</h1>
+<ul>
+<li>First 3 months 2011 Taxicab dataset (32M rows)</li>
+<li>Determine total tips</li>
+<li>Create plots of pickup &amp; dropoff locations</li>
+<li>32 processes over 8 nodes</li>
+</ul>
+<h1 data-number="14" id="challenges"><span class="header-section-number">14</span> Challenges</h1>
+<ul>
+<li>Evaluation &amp; Alignment: Recycling over distributed arrays</li>
+<li>Asynchrony: Race conditions, dependencies</li>
+<li>Debugging: Distributed errors</li>
+</ul>
+<h1 data-number="15" id="further-work"><span class="header-section-number">15</span> Further Work</h1>
+<ul>
+<li>Fault Tolerance: <span class="math inline"><em>P</em>(failure) = 1 − (1−<em>p</em>)<sup><em>n</em></sup></span> as <span class="math inline"><em>n</em> → ∞</span></li>
+<li>Memory usage optimisation</li>
+<li>Interfacing with other systems</li>
+<li>Benchmarking</li>
+</ul>
+<h1 data-number="16" id="contact"><span class="header-section-number">16</span> Contact</h1>
+<p>GitHub</p>
+<ul>
+<li><a href="https://github.com/jcai849/phd">jcai849/phd</a></li>
+<li><a href="https://github.com/jcai849/largeScaleR">jcai849/largeScaleR</a></li>
+</ul>
+</body>
+</html>

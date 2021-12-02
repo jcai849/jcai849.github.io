@@ -1,0 +1,42 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam style strictuml
+skinparam LifelineStrategy nosolid
+skinparam sequenceMessageAlign center
+title Work Request,\nPrerequisite Pending Locally to the Store
+
+box "Node x" #ffffff
+participant Client as client
+end box
+box "Node y" #ffffff
+participant Store as store
+participant "Prerequsite Worker" as pworker
+participant Worker as worker
+end box
+
+activate pworker
+client -> store ++: Request work
+activate client
+store -> store ++--: Set work state: PEND
+store --> client: ACK
+deactivate client
+store -> store ++: Get prereq state
+return PEND
+store -> store ++--: Set prereq state association:\nAVAIL -> Launch work
+deactivate store
+...
+pworker --> store: Prereq data
+destroy pworker
+activate store
+store -> store ++: Store data
+store -> store ++: Set prereq data state:\nAVAIL
+store -> store ++: Get prereq state associations
+store -> worker **: Launch work
+deactivate store
+deactivate store
+deactivate store
+deactivate store
+activate worker
+|||
+@enduml
