@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2021-06-30" />
+  <title>Distributed Reduce in LargeScaleR</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Distributed Reduce in LargeScaleR</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2021-06-30</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>A <code class="sourceCode r"><span class="fu">Reduce</span>()</code>, commonly known as a <em>fold</em>, is a computational operation evaluating a binary operation sequentially along a container of objects <span class="citation" data-cites="bird2010pearls"><a href="#ref-bird2010pearls" role="doc-biblioref">[1]</a></span>. For example, in the case of a <code>+</code> operation over a list of values drawn from <span class="math inline">ℝ</span>, it is equivalent to a cumulative sum. The <code class="sourceCode r"><span class="fu">Reduce</span>()</code> is provided in the base R distribution as part of the <em>funprog</em> group of common higher-order functions. It serves as a standard means of performing a rolling operation over some container without resorting to explicit looping. The functional programming paradigm in turn makes heavy use of <code class="sourceCode r"><span class="fu">Reduce</span>()</code> for the succinct encapsulation of the concept. The <code>Reduce</code> referred to in the <code>MapReduce</code> paradigm is a similar, though distinct, operation, serving closer to a grouped summary <span class="citation" data-cites="dean2004mapreduce"><a href="#ref-dean2004mapreduce" role="doc-biblioref">[2]</a></span>. The <code>MapReduce</code> is thus able to stay largely embarrassingly parallel, while a <code class="sourceCode r"><span class="fu">Reduce</span>()</code> is necessarily serial.</p>
+<h1 data-number="2" id="distributed-reduce"><span class="header-section-number">2</span> Distributed Reduce</h1>
+<p>To create a distributed reduce using the <em>largeScaleR</em> system is actually mostly solved by the design of distributed objects, which can be passed to the existing <code class="sourceCode r"><span class="fu">Reduce</span>()</code> function as provided in base R, with no further modification. The only additional effort is to ensure that the operant binary function is capable of operating on distributed objects. This can be guaranteed by making use of a <code class="sourceCode r"><span class="fu">dreducable</span>()</code> wrapper functional around a regular function, which returns the original function modified to operate in distributed fashion. The source code demonstrating this is given in lst. <a href="#lst:dreduce">1</a>.</p>
+<div id="lst:dreduce" class="listing R">
+<p>Listing 1: The wrapper functional providing a distributed reduce showing the very little effort required to generate a distributed reduce from the framework</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dreduce <span class="ot">&lt;-</span> <span class="cf">function</span>(f, x, init, <span class="at">right =</span> <span class="cn">FALSE</span>, <span class="at">accumulate =</span> <span class="cn">FALSE</span>, ...) {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Reduce</span>(<span class="fu">dreducable</span>(f, ...), <span class="fu">chunkRef</span>(x), init, right, accumulate)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>dreducable <span class="ot">&lt;-</span> <span class="cf">function</span>(f, ...) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">function</span>(x, y) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">do.ccall</span>(f, <span class="fu">list</span>(x, y), <span class="at">target =</span> y, ...)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>The <code class="sourceCode r"><span class="fu">dreducable</span>()</code> function is itself a simple wrapper around the <code class="sourceCode r"><span class="fu">do.ccall</span>()</code> function that serves to power all of the <em>largeScaleR</em> distributed object operation requests.</p>
+<h1 data-number="3" id="description-of-program-flow"><span class="header-section-number">3</span> Description of Program Flow</h1>
+<p>The program flow of a standard distributed reduce is depicted in fig. <a href="#fig:dreduce">1</a>.</p>
+<figure>
+<img src="dreduce.svg" id="fig:dreduce" alt="Figure 1: Distributed reduce procedure flow" /><figcaption aria-hidden="true">Figure 1: Distributed reduce procedure flow</figcaption>
+</figure>
+<p>Assuming a distributed object split consecutively over processes 1, 2, and 3, with a single master node containing the reference to this object, a distributed reduce takes place as follows:</p>
+<ol type="1">
+<li>Upon invocation of the distributed reduce, the master sends requests to all queues associated with the chunks composing the distributed object. These requests contain (unresolved) references to the chunks resulting from the distributed reduce, alongside the function to be performed over them. As these chunk references are not yet resolved, the processes popping the requests from the queues will block, except for the initial queue, which should be only referencing resolved chunks. The master process continues processing asynchronously, only blocking when the result of the distributed reduce operation is requested.</li>
+<li>The process containing the initial chunk operates over it and stores the output. It then continues reading queues and processing as before, with it’s role in distributed reduce being complete.</li>
+<li>The second process is now able to access the previously unresolved chunk reference, and emerges it directly from the first process. It operates on the chunks, storing the output.</li>
+<li>This repeats until all processes have completed the requests initially given by the master process.</li>
+<li>When needed, the master may emerge the resulting object, with either cumulative steps given by all processes, or only the end result, depending on the options provided. The distributed reduce is complete.</li>
+</ol>
+<h1 data-number="4" id="applications-and-challenges"><span class="header-section-number">4</span> Applications and Challenges</h1>
+<p>The applications for a distributed reduce correspond closely to those of a regular reduce. Any “rolling” or windowed function that bases it’s state on some form of previous elements in a list is able to take clear representation through a distributed reduce.</p>
+<p>Of particular interest are updating modelling functions. Representative of this class of statistical algorithm is <em>biglm</em>, with an eponymously named package available in R. A prototype distributed linear model making use of both the <em>biglm</em> and <em>largeScaleR</em> packages is described in detail in the distributed linear model document.</p>
+<p>Though serving as a powerful high-level construct, it is hindered at present by the current state of the <em>largeScaleR</em> mechanism of managing unresolved references. As it currently stands, when a process receives a request from a queue involving a reference that has not yet been computed (unresolved), it sits and blocks until that the chunk has been resolved. A very simple race condition emerges when the process has two requests simultaneously, one dependent on another, and pops the request with dependency. This request can never be serviced, as it will block, thereby never allowing the request providing the dependency to run. Such a race condition manifests in a distributed reduce if a process holds two or more chunks to be reduced over – there is a single line of dependence between them and their resultant chunks. Furthermore, as the nature of popping from multiple queues is for all intents random, such a race condition is non-deterministic and difficult to reproduce. lst. <a href="#lst:dreduce-race">2</a> gives a setup where roughly half the time a race condition as described occurs, and the program hangs until forced termination, with illustration provided in fig. <a href="#fig:dreduce-rc">2</a>.</p>
+<div id="lst:dreduce-race" class="listing R">
+<p>Listing 2: Example potential for a race condition in the distributed reduce</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(largeScaleR)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">start</span>(<span class="at">workers=</span><span class="dv">1</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>chunks <span class="ot">&lt;-</span> <span class="fu">distribute</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="dv">2</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dreduce</span>(<span class="st">&quot;sum&quot;</span>, chunks)</span></code></pre></div>
+</div>
+<figure>
+<img src="dreduce-rc.svg" id="fig:dreduce-rc" alt="Figure 2: Diagram of non-terminating race condition where a worker containing consecutive chunks 1 and 2 reads in dreduce requests in the incorrect order, as indicated ordinally" /><figcaption aria-hidden="true">Figure 2: Diagram of non-terminating race condition where a worker containing consecutive chunks 1 and 2 reads in dreduce requests in the incorrect order, as indicated ordinally</figcaption>
+</figure>
+<p>Solutions to such a problem are forthcoming, with the chosen solution likely serving as a key architectural component.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-bird2010pearls" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">R. Bird, <em>Pearls of functional algorithm design</em>. Cambridge New York: Cambridge University Press, 2010.</div>
+</div>
+<div id="ref-dean2004mapreduce" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">J. Dean and S. Ghemawat, <span>“MapReduce: <span>Simplified</span> data processing on large clusters,”</span> <em>Google, Inc.</em>, 2004.</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-07-26" />
+  <title>Distributed Architecture Informal Assumptions and Considerations</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Distributed Architecture Informal Assumptions and Considerations</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-07-26</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Following several weeks of development on a prototype distributed platform, a large number of architectural choices have had to be made, covered in the series of reports, <a href="experiment-eager-dist-obj-supp.pdf">Experiment: Eager Distributed Object</a>. An attempt to outline some of the assumptions leading to these decisions is made in sec. <a href="#sec:assumptions">2</a>, as a means of making explicit what is otherwise left implicit and potentially unquestioned. Potential future assumptions with interesting consequences are considered in sec. <a href="#sec:potential">3</a>.</p>
+<p>At the current iteration of this text, only a few assumptions are laid out, however more will be progressively added following further development and consideration.</p>
+<h1 data-number="2" id="sec:assumptions"><span class="header-section-number">2</span> Present Assumptions</h1>
+<p>Assumption: The large data made use of in the platform originates externally and comes pre-distributed. If the data were instead being originated entirely locally, as in a simulation, the memory required would soon be excessive for a single computer. Data appropriate for this platform is too large for a single machine, so it can’t have been originated all at once from a single machine. There may be room in the future ofor consideration of streaming data recording and generation that distributes local <em>ex nihilo</em> data, but that is a separate concern to that of the platform for modelling on that data. Beyond the slightly tautological argument, experience shows that most large-scale data dealt with by a standard statistician is sourced externally. Consequences of this assumption include the complete removal of <code>as.distributed</code> from user-space, as it is at odds with such an assumption. Combined with a means of deriving locations of data chunks for import, such as through user-provided file URI’s, or hadoop locations, this enables the removal of the concept of cluster objects from user-space. A removal of cluster objects may lead to potential difficulties upon attempting operations involving multiple independently-read objects, as they may be unaligned, existing in different locations. This leads to the consideration that alignment of distributed objects should be an operation with side-effects, thereby ideally letting the expensive operation of data movement occur only once between a pair of unaligned objects. A corollary of removing cluster objects is a change in semantics; if, for example, a library is to be loaded across all nodes on a cluster, the declaration is no longer, “load the library at these specific locations.” rather it becomes, “load the library everywhere relevent to this distributed object.”</p>
+<p>Asumption: The platform makes use of parallelism as a means for handling large data, in order to cope with memory constraints, and any potential speed-ups are a secondary side-effect. Consider the counterfactual, that the principal concern was not large data, but parallelism for speed: CPU-bound, not memory-bound operations. In this kind of system, high levels of communication are acceptable and likely beneficial. Conversely, under our assumption, communication is required to be kept to a minimum, given the high cost associated with transferring large swaths of data across a network</p>
+<h1 data-number="3" id="sec:potential"><span class="header-section-number">3</span> Potential Future Assumptions</h1>
+<p>Assumption: Arbitrary classes can be distributed. Generalisation to arbitrary classes is an interesting pursuit, for the obvious increases in flexibility, as well as forcing clarity in the existing concepts of the system. The user offering a class to the system to distribute would be required to define methods for splitting, combining, as well as some other functions to aid special cases such as indexing. A marker of success would be the capacity to distribute matrices, with an extension to different types of matrices, such as sparse, diagonal, etc. Already some generalisation between classes is necessary; vectors and data frames are broken into chunks for distribution using a <code>split</code> method in order to abstract over their differences in structure. The proposed auxiliary functions are given in tbl. <a href="#tbl:aux">1</a>.</p>
+<div id="tbl:aux">
+<table>
+<caption>Table 1: Proposed auxiliary functions</caption>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>measure</code></td>
+<td>A count of the number of elements within an object</td>
+</tr>
+<tr class="even">
+<td><code>split</code></td>
+<td>A means of breaking an object into chunks</td>
+</tr>
+<tr class="odd">
+<td><code>combine</code></td>
+<td>A means of recombining the chunks locally</td>
+</tr>
+<tr class="even">
+<td><code>reftype</code></td>
+<td>A means of determining the appropriate class of distributed object to serve as a reference to the distributed chunks</td>
+</tr>
+<tr class="odd">
+<td><code>sizes</code></td>
+<td>A count of the number of elements within each distributed chunk</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Assumption: Point-to-point communication is necessary. Point-to-point communication, directly between nodes without master involvement is essential to the efficient movement of data between workers, but the implementation involves walking a tightrope of user-friendliness. At face value, it is antithetical to the expectation that locations should remain unknown to the user. This sees a fairly simple resolution in layering the platform, with explicit reference to locations existing only at the level of co-ordination and below; ideally lower. See tbl. <a href="#tbl:layers">2</a> for more detail on platform layering. An ideal outcome of point-to-point communication is the implementation of a sorting algorithm, with a more pedestrian, but still useful outcome in direct alignment of objects on different nodes.</p>
+<div id="tbl:layers">
+<table>
+<caption>Table 2: An outline of layers in the distributed architecture</caption>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Definitive Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>User</td>
+<td><code>table</code>, <code>dist.read.csv</code>, <code>dist.scan</code>, <code>Math</code> group (<code>+</code> etc.), <code>[&lt;-</code></td>
+</tr>
+<tr class="even">
+<td>Programming</td>
+<td><code>dist.do.call</code></td>
+</tr>
+<tr class="odd">
+<td>Co-ordination</td>
+<td><code>which.align</code>, <code>align</code>, <code>index</code></td>
+</tr>
+<tr class="even">
+<td>Movement</td>
+<td><code>send</code>, <code>p2p</code></td>
+</tr>
+<tr class="odd">
+<td>Communication</td>
+<td>RServe</td>
+</tr>
+</tbody>
+</table>
+</div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-05-26" />
+  <title>Initial Considerations on a Distributed R Architecture</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Initial Considerations on a Distributed R Architecture</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-05-26</p>
+</header>
+<h1 data-number="1" id="general-thoughts"><span class="header-section-number">1</span> General Thoughts</h1>
+<p>NOTE: Further work to still be done in correctly referencing attributes of the idealised system with respect to existing systems and concepts</p>
+<p>The system takes the form out of highest concern for the minimisation of data movement. A master-worker paradigm is favoured over SPMD, given that SPMD often ends up emulating master-slave anyway. Operation on the data is among the larger concerns; How are thes objects to be interacted with? Do we implement transparent distributed objects, as alluded to in the idealised R session, as well as by pbdDMAT, or do we allow interaction only through an interface as in sparklyr via dplyr? Furthermore, how are the operations to be carried out by the cluster, especially in a manner congenial to different backends? Do we translate everything to a language capable of natively handling distributed objects, as sparklyr does in its <code>mutate()</code> to Spark SQL, do we launch R sessions across the cluster, or do we define methods for a class that talk directly to a cluster? Do I look at a long list of standard generics in R and just set to work getting them to run on distributed objects? Obvious risks include missing just one of them, as pbdDMAT does with <code>diag()&lt;-</code> ! However, a very pleasant result is achieved when it does actually run transparently. Most importantly, how is iteration to work? Through special directives to whatever is handling the cluster operations? Through synchronisation to a master loop?</p>
+<p>My initial answers to these questions are illustrated to a degree in sec. <a href="#sec:idealised_r_session">2</a>.</p>
+<h1 data-number="2" id="sec:idealised_r_session"><span class="header-section-number">2</span> Idealised R Session</h1>
+<p>lst. <a href="#lst:ideal-r">1</a> gives an idealised R session running and testing a distributed R architecture, with favourable attributes taken from other distributed packages, as well as some new concepts introduced.</p>
+<div id="lst:ideal-r" class="listing R">
+<p>Listing 1: Idealised R session</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> c <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(<span class="at">hosts =</span> <span class="fu">paste0</span>(<span class="st">&quot;host&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>, <span class="at">type =</span> <span class="st">&quot;SOCK&quot;</span>)  <span class="sc">&lt;</span><span class="dv">1</span><span class="sc">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> c</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>socket cluster with x nodes on host xx</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> c<span class="sc">$</span>host1   <span class="sc">&lt;</span><span class="dv">2</span><span class="sc">&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>R process on host host1</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">ls</span>(c<span class="sc">$</span>host1)   <span class="sc">&lt;</span><span class="dv">3</span><span class="sc">&gt;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">character</span>(<span class="dv">0</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> x <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> x <span class="ot">&lt;-</span> <span class="fu">send</span>(<span class="at">to =</span> c<span class="sc">$</span>host1, <span class="at">obj =</span> x)  <span class="sc">&lt;</span><span class="dv">4</span><span class="sc">&gt;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> x</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>Distributed Integer</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="do">## Further details ...</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> y <span class="ot">&lt;-</span> <span class="fu">cluster.read.csv</span>(<span class="at">cluster =</span> c,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">file =</span> <span class="st">&quot;hdfs://xxx.csv&quot;</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">partitionFUN =</span> <span class="cn">NULL</span>)    <span class="sc">&lt;</span><span class="dv">5</span><span class="sc">&gt;</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> y</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>Distributed Data Frame</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="do">## Further details ...</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">head</span>(y)   <span class="sc">&lt;</span><span class="dv">6</span><span class="sc">&gt;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    Sepal.Length    Sepal.Width ...</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>   <span class="fl">5.1</span>     <span class="fl">3.5</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>   <span class="fl">4.9</span>     <span class="fl">3.0</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>   <span class="fl">4.7</span>     <span class="fl">3.2</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> y<span class="sc">$</span>Sepal.Length    <span class="sc">&lt;</span><span class="dv">7</span><span class="sc">&gt;</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>Distributed Integer</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="do">## Further details ...</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> z <span class="ot">&lt;-</span> x <span class="sc">+</span> y<span class="sc">$</span>Sepal.Length   <span class="sc">&lt;</span><span class="dv">8</span><span class="sc">&gt;</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> z</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>Distributed Integer</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="do">## Further details ...</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">send</span>(<span class="at">from =</span> c, <span class="at">to =</span> <span class="st">&quot;master&quot;</span>, <span class="at">obj =</span> z)    <span class="sc">&lt;</span><span class="dv">9</span><span class="sc">&gt;</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> z</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>] <span class="fl">6.1</span> <span class="fl">6.9</span> <span class="fl">7.7</span> ...</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> x <span class="sc">+</span> <span class="dv">1</span> <span class="sc">&lt;</span><span class="dv">10</span><span class="sc">&gt;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>Distributed Integer</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a><span class="do">## Further details ...</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> a <span class="ot">&lt;-</span> x <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">receive</span>(a)</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> a</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>] <span class="dv">2</span>   <span class="dv">3</span>   <span class="dv">4</span>   <span class="dv">6</span>   ...</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="at">cont =</span> <span class="cn">TRUE</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="cf">while</span> (cont) {</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> x <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    cont <span class="ot">&lt;-</span> <span class="fu">any</span>(x <span class="sc">&lt;</span> <span class="dv">70</span>) <span class="sc">&lt;</span><span class="dv">11</span><span class="sc">&gt;</span></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    <span class="fu">receive</span>(cont)</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<ol type="1">
+<li>Possible alternative: <code>makeYARNcluster()</code>. <code>makeCluster</code> can be made using RServe and RSclient. If using a YARN cluster, RServe may need to be embedded in Java - not sure</li>
+<li>The cluster takes a list structure, with each node holding a reference as a node object, as an element in the list</li>
+<li>Not accurate, but if <code>ls()</code> was generic, then the idea is that it would return the global environment of the node given as argument. Of course, a function with any other name can be created</li>
+<li>Blocks until sent, modifies environment of <code>host1</code>, based on the name of assignment locally. Communicates serial object. Distributed object referenced locally. <code>c</code> acts as namenode or virtual memory, determining and retaining where the chunks are distributed among the nodes. <code>x</code> then only references it’s location in <code>c</code></li>
+<li>Distributed csv read by slave process on <code>c</code> directly, locally referenced by <code>y</code>, but environment again modified on all cluster nodes.</li>
+<li>Methods defined for standard generics. Can potentially be simplified through inheritence of a general distributed class</li>
+<li>Attributes (such as <code>names</code>) of distributed data frames and lists may be saved locally</li>
+<li>Again, transparent operation on distributed object, assignment is carried into the cluster as well</li>
+<li>maybe aliased to <code>receive()</code> or the like</li>
+<li>Implicit coersion to distributed objects</li>
+<li>Perhaps functions which always return scalars can be implicitly <code>receive()</code>’d.</li>
+</ol>
+</body>
+</html>

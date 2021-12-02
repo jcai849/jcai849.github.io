@@ -51,7 +51,7 @@ Despite the reduced time spent blocking, the client-originated chunk ID modelled
 This would not be determined by the client untile the completion of `f(z)`{.R}, in which an error would presumably result.
 Worse, if the chunk reference `x`{.R} was given as an additional argument to another server, which in turn requested the chunk `C1`{.R} from the node `C1`{.R} resided upon, the error would propagate, with the source of the error being exceedingly difficult to trace.
 
-# Proposal}
+# Proposal
 
 A potential solution to the problems of the models posed in [@sec:mod-eval] is to treat chunk reference objects somewhat like futures, which have a state of `resolved`{.R} or `unresolved`{.R}, with failures also encapsulated in the object upon resolution [@bengtsson19:_futur_r].
 

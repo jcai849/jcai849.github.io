@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-05-19" />
+  <title>Considerations on a Functional Iterative Interface</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Considerations on a Functional Iterative Interface</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-05-19</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>A <em>functional</em> iterative interface may be a suitable interface to the platform. An explicit interface has benefits over recursion in that R has little optimisation for recursion either through tail call elimination or call stack manipulation <span class="citation" data-cites="rcore2020lang"><a href="#ref-rcore2020lang" role="doc-biblioref">[1]</a></span>. Being <em>functional</em> entails referential transparency, purity, and operational access through functions <span class="citation" data-cites="cousineau1998functional"><a href="#ref-cousineau1998functional" role="doc-biblioref">[2]</a></span>. The benefits brought by referential transparency include most notably for this platform, sufficient encapsulation such that backends can be switched out without requiring alteration of the code <span class="citation" data-cites="strachey2000fundamental"><a href="#ref-strachey2000fundamental" role="doc-biblioref">[3]</a></span>. Additionally, the design and terminology of the function offers a close mapping to the mathematical notation of a recurrence relation.</p>
+<p>This can be contrasted with a non-functional approach, which in it’s most efficient form in R would entail defining an iterator object, which pulls the act of implementation closer to the details of object definition rather than, as on paper, the function definition <span class="citation" data-cites="analytics19"><a href="#ref-analytics19" role="doc-biblioref">[4]</a></span>.</p>
+<p>This particular interface attempts to emulate notation of iterated functions of the following form:</p>
+<p><span class="math display"><em>x</em><sub><em>n</em> + 1</sub> = <em>x</em><sub><em>n</em></sub></span></p>
+<p>With the function body aiming to map as closely as possible a standard mathematical notion of iterated functions:</p>
+<p><span class="math display"><em>f</em><sup>0</sup> = <em>i</em><em>d</em><sub><em>x</em></sub></span> <span class="math display"><em>f</em><sup><em>n</em> + 1</sup> = <em>f</em> ∘ <em>f</em><sup><em>n</em></sup></span></p>
+<h1 data-number="2" id="a-higher-order-model-for-iterative-functions"><span class="header-section-number">2</span> A Higher-Order Model for Iterative Functions</h1>
+<p>A draft interface sees a function taking the following form:</p>
+<p><code>iter(x0, ..., P, fn)</code></p>
+<p>Where the formal parameters include,</p>
+<ul>
+<li><code>x0</code> as the initial object to iterate upon;</li>
+<li><code>...</code> as additional objects to iterate upon;</li>
+<li><code>P</code> as the predicate to cease iteration upon evaluating false, and;</li>
+<li><code>fn</code> as the iterated function</li>
+</ul>
+<p>A means of referring to prior returned objects of <code>fn</code> within <code>P</code> and <code>fn</code> would have to be defined. This could take the form of reserved names such as <code>xn</code>, <code>xn\_1</code>, … <code>xn\_n</code> to refer to the output of <code>fn</code>, the prior output of <code>fn</code>, and so on, respectively, as well as <code>x1</code>, <code>x2</code>, … <code>xn</code> to refer to the output of the <span class="math inline"><em>n</em></span>th iteration. Memory could be spared through parsing <code>P</code> and <code>fn</code> and only keeping the value of those names which are referenced in <code>P</code> and <code>fn</code>.</p>
+<p>Through this interface, iterated functions are clearly defined without the need for explicit loop control structures, and through the transparancy of the function, may swap in backend-specific mechanisms of action. This function may be defined as a generic, with appropriate backend-specific methods dispatched based on the class of <code>x0</code>.</p>
+<p>As an example of an iterated function, a GLM can be defined using this interface, as outlined in lst. <a href="#lst:glm">1</a>:</p>
+<div id="lst:glm" class="listing R">
+<p>Listing 1: GLM Implementation</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># include definitions for X and y</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> <span class="cf">function</span>(X, B){</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>X  <span class="sc">%*%</span> B))</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>fn <span class="ot">&lt;-</span> <span class="cf">function</span>(B){</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    W <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">as.vector</span>(<span class="fu">pr</span>(X, B)))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    hessian <span class="ot">&lt;-</span> <span class="sc">-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> W <span class="sc">%*%</span> X</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    z <span class="ot">&lt;-</span> X <span class="sc">%*%</span> B <span class="sc">+</span> <span class="fu">solve</span>(W) <span class="sc">%*%</span> (y <span class="sc">-</span> <span class="fu">pr</span>(X, B))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    B <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="sc">-</span>hessian) <span class="sc">%*%</span> <span class="fu">crossprod</span>(X, W <span class="sc">%*%</span> z)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    B</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>x0 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">x</span>(<span class="dv">0</span>,<span class="dv">0</span>))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>P <span class="ot">&lt;-</span> <span class="fu">quote</span>(<span class="fu">colSums</span>(xn_1 <span class="sc">-</span> xn)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">&gt;</span> tolerance<span class="er">)</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">iter</span>(x0, P, fn)</span></code></pre></div>
+</div>
+<h1 data-number="3" id="implementation-details"><span class="header-section-number">3</span> Implementation Details</h1>
+<p>Internally, a while loop with predicate <code>P</code> runs function <code>fn</code> on it’s returned output, starting with <code>x0</code>. A basic, non-generic implementation could take the form of lst. <a href="#lst:basic-imp">2</a>:</p>
+<div id="lst:basic-imp" class="listing R">
+<p>Listing 2: Implementation structure</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>iter <span class="ot">&lt;-</span> <span class="cf">function</span>(x0, P, fn){</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ModifyBaseEnv</span>(P, fn)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (P) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        xn <span class="ot">&lt;-</span> <span class="fu">fn</span>(xn)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ModifyLoopEnv</span>(P)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    xn</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>Note: - <code>ModifyBaseEnv(P, fn)</code> is required in the case that <code>P</code> or <code>fn</code> references variables such as <code>xn\_1</code>; In this case, the reserved names are linked to the initial input variables up to the n’th input variable. - <code>ModifyLoopEnv(P)</code> is required in the same case as the previous, wherein the environment is modified to hold the additional variable references.</p>
+<p>Optimisations can include inlining the function through substitution in order to minimise object movement.</p>
+<p>Various backends could be used. As an example, sparklyr could be run through being passed an <code>x0</code> of class <code>spark\_tbl</code>, wherein the appropriate method would be dispatched. This method would enclose the <code>fn</code> function calls within <code>mutate</code>, and perform other enhancements such as caching directives. sparklyr could just as easily be bypassed, with some serialisation of the closure <code>fn</code> performed and sent directly to Spark, if Spark allows for such an operation.</p>
+<h1 data-number="4" id="potential-further-developments"><span class="header-section-number">4</span> Potential Further Developments</h1>
+<p>Explicit embarrassing parallel sections may be specified as additional arguments; With an appropriate backend, these parallel functions are changed to be processed in parallel, with the converted functions fed into the environment of the iterated function. As a corollary, the partitioning of data may be manually specified to ensure good performance under parallelisation.</p>
+<p>Communicative parallelism is significantly more difficult to capture in the design of such an interface, with most parallel R packages ignoring such a construct <span class="citation" data-cites="bengtsson20 core:_packag matloff16softw_alchemy vaughan18"><a href="#ref-bengtsson20" role="doc-biblioref">[5]</a>}, <a href="#ref-core:_packag" role="doc-biblioref">[6]</a>}, <a href="#ref-matloff16softw_alchemy" role="doc-biblioref">[7]</a>}, <a href="#ref-vaughan18" role="doc-biblioref">[8]</a></span>. However, it is conceivable that such functions can also be delivered as formal parameters to the <code>iter</code> function, though it is as yet unclear how to integrate this cleanly.</p>
+<h1 data-number="5" id="conclusion"><span class="header-section-number">5</span> Conclusion</h1>
+<p>While this functional API does provide a simple abstract interface, it comes at the cost of lacking clear communication directives. Multivariable iterated functions are also difficult to manage; they can be contained in a list as a single formal parameter, but this limits the generic capability of the function to dispatch methods based on the class of the initial object <code>x0</code>. Such a cost is bearable by some applications, but limits the platform excessively at this early stage; In addition, the necessity of reference to prior and named output has led to the usage of a set of reserved names, beginning to create something of a domain-specific language. This can be powerful if executed perfectly, but will be difficult to implement and may prove difficult to debug and make use of if not expertly implemented. it may be better to pursue this idea at a later point in time, pending development of the more primitive platform details.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-rcore2020lang" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">R. C. Team, <em>R language definition</em>. 2020.</div>
+</div>
+<div id="ref-cousineau1998functional" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">G. Cousineau and M. Mauny, <em>The functional approach to programming</em>. Cambridge University Press, 1998.</div>
+</div>
+<div id="ref-strachey2000fundamental" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">C. Strachey, <span>“Fundamental concepts in programming languages,”</span> <em>Higher-order and symbolic computation</em>, vol. 13, no. 1–2, pp. 11–49, 2000.</div>
+</div>
+<div id="ref-analytics19" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">R. Analytics and S. Weston, <em>Iterators: <span>Provides</span> iterator construct</em>. 2019.</div>
+</div>
+<div id="ref-bengtsson20" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">H. Bengtsson, <em>Future: <span>Unified</span> parallel and distributed processing in r for everyone</em>. 2020.</div>
+</div>
+<div id="ref-core:_packag" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">R. Core, <em>Package ’parallel’</em>. 2018.</div>
+</div>
+<div id="ref-matloff16softw_alchemy" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">N. Matloff, <span>“Software alchemy: <span>Turning</span> complex statistical computations into embarrassingly-parallel ones,”</span> <em>Journal of Statistical Software</em>, vol. 71, no. 4, pp. 1–15, 2016.</div>
+</div>
+<div id="ref-vaughan18" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">D. Vaughan and M. Dancho, <em>Furrr: <span>Apply</span> mapping functions in parallel using futures</em>. 2018.</div>
+</div>
+</div>
+</body>
+</html>

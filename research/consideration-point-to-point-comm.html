@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-05-22" />
+  <title>Considerations on the Value of Point-to-Point Communication</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Considerations on the Value of Point-to-Point Communication</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-05-22</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Point-to-point communication refers to communication directly from on node to another. It allows for fine-grained transfer of data and directives, potentially attaining high levels of efficiency in computations that stand to gain from such a form of communication. In addition, point-to-point communication consumes significantly less bandwidth than that required for a complete broadcast among all nodes.</p>
+<h1 data-number="2" id="implementations"><span class="header-section-number">2</span> Implementations</h1>
+<p>Point-to-point communication finds its most notable implementation in MPI, primarily through the use of <code>MPI_Send</code> and <code>MPI_Recv</code> functions. I’m not sure yet about others - Hadoop, YARN, Spark??</p>
+<h1 data-number="3" id="applications"><span class="header-section-number">3</span> Applications</h1>
+<p>The capacity for point-to-point communication enables many applications; <a href="https://mpitutorial.com/tutorials/point-to-point-communication-application-random-walk">Wes Kendall</a> demonstrates random walks and parallel particle tracing as some applications that can take advantage of point-to-point communication <span class="citation" data-cites="kendall2014mpi"><a href="#ref-kendall2014mpi" role="doc-biblioref">[1]</a></span>. A generalisation of such applications would be any where a large amount of static data exists in distributed memory, and nodes perform iterative computation on the main data in conjunction with small pieces of data that are then transferred and received based on the output of the computation.</p>
+<p>Applications in the domain of statistical modelling (beyond a random walk) are unclear, but there are likely to be some in the domains of graphical models, Bayesian networks, undirected Markov blankets, Hidden Markov Models, potentially even neural networks wherein each node contains several consecutive layers that are a part of a larger network spanned by all of the nodes.</p>
+<h1 data-number="4" id="conclusion"><span class="header-section-number">4</span> Conclusion</h1>
+<p>Point-to-point communication adds huge performance capabilities to a distributed system. This comes at the potential for deadlock, which must be carefully managed by both the implementation and the user. A large-scale platform for statistical modelling in R will benefit from such a capability, but there will be at least the following difficulties:</p>
+<ul>
+<li>Determining an appropriate interface</li>
+<li>Avoiding the reinvention of the wheel</li>
+<li>Clean implementation avoiding excess communication</li>
+</ul>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-kendall2014mpi" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">W. Kendall, <span>“MPI tutorial. <span class="nocase">Point-to-point</span> communication application - random walk.”</span> </div>
+</div>
+</div>
+</body>
+</html>

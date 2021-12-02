@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-06-08" />
+  <title>Considerations on Distributed Objects</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Considerations on Distributed Objects</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-06-08</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Distributed objects are a means of access to objects on a distributed system. They typically take the form of a reference (<em>stub</em>) that acts as a transparent handle to fragmented referents (<em>skeletons</em>) over a distributed system. Details of their methods of interaction can vary enormously; distributed objects can exist anywhere on the spectrum of lazy/eager evaluation, for example. Greater transparency in distributed objects is exemplified best in R with pbdDMAT, which provides distributed matrix objects, implementing nearly all standard Matrix methods on them. pbdDMAT is discussed further in <a href="review-pbdr.html">Review of pbdR</a>. The foundations of an implementation of distributed objects, focussing on vectors, can be found in <a href="github.com/jcai849/phd/R/experiment-eager-dist-obj.R">R/experiment-eager-dist-obj.R</a>.</p>
+<h1 data-number="2" id="benefits"><span class="header-section-number">2</span> Benefits</h1>
+<p>The benefits of distributed objects grow commensurately with their degree of transparency. At the closest state to ideal, a distributed object would be manipulated equivalently to its local equivalent. More …</p>
+<h1 data-number="3" id="contrary-recommendations"><span class="header-section-number">3</span> Contrary Recommendations</h1>
+<p>Experience has found the state of transparency to be impossible to achieve completely; ultimately, it is an abstraction, replete with the leaks inherent in such a physically-dependent abstraction. This was noted with respect to pbdR in <a href="review-pbdr.html">Review of pbdR</a>.</p>
+<p>Further initial research has revealed strong skepticism from some commentators <span class="citation" data-cites="waldo1996note rotem2006fallacies"><a href="#ref-waldo1996note" role="doc-biblioref">[1]</a>, <a href="#ref-rotem2006fallacies" role="doc-biblioref">[2]</a></span>, with Martin Fowler declaring his First Law of Distributed Object Design;</p>
+<blockquote>
+<p>don’t distribute your objects <span class="citation" data-cites="fowler2003patterns"><a href="#ref-fowler2003patterns" role="doc-biblioref">[3]</a></span></p>
+</blockquote>
+<h1 data-number="4" id="next-steps"><span class="header-section-number">4</span> Next Steps</h1>
+<p>Despite the criticism, it is a very strong idea, with plenty of examples of effective real world usage. It would be worth going into more detail on distributed objects, their implementations in other languages (esp. CORBA), what prompted such skepticism, and whether it is justified.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-waldo1996note" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">J. Waldo, G. Wyant, A. Wollrath, and S. Kendall, <span>“A note on distributed computing,”</span> in <em>International workshop on mobile object systems</em>, 1996, pp. 49–64.</div>
+</div>
+<div id="ref-rotem2006fallacies" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">A. Rotem-Gal-Oz, <span>“Fallacies of distributed computing explained,”</span> <em>URL http://www. rgoarchitects. com/Files/fallacies. pdf</em>, vol. 20, 2006.</div>
+</div>
+<div id="ref-fowler2003patterns" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">M. Fowler, <em>Patterns of enterprise application architecture</em>. Boston: Addison-Wesley, 2003.</div>
+</div>
+</div>
+</body>
+</html>

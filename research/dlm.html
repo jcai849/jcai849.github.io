@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2021-07-05" />
+  <title>dlm: Distributed Linear Models</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">dlm: Distributed Linear Models</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2021-07-05</p>
+</header>
+<h1 data-number="1" id="overview"><span class="header-section-number">1</span> Overview</h1>
+<p>To serve as a demonstration and test of modelling using the <em>largeScaleR</em> system, the canonical statistical model, the linear model, was chosen for implementation. While simple to derive the mathematics detailing a linear model, the naive method doesn’t map straightforwardly to a distributed system. This is due to matrix inversion and multiplication operations requiring more than isolated chunkwise information. Conveniently, the common method of decomposing a matrix, typically for computationally simplified inversion, is given in a chunked form as part of Algorithm AS274 <span class="citation" data-cites="miller1992as274"><a href="#ref-miller1992as274" role="doc-biblioref">[1]</a></span>. This algorithm is in turn implemented and wrapped through the <em>biglm</em> package in R with several additional features such as such as sandwiching <span class="citation" data-cites="lumley2013biglm"><a href="#ref-lumley2013biglm" role="doc-biblioref">[2]</a></span>. The <em>biglm</em> package creates a linear model object from some initial row-wise chunk of data with a space complexity of <span class="math inline"><em>m</em><em>a</em><em>t</em><em>h</em><em>c</em><em>a</em><em>l</em><em>O</em>(<em>p</em><sup>2</sup>)</span> for <span class="math inline"><em>p</em></span> variables. The linear model object is then updated sequentially with further chunks of the data, until all of the data has been read, yielding a final linear model object with methods available for standard linear model object inspection, including summaries and predictions. This sequential rolling update over chunked data is able to be captured succinctly in a <code>Reduce()</code> pattern typical of the functional programming paradigm. Using the  dataset as an example, a linear model of the form, <span class="math display"><em>P</em><em>e</em><em>t</em><em>a</em><em>l</em>.<em>L</em><em>e</em><em>n</em><em>g</em><em>t</em><em>h</em><sub><em>i</em></sub> = <em>S</em><em>e</em><em>p</em><em>a</em><em>l</em>.<em>W</em><em>i</em><em>d</em><em>t</em><em>h</em><sub><em>i</em></sub> + <em>S</em><em>e</em><em>p</em><em>a</em><em>l</em>.<em>L</em><em>e</em><em>n</em><em>g</em><em>t</em><em>h</em><sub><em>i</em></sub> + <em>S</em><em>e</em><em>p</em><em>a</em><em>l</em>.<em>W</em><em>i</em><em>d</em><em>t</em><em>h</em> × <em>S</em><em>e</em><em>p</em><em>a</em><em>l</em>.<em>L</em><em>e</em><em>n</em><em>g</em><em>t</em><em>h</em> + <em>ϵ</em><sub><em>i</em></sub></span> is fitted using <em>biglm</em> as part of a demonstrative non-distributed <code>Reduce()</code> in lst. <a href="#lst:lm-reduce">1</a>.</p>
+<div id="lst:lm-reduce" class="listing R">
+<p>Listing 1: Splitting the iris dataframe into 15 chunks stored as elements of a list and reducing over the list with the biglm update function.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(biglm)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>nc <span class="ot">&lt;-</span> <span class="dv">15</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>cs <span class="ot">&lt;-</span> <span class="fu">split</span>(iris, <span class="fu">cumsum</span>((<span class="fu">seq</span>(<span class="fu">nrow</span>(iris)) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">%%</span> nc <span class="sc">==</span> <span class="dv">0</span>)) <span class="co"># split to chunks</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">Reduce</span>(<span class="at">f =</span> update, <span class="at">x =</span> cs[<span class="sc">-</span><span class="dv">1</span>],</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">init =</span> <span class="fu">biglm</span>(Petal.Length <span class="sc">~</span> Sepal.Width <span class="sc">*</span> Sepal.Length, cs[[<span class="dv">1</span>]]))</span></code></pre></div>
+</div>
+<p>The <em>largeScaleR</em> package provides the distributed Reduce, <code>dreduce</code>, as discussed in the dreduce document. The <code>dreduce</code> is therefore to be used as an equivalent structural backbone for the implementation of a distributed linear model.</p>
+<h1 data-number="2" id="implementation-details"><span class="header-section-number">2</span> Implementation Details</h1>
+<p>The implementation of the distributed linear model is succinct enough to be given in it’s entireity in lst. <a href="#lst:dlm">2</a>.</p>
+<div id="lst:dlm" class="listing R">
+<p>Listing 2: Full listing of distributed linear model implementation.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dlm <span class="ot">&lt;-</span> <span class="cf">function</span>(formula, data, <span class="at">weights=</span><span class="cn">NULL</span>, <span class="at">sandwich=</span><span class="cn">FALSE</span>) {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(largeScaleR<span class="sc">::</span><span class="fu">is.distObjRef</span>(data))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    chunks <span class="ot">&lt;-</span> largeScaleR<span class="sc">::</span><span class="fu">chunkRef</span>(data)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(<span class="fu">length</span>(chunks) <span class="sc">&gt;</span> 0L)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    dblm <span class="ot">&lt;-</span> <span class="fu">dbiglm</span>(formula, chunks[[<span class="dv">1</span>]], weights, sandwich)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(chunks) <span class="sc">!=</span> 1L)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        largeScaleR<span class="sc">::</span><span class="fu">dreduce</span>(<span class="at">f=</span><span class="st">&quot;biglm::update.biglm&quot;</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                     <span class="at">x=</span>largeScaleR<span class="sc">::</span><span class="fu">distObjRef</span>(chunks[<span class="sc">-</span><span class="dv">1</span>]),</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                     <span class="at">init=</span>dblm)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> init</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>dbiglm <span class="ot">&lt;-</span> <span class="cf">function</span>(formula, data, <span class="at">weights=</span><span class="cn">NULL</span>, <span class="at">sandwich=</span><span class="cn">FALSE</span>) {</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stopifnot</span>(largeScaleR<span class="sc">::</span><span class="fu">is.chunkRef</span>(data))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    sys.call <span class="ot">&lt;-</span> largeScaleR<span class="sc">::</span><span class="fu">currCallFun</span>(<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    largeScaleR<span class="sc">::</span><span class="fu">do.ccall</span>(<span class="at">what=</span><span class="st">&quot;biglm::biglm&quot;</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>                  <span class="at">args=</span><span class="fu">list</span>(<span class="at">formula=</span>largeScaleR<span class="sc">::</span><span class="fu">envBase</span>(formula),</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">data=</span>data,</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>                    <span class="at">weights=</span>largeScaleR<span class="sc">::</span><span class="fu">envBase</span>(weights),</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>                    <span class="at">sandwich=</span>sandwich),</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                  <span class="at">target=</span>data,</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                  <span class="at">insert=</span><span class="fu">list</span>(<span class="at">sys.call=</span>largeScaleR<span class="sc">::</span><span class="fu">envBase</span>(sys.call)))</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>This implementation includes several important aspects. Mapping to the list of chunks, an existing distributed object must be transformed to a list of chunks for the reduce function. The reduce function itself is accessed through a light wrapper <code>dreduce()</code>, with all of the internal code operating transparently on chunks without concern for the type of object. A major divergence is given in the generation of the initial reduction object. This uses a <code>do.ccall</code> function to create the initial biglm linear model object, which is then passed to the <code>dreduce()</code> function.</p>
+<h2 data-number="2.1" id="the-special-case-of-call-capturing"><span class="header-section-number">2.1</span> The Special Case of Call Capturing</h2>
+<p>A more significant divergence than different initialisation, with severe performance implications, is shown through the intercept and insertion of the function call. This is made necessary by the fact that <em>biglm</em> captures the call it was called with, and stores it as part of the model object – this is not unique to <em>biglm</em>, and this behaviour is common to most modelling functions in R. Due to actually enacting the call to construct the inital <em>biglm</em> linear model object on the worker process, rather than the master process, with worker processes evaluating requests through construction with the <code>do.call()</code> function, rather than exact replication of the initial call, the call as seen by the function is not necessarily the same as that issued on the master process. This presents two problems: inaccuracy, and unbounded call sizes. Inaccuracy is not an enormous problem, as the call isn’t typically used for anything other than rendering a portion of the string representation of the model object. The greater issue is that as calls are constructed on the worker, all arguments are evaluated, and the captured call will include fully expanded objects in a <code>dump()</code>-like form. This object may very well have a larger memory footprint than all of the arguments to the call combined, and will lead to memory limitations and slowdowns, particularly when transferring the model object from process to process.</p>
+<p>The solution to this is twofold: allow new insertion environments to be inserted to the requested function on the worker for the purpose of non-destructive masking; and capture the call on the master end, wrapped into a function returning the call, and insert into the new insertion environment to take the place of the previous call capture function.</p>
+<p>An insertion environment follows the simple concept of being placed between some function and the function’s original enclosing environment for the purpose of having it’s objects first on the search path, for masking or perhaps making previously global variables available. Its form is given in the diagram at Figure .</p>
+<p>The call is captured on the master end, with a function constructed to return this call, given by the <em>largeScaleR</em>-provided <code>currCallFun()</code>, and this is then sent to the worker to be inserted as <code>sys.call()</code> in the insertion environment, thus effectively masking the call capture function at the top level of the requested <em>biglm</em> function. Depending on perspective, the fact that this only works at the top level can be a feature, as it doesn’t messily mask further along the call stack, however it has the associated limitation.</p>
+<p>Worth noting is that call capture is notoriously messy, with <em>biglm</em> itself featuring source code directly manipulating the call as part of some functions.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-miller1992as274" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">A. J. Miller, <span>“Algorithm AS 274: Least squares routines to supplement those of gentleman,”</span> <em>Journal of the Royal Statistical Society. Series C (Applied Statistics)</em>, vol. 41, no. 2, pp. 458–478, 1992,Available: <a href="http://www.jstor.org/stable/2347583">http://www.jstor.org/stable/2347583</a></div>
+</div>
+<div id="ref-lumley2013biglm" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">T. Lumley, <em>Biglm: <span>Bounded</span> memory linear and generalized linear models</em>. 2013.</div>
+</div>
+</div>
+</body>
+</html>
