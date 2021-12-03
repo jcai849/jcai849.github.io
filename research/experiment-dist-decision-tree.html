@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-06-08" />
+  <title>Experiment: Distributed Decision Tree</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Experiment: Distributed Decision Tree</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-06-08</p>
+</header>
+<h1 data-number="1" id="introduction-and-motivation"><span class="header-section-number">1</span> Introduction and Motivation</h1>
+<p>The intention of this experiment is to train a decision tree on data physically distributed across separate nodes, with the result being capable of prediction. This is motivated by the need for the demonstration of practical use of eager distributed objects, themselves detailed in the <a href="experiment-eager-dist-obj-pre.html">Precursory</a> and <a href="experiment-eager-dist-obj-supp.pdf">Supplementary</a> reports.</p>
+<p>Ideally, the decision tree represents the hard part of ensemble methods such as random forest or adaboost, and such methods could form the basis of later experiments.</p>
+<h1 data-number="2" id="theory"><span class="header-section-number">2</span> Theory</h1>
+<p>The following brief description of decision trees follows <span class="citation" data-cites="breiman1993trees"><a href="#ref-breiman1993trees" role="doc-biblioref">[1]</a></span> very closely. Decision trees operate on the principal of recursively splitting and subsetting initial explanatory data based on predicates operating on variables within the data, under some measure of goodness of each split; the resultant model corresponds to a tree, with predictions on new data performed through traversing based on the evaluation of the predicates within each node of the tree, and the terminal nodes corrresponding to some prediction.</p>
+<p>The predicates with which to split the data are referred to as questions, and operate through determining whether particular variables hold specific values, or within some other relation to a particular splitting value, such as being less than some number for numeric data. The tree is constructed through building the set of all possible questions, then running the data through the questions to generate the resulting splits. These splits are then analysed under some measure of goodness of split, then subset by that particular predicate, and the process again applied to the resulting subsets.</p>
+<p>The goodness of each split is drawn from the measure of lack of impurity within the parent and two descendant nodes. Impurity itself is a measure of differentiation among the response variables corresponding to the subset explanatory variables; a perfectly pure dataset has a response variable of only one type of value, and a perfectly impure dataset has every value unique. In this way, goodness of the split is equivalent to the minimisation of impurity:</p>
+<p><span class="math display"><em>δ</em><em>i</em>(<em>s</em>,<em>t</em>) = <em>i</em>(<em>t</em>) − <em>p</em><sub><em>L</em></sub><em>i</em>(<em>t</em><sub><em>L</em></sub>) − <em>p</em><sub><em>R</em></sub><em>i</em>(<em>t</em><sub><em>R</em></sub>)</span></p>
+<p>Where <span class="math inline"><em>i</em></span> is the measure of impurity on some node <span class="math inline"><em>t</em></span> and the conditional proportions of the data split into the left and right nodes <span class="math inline"><em>t</em><sub><em>L</em></sub></span>, <span class="math inline"><em>t</em><sub><em>R</em></sub></span>) are given by <span class="math inline"><em>p</em><sub><em>L</em></sub></span> and <span class="math inline"><em>p</em><sub><em>R</em></sub></span> respectively.</p>
+<p>The metric used in this case is the gini impurity measure, on the basis of ease of computation and little variance in impurity measures as described by Breiman. Gini impurity is given as the probability of misclassification under arbitrary assignment for each possible class of response variable within the subset:</p>
+<p><span class="math display"><em>i</em>(<em>t</em>) = ∑<sub><em>j</em> ≠ <em>i</em></sub><em>p</em>(<em>j</em><em>t̄</em>)<em>p</em>(<em>i</em><em>t̄</em>)</span></p>
+<p>where the variables <span class="math inline"><em>i</em></span> and <span class="math inline"><em>j</em></span> stand for all possible classes belonging to a response. This is further simplified to:</p>
+<p><span class="math display"><em>i</em>(<em>t</em>) = 1 − ∑<sub><em>j</em></sub><em>p</em><sup>2</sup>(<em>j</em><em>t̄</em>)</span></p>
+<h1 data-number="3" id="implementation"><span class="header-section-number">3</span> Implementation</h1>
+<h1 class="unnumbered" id="outcome">Outcome</h1>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-breiman1993trees" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">L. Breiman, <em>Classification and regression trees</em>. New York: Chapman &amp; Hall, 1993.</div>
+</div>
+</div>
+</body>
+</html>

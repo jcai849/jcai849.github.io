@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-08-19" />
+  <title>Initial Chunk Experimentation with a Message Queue Communication System</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Initial Chunk Experimentation with a Message Queue Communication System</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-08-19</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Given the simplicity and promise of flexibility as demonstrated in the documents <a href="inter-node-comm-w-redis.html">Inter-node Communication with Redis</a> and <a href="message-queues-comms.html">Message Queue Communications</a>, further experimentation around the concept is undertaken and documented herein. The experiments are built successively upon it’s prior, with the aim of rapidly approximating a functioning prototype via experimentation.</p>
+<h1 data-number="2" id="general-function-on-single-chunk"><span class="header-section-number">2</span> General Function on Single Chunk</h1>
+<p>While the RPC-based architecture as described in <a href="experiment-eager-dist-obj-pre.html">Experiment: Eager Distributed Object</a> had significant limitations, a particularly powerful construct was the higher order function <code class="sourceCode r">distributed.do.call</code>, which took functions as arguments to be performed on the distributed chunks.</p>
+<p>This construct is powerful in that it can serve as the basis for nearly every function on distributed chunks, and this section serves to document experiments relating to the creation of a general function that will perform a function at the node hosting a particular chunk.</p>
+<h2 data-number="2.1" id="sec:val-ret"><span class="header-section-number">2.1</span> With Value Return</h2>
+<p>Regardless of performing the actual function, some means of returning the value of a function must be provided; this section focuses on getting a function to be performed on a server node, with the result send back to the client. Listings of an implementation of these concepts are given by lsts. <a href="#lst:vr-client">1</a>, <a href="#lst:vr-server">2</a>.</p>
+<div id="lst:vr-client" class="listing R">
+<p>Listing 1: Value return to request for client Node</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env R</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rediscc)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>RSC <span class="ot">&lt;-</span> <span class="fu">redis.connect</span>(<span class="at">host=</span><span class="st">&quot;localhost&quot;</span>, <span class="at">port=</span>6379L)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>SELF_ADDR <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">host=</span><span class="st">&quot;localhost&quot;</span>, <span class="at">port=</span>12345L)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>chunk <span class="ot">&lt;-</span> <span class="fu">structure</span>(<span class="st">&quot;chunk1&quot;</span>, <span class="at">class =</span> <span class="st">&quot;chunk&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">doFunAt</span>(<span class="at">fun=</span>exp, <span class="at">chunk=</span>chunk)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>doFunAt <span class="ot">&lt;-</span> <span class="cf">function</span>(fun, chunk, conn) {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    msg <span class="ot">&lt;-</span> <span class="fu">bquote</span>(<span class="fu">list</span>(<span class="at">fun=</span>.(fun),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">chunk=</span>.(chunk),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>               <span class="at">returnAddr=</span>.(SELF_ADDR)))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">writeMsg</span>(msg, chunk)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;wrote message: &quot;</span>, <span class="fu">format</span>(msg), <span class="st">&quot; to &quot;</span>, chunk, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">listenReply</span>()</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>listenReply <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    replySock <span class="ot">&lt;-</span> <span class="fu">socketConnection</span>(<span class="fu">getHost</span>(), <span class="fu">getPort</span>(), <span class="at">server=</span><span class="cn">TRUE</span>)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    response <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="dv">0</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">length</span>(response) <span class="sc">&lt;</span> <span class="dv">1</span>) {</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        response <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">unserialize</span>(replySock),</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>                     <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;no reply, trying again in 1 sec</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">Sys.sleep</span>(<span class="dv">1</span>); <span class="cn">NULL</span>})</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;received response: &quot;</span>, <span class="fu">format</span>(response), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">close</span>(replySock)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    response</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>getHost <span class="ot">&lt;-</span> <span class="cf">function</span>() SELF_ADDR<span class="sc">$</span>host</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>getPort <span class="ot">&lt;-</span> <span class="cf">function</span>() SELF_ADDR<span class="sc">$</span>port</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>writeMsg <span class="ot">&lt;-</span> <span class="cf">function</span>(msg, to) {</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">rawToChar</span>(<span class="fu">serialize</span>(msg, <span class="cn">NULL</span>, T))</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">redis.push</span>(RSC, to, serializedMsg)</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<div id="lst:vr-server" class="listing R">
+<p>Listing 2: Value return to request for server Node</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env R</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rediscc)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>RSC <span class="ot">&lt;-</span> <span class="fu">redis.connect</span>(<span class="at">host=</span><span class="st">&quot;localhost&quot;</span>, <span class="at">port=</span>6379L)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>chunk1 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">10</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>QUEUE <span class="ot">&lt;-</span> <span class="st">&quot;chunk1&quot;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="cn">TRUE</span>) {</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        msg <span class="ot">&lt;-</span> <span class="fu">readMessage</span>(QUEUE)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;read message:&quot;</span>, <span class="fu">format</span>(msg), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        result <span class="ot">&lt;-</span> <span class="fu">doFun</span>(msg)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;result is: &quot;</span>, <span class="fu">format</span>(result), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">reply</span>(result, <span class="fu">getReturnAddr</span>(msg))</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>doFun <span class="ot">&lt;-</span> <span class="cf">function</span>(msg) {</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    fun <span class="ot">&lt;-</span> <span class="fu">getFun</span>(msg); arg <span class="ot">&lt;-</span> <span class="fu">getArg</span>(msg)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">do.call</span>(fun, <span class="fu">list</span>(arg))</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>reply <span class="ot">&lt;-</span> <span class="cf">function</span>(result, returnAddr) {</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    replySock <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">is.null</span>(replySock))</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        replySock <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">socketConnection</span>(<span class="fu">getHost</span>(returnAddr),</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>                               <span class="fu">getPort</span>(returnAddr)),</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>                  <span class="at">error =</span> <span class="cf">function</span>(e) {</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">cat</span>(<span class="st">&quot;Failed to connect to return address&quot;</span>,</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>                      <span class="st">&quot;, trying again..</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>                      <span class="cn">NULL</span>})</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;replying to request...</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">serialize</span>(result, replySock)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;replied</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">close</span>(replySock)</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>getFun <span class="ot">&lt;-</span> <span class="cf">function</span>(msg) msg<span class="sc">$</span>fun</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>getArg <span class="ot">&lt;-</span> <span class="cf">function</span>(msg) <span class="fu">get</span>(msg<span class="sc">$</span>chunk)</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>getReturnAddr <span class="ot">&lt;-</span> <span class="cf">function</span>(msg) msg<span class="sc">$</span>returnAddr</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>getHost <span class="ot">&lt;-</span> <span class="cf">function</span>(addr) addr<span class="sc">$</span>host</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>getPort <span class="ot">&lt;-</span> <span class="cf">function</span>(addr) addr<span class="sc">$</span>port</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>readMessage <span class="ot">&lt;-</span> <span class="cf">function</span>(queues) {</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">redis.pop</span>(RSC, queues, <span class="at">timeout=</span><span class="cn">Inf</span>)</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unserialize</span>(<span class="fu">charToRaw</span>(serializedMsg))</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<p>To this end, the client node has a function defined as <code class="sourceCode r"><span class="fu">doFunAt</span>(fun, chunk)</code>, which takes in any function, and the ID of a chunk to perform the function on. An implementation is given by lst. <a href="#lst:vr-client">1</a>. <code class="sourceCode r"><span class="fu">doFunAt</span>()</code> first composes a message to send to the chunk’s queue, being a list consisting of the function, the chunk name, and a return address, which contains sufficient information for the node performing the operation on the chunk to send the results back to via socket connection. The message is then serialised and pushed to the chunk’s queue, and the requesting node sits listening on the socket that it has set up and advertised.</p>
+<p>On the server node end, it sits waiting on it’s preassigned queues, each of which correspond to a chunk that it holds. Upon a message coming through, it runs a <code>doFun()</code> function on the message, which in turn runs the function on the chunk named in the message. An implementation is given by lst. <a href="#lst:vr-server">2</a>. It then creates a socket connected to the clients location as advertised in the message, and sends the serialised results through.</p>
+<p>A problem with this approach is the fickle aspect of creating and removing sockets for every request; beyond the probability of missed connections and high downtime due to client waiting on a response, R only has a very limited number of connections available to it, so it is impossible to scale beyond that limit.</p>
+<h2 data-number="2.2" id="with-assignment"><span class="header-section-number">2.2</span> With Assignment</h2>
+<p>Assigning the results of distributed operation to a new chunk is a far more common operation in a distributed system in order to minimise data movement. This will involve specifying additional directions as part of the request message, in order to specify that assignment, and not merely the operation, is desired.</p>
+<p>It will be clear from the previous example that the problem of point-to-point data movement, somewhat solved via direct sockets in that previous example, is largely an implementation issue, and a problem entirely distinct to the remainder of the logic of the system. From this experiment onwards, the mechanism of data movement is abstracted out, with the assumption that there will exist some additional tool that can serve as a sufficient backend for data movement. In reality, until that tool is developed, data will be sent through redis; not a solution, but something that can be ignored without loss of generality.</p>
+<p>The actual creation of a chunk ID in itself demands a system-wide unique identifier; this is a solved problem with a central message server, in redis providing an <code>INCR</code> operation, which can be used to generate a new chunk ID that is globally unique.</p>
+<p>The name origination and option of blocking until a chunk is formed will dictate different algorithms in the creation of the distributed chunk object, as well as the structure of the distributed chunk object. tbl. <a href="#tbl:name-orig-block">1</a> shows potential forms these may take. In addition, the “jobID” referred to in the table may take the concrete form of a simple key-value store, with the key being passed and monitored by the client node.</p>
+<div id="tbl:name-orig-block">
+<table>
+<caption>Table 1: Description of Algorithms and Data Structure of chunk reference object, by blocking status in creation, and origination of chunk ID.</caption>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 32%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Client-Originated chunk ID</th>
+<th>Server-Originated chunk ID</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Blocking Algorithm</td>
+<td>client attains chunk ID, sends operation request withchunk ID to server, creating chunk reference concurrently, blocking until direct signal of completion from server.</td>
+<td>client sends operation request with reference to some common information repository and the job ID to server. server attains chunk ID, performs operation, and sends chunk chunk ID to thejob ID at the common information repository, which client watches, releasing chunk object after attaining chunk ID from repository.</td>
+</tr>
+<tr class="even">
+<td>Blocking Structure</td>
+<td>String name of chunk.</td>
+<td>String name of chunk.</td>
+</tr>
+<tr class="odd">
+<td>Non-Blocking Algorithm</td>
+<td>client attains chunk ID, sends operation request withchunk ID to server, creating chunk reference concurrently. Nowaiting for server signal of completion.</td>
+<td>client sends operation request with reference to some common information repository and the job ID to server. server attains chunk ID, performs operation, and sends chunk ID to the job ID at common information repository. Before server completion, client releases chunk object, not waiting for reception of chunk information.</td>
+</tr>
+<tr class="even">
+<td>Non-Blocking Structure</td>
+<td>String name of chunk</td>
+<td>Initially, reference to common information repository. Mutable; can become string name of chunk upon accessing that information in the common information repository.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>While it is clearly more straightforward for a client node to originate a chunk ID, with blocking, the opposite will possibly be the most flexible; server-originated chunk ID with no blocking. This is because the very existence of a chunk is presupposed when a client node originates a chunk ID, while that may not be true in reality. For instance, the result may be an unexpected <code>NULL</code>, zero-length vector, or even an error. In addition, the server-originated chunk ID with no blocking has every feature common to that of a future, from the future package; it can be checked for completion, and accessed as a value, allowing for many asynchronous and parallel operations.</p>
+<h3 data-number="2.2.1" id="client-originated-chunk-id"><span class="header-section-number">2.2.1</span> Client-Originated Chunk ID</h3>
+<p>The logic of the client in assigning the result of a distributed operation on a chunk is largely encapsulated in a new function, <code class="sourceCode r"><span class="fu">assignFunAt</span>()</code>, as demonstrated in lst. <a href="#lst:ro-ass-client">3</a>. The function attains a chunk ID, generates a unique return address, sends a message to the operand chunk queue, and waits for a reply, before returning the id as a string belonging to the “chunk” class. There is more information in the message relative the the function-only message of section sec. <a href="#sec:val-ret">2.1</a>; the chunk ID, request for acknowledgement of completion, return address, as well as an operation specifier to direct the intent of the message.</p>
+<div id="lst:ro-ass-client" class="listing R">
+<p>Listing 3: Demonstration of assignment in client Node, with client-Originated chunk name</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env R</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rediscc)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(uuid)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>RSC <span class="ot">&lt;-</span> <span class="fu">redis.connect</span>(<span class="at">host=</span><span class="st">&quot;localhost&quot;</span>, <span class="at">port=</span>6379L)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">redis.rm</span>(RSC, <span class="st">&quot;chunkID&quot;</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>chunk1 <span class="ot">&lt;-</span> <span class="fu">structure</span>(<span class="st">&quot;chunk1&quot;</span>, <span class="at">class =</span> <span class="st">&quot;chunk&quot;</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">redis.rm</span>(RSC, <span class="st">&quot;chunk1&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">redis.rm</span>(RSC, <span class="fu">as.character</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">=</span> <span class="fu">assignFunAt</span>(<span class="at">fun=</span>expm1, <span class="at">chunk=</span>chunk1, <span class="at">wait=</span>F)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">=</span> <span class="fu">assignFunAt</span>(<span class="at">fun=</span>log1p, <span class="at">chunk=</span>x, <span class="at">wait=</span>T)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>assignFunAt <span class="ot">&lt;-</span> <span class="cf">function</span>(fun, chunk, <span class="at">wait=</span><span class="cn">TRUE</span>) {</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    id <span class="ot">&lt;-</span> <span class="fu">getChunkID</span>();</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    returnAddr <span class="ot">&lt;-</span> <span class="fu">UUIDgenerate</span>()</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sendMsg</span>(<span class="st">&quot;ASSIGN&quot;</span>, fun, chunk, returnAddr, id, <span class="at">ack =</span> wait)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (wait) <span class="fu">readReply</span>(returnAddr)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">structure</span>(id, <span class="at">class =</span> <span class="st">&quot;chunk&quot;</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>doFunAt <span class="ot">&lt;-</span> <span class="cf">function</span>(fun, chunk) {</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    returnAddr <span class="ot">&lt;-</span> <span class="fu">UUIDgenerate</span>()</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sendMsg</span>(<span class="st">&quot;DOFUN&quot;</span>, fun, chunk, returnAddr)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">readReply</span>(returnAddr)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>getChunkID <span class="ot">&lt;-</span> <span class="cf">function</span>() <span class="fu">as.character</span>(<span class="fu">redis.inc</span>(RSC, <span class="st">&quot;chunkID&quot;</span>))</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>readReply <span class="ot">&lt;-</span> <span class="cf">function</span>(addr, <span class="at">clear=</span><span class="cn">TRUE</span>) {</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    reply <span class="ot">&lt;-</span> <span class="fu">redis.pop</span>(RSC, addr, <span class="at">timeout =</span> <span class="cn">Inf</span>);</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (clear) <span class="fu">redis.rm</span>(RSC, addr)</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unserialize</span>(<span class="fu">charToRaw</span>(reply))</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>sendMsg <span class="ot">&lt;-</span> <span class="cf">function</span>(op, fun, chunk, returnAddr, <span class="at">id=</span><span class="cn">NULL</span>, <span class="at">ack=</span><span class="cn">NULL</span>) {</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    msg <span class="ot">&lt;-</span> <span class="fu">newMsg</span>(op, fun, chunk, id, ack, returnAddr)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">writeMsg</span>(msg, chunk)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>newMsg <span class="ot">&lt;-</span> <span class="cf">function</span>(op, fun, chunk, id, ack, returnAddr) {</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">structure</span>(<span class="fu">list</span>(<span class="at">op =</span> op, <span class="at">fun =</span> fun, <span class="at">chunk =</span> chunk,</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>               <span class="at">id =</span> id, <span class="at">ack =</span> ack, <span class="at">returnAddr =</span> returnAddr),</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>          <span class="at">class =</span> <span class="st">&quot;msg&quot;</span>)</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>writeMsg <span class="ot">&lt;-</span> <span class="cf">function</span>(msg, to) {</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">rawToChar</span>(<span class="fu">serialize</span>(msg, <span class="cn">NULL</span>, T))</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">redis.push</span>(RSC, to, serializedMsg)</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>format.chunk <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">doFunAt</span>(identity, x)</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">format</span>(obj)</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<p>The server, as shown in lst. <a href="#lst:ro-ass-server">4</a>, consists in a loop of reading the message and performing an operation dependent on the operation specifier of the message. For an operation of <code>DOFUN</code>, all that is run is a <code class="sourceCode r"><span class="fu">do.call</span>()</code> on the function and chunk specified, with a message being returned to the client with the value of the <code class="sourceCode r"><span class="fu">do.call</span>()</code>. An operation of <code>ASSIGN</code> runs the same as <code>DOFUN</code>, with the addition of assigning the value to the ID as passed in the message, adding the ID to the array of queues to monitor, and potentially sending acknowledgement back to the client node.</p>
+<div id="lst:ro-ass-server" class="listing R">
+<p>Listing 4: Demonstration of assignment in server Node, with client-Originated chunk name</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env R</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rediscc)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>RSC <span class="ot">&lt;-</span> <span class="fu">redis.connect</span>(<span class="at">host=</span><span class="st">&quot;localhost&quot;</span>, <span class="at">port=</span>6379L)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>chunk1 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">10</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>QUEUE <span class="ot">&lt;-</span> <span class="st">&quot;chunk1&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="cn">TRUE</span>) {</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        msg <span class="ot">&lt;-</span> <span class="fu">readMessage</span>(QUEUE)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;read message:&quot;</span>, <span class="fu">format</span>(msg), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">switch</span>(<span class="fu">getOp</span>(msg),</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;ASSIGN&quot;</span> <span class="ot">=</span> {<span class="fu">assignFun</span>(<span class="fu">getFun</span>(msg), <span class="fu">getChunk</span>(msg),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">getChunkID</span>(msg))</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">if</span> (<span class="fu">getAck</span>(msg))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">writeMsg</span>(<span class="st">&quot;Complete&quot;</span>, <span class="fu">getReturnAddr</span>(msg))},</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;DOFUN&quot;</span> <span class="ot">=</span> <span class="fu">writeMsg</span>(<span class="fu">doFun</span>(<span class="fu">getFun</span>(msg), <span class="fu">getChunk</span>(msg)),</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">getReturnAddr</span>(msg)))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>assignFun <span class="ot">&lt;-</span> <span class="cf">function</span>(fun, chunk, id) {</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    val <span class="ot">&lt;-</span> <span class="fu">doFun</span>(fun, chunk)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">assign</span>(id, val, <span class="at">envir =</span> .GlobalEnv)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">assign</span>(<span class="st">&quot;QUEUE&quot;</span>, <span class="fu">c</span>(QUEUE, id), <span class="at">envir =</span> .GlobalEnv)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>doFun <span class="ot">&lt;-</span> <span class="cf">function</span>(fun, chunk) {</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">do.call</span>(fun, <span class="fu">list</span>(chunk))</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>getMsgField <span class="ot">&lt;-</span> <span class="cf">function</span>(field) <span class="cf">function</span>(msg) msg[[field]]</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>getOp <span class="ot">&lt;-</span> <span class="fu">getMsgField</span>(<span class="st">&quot;op&quot;</span>); getFun <span class="ot">&lt;-</span> <span class="fu">getMsgField</span>(<span class="st">&quot;fun&quot;</span>)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>getChunk <span class="ot">&lt;-</span> <span class="cf">function</span>(msg) <span class="fu">get</span>(<span class="fu">getMsgField</span>(<span class="st">&quot;chunk&quot;</span>)(msg))</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>getChunkID <span class="ot">&lt;-</span> <span class="fu">getMsgField</span>(<span class="st">&quot;id&quot;</span>); getAck <span class="ot">&lt;-</span> <span class="fu">getMsgField</span>(<span class="st">&quot;ack&quot;</span>)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>getReturnAddr <span class="ot">&lt;-</span> <span class="fu">getMsgField</span>(<span class="st">&quot;returnAddr&quot;</span>)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>readMessage <span class="ot">&lt;-</span> <span class="cf">function</span>(queues) {</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">redis.pop</span>(RSC, queues, <span class="at">timeout=</span><span class="cn">Inf</span>)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unserialize</span>(<span class="fu">charToRaw</span>(serializedMsg))</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>writeMsg <span class="ot">&lt;-</span> <span class="cf">function</span>(msg, to) {</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">rawToChar</span>(<span class="fu">serialize</span>(msg, <span class="cn">NULL</span>, T))</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">redis.push</span>(RSC, to, serializedMsg)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;wrote message: &quot;</span>, <span class="fu">format</span>(msg),</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot; to queue belonging to chunk </span><span class="sc">\&quot;</span><span class="st">&quot;</span>, to, <span class="st">&quot;</span><span class="sc">\&quot;\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<h3 data-number="2.2.2" id="server-originated-chunk-id"><span class="header-section-number">2.2.2</span> Server-Originated chunk ID</h3>
+<p>By this point the client (lst. <a href="#lst:wo-ass-client">5</a>) and server (lst. <a href="#lst:wo-ass-server">6</a>) come to increasingly resemble each other, and most of the functions are shared, as in listings lsts. <a href="#lst:wo-ass-chunk">7</a>-<a href="#lst:wo-ass-messages">9</a>.</p>
+<p>The principal mechanism of action is best demonstrated via a logical time diagram, given by figure (missing), following a Lamport form of event ordering <span class="citation" data-cites="lamport1978ordering"><a href="#ref-lamport1978ordering" role="doc-biblioref">[1]</a></span>. The first message, shown by the <strong>a</strong> arrow in the diagram, involves a client sending a message to a server regarding the request, including the job ID naming a queue in a shared information reference for the server to later place the chunk ID into.</p>
+<p>Optionally, the client can immediately create a chunk object with no direct knowledge of the chunk ID, holding the job ID at the information reference instead, and the client continues whatever work it was doing. Only when the chunk ID is required, the chunk object, triggers a blocking pop on it’s associated information reference queue, which the server may at any point push the chunk ID to. The chunk object then has the associate the ID associated with it, and the information reference queue can be deleted.</p>
+<div id="lst:wo-ass-client" class="listing R">
+<p>Listing 5: Demonstration of assignment in client Node, with server-Originated chunk name</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env R</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;shared.R&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;messages.R&quot;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;chunk.R&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">distInit</span>()</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>rediscc<span class="sc">::</span><span class="fu">redis.rm</span>(<span class="fu">conn</span>(), <span class="fu">c</span>(<span class="st">&quot;distChunk1&quot;</span>, <span class="fu">paste0</span>(<span class="st">&quot;C&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>), <span class="fu">paste0</span>(<span class="st">&quot;J&quot;</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;JOB_ID&quot;</span>, <span class="st">&quot;CHUNK_ID&quot;</span>))</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>distChunk1 <span class="ot">&lt;-</span> <span class="fu">structure</span>(<span class="fu">new.env</span>(), <span class="at">class =</span> <span class="st">&quot;distChunk&quot;</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">chunkID</span>(distChunk1) <span class="ot">&lt;-</span> <span class="st">&quot;distChunk1&quot;</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Value of distChunk1:&quot;</span>, <span class="fu">format</span>(distChunk1), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">do.call.distChunk</span>(<span class="at">what=</span>expm1, <span class="at">chunkArg=</span>distChunk1,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                   <span class="at">assign=</span>T, <span class="at">wait=</span>F)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Value of x:&quot;</span>, <span class="fu">format</span>(x), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">do.call.distChunk</span>(log1p, x, <span class="at">assign=</span>T, <span class="at">wait=</span>T)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Value of y:&quot;</span>, <span class="fu">format</span>(y), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<div id="lst:wo-ass-server" class="listing R">
+<p>Listing 6: Demonstration of assignment in server Node, with server-Originated chunk name</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env R</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;shared.R&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;messages.R&quot;</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;chunk.R&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">distInit</span>()</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>distChunk1 <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">10</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>QUEUE <span class="ot">&lt;-</span> <span class="st">&quot;distChunk1&quot;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">repeat</span> {</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        m <span class="ot">&lt;-</span> <span class="fu">read.queue</span>(QUEUE)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">switch</span>(<span class="fu">op</span>(m),</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;ASSIGN&quot;</span> <span class="ot">=</span> {cID <span class="ot">&lt;-</span> <span class="fu">do.call.chunk</span>(<span class="at">what=</span><span class="fu">fun</span>(m),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>                            <span class="at">chunkArg=</span><span class="fu">chunk</span>(m),</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>                            <span class="at">distArgs=</span><span class="fu">dist</span>(m),</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>                            <span class="at">staticArgs=</span><span class="fu">static</span>(m),</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>                            <span class="at">assign=</span><span class="cn">TRUE</span>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">send</span>(<span class="at">CHUNK_ID =</span> cID, <span class="at">to =</span> <span class="fu">jobID</span>(m))},</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>               <span class="st">&quot;DOFUN&quot;</span> <span class="ot">=</span> {v <span class="ot">&lt;-</span> <span class="fu">do.call.chunk</span>(<span class="at">what=</span><span class="fu">fun</span>(m),</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>                             <span class="at">chunkArg=</span><span class="fu">chunk</span>(m),</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>                             <span class="at">distArgs=</span><span class="fu">dist</span>(m),</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>                             <span class="at">staticArgs=</span><span class="fu">static</span>(m),</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>                             <span class="at">assign=</span><span class="cn">FALSE</span>)</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">send</span>(<span class="at">VAL =</span> v, <span class="at">to =</span> <span class="fu">jobID</span>(m))})</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>do.call.chunk <span class="ot">&lt;-</span> <span class="cf">function</span>(what, chunkArg, distArgs, staticArgs, <span class="at">assign=</span><span class="cn">TRUE</span>) {</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (assign) {</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        cID <span class="ot">&lt;-</span> <span class="fu">chunkID</span>()</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        v <span class="ot">&lt;-</span> <span class="fu">do.call</span>(what, <span class="fu">list</span>(chunkArg))</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;Assigning value&quot;</span>, <span class="fu">format</span>(v), <span class="st">&quot;to identifier&quot;</span>,</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>            <span class="fu">format</span>(cID), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>        <span class="fu">assign</span>(cID, v, <span class="at">envir =</span> .GlobalEnv)</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>        <span class="fu">assign</span>(<span class="st">&quot;QUEUE&quot;</span>, <span class="fu">c</span>(QUEUE, cID), <span class="at">envir =</span> .GlobalEnv)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(cID)</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="fu">do.call</span>(what, <span class="fu">list</span>(chunkArg))</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<div id="lst:wo-ass-chunk" class="listing R">
+<p>Listing 7: Chunk functions of client and server in server-Originated chunk names for assignment</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># distChunk methods</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>jobID.distChunk <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) <span class="fu">get</span>(<span class="st">&quot;JOB_ID&quot;</span>, x)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>chunkID.distChunk <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span> <span class="fu">exists</span>(<span class="st">&quot;CHUNK_ID&quot;</span>, x)) {</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        jID <span class="ot">&lt;-</span> <span class="fu">jobID</span>(x)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;chunkID not yet associated with distChunk; checking jobID&quot;</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>            jID, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        cID <span class="ot">&lt;-</span> <span class="fu">chunkID</span>(<span class="fu">read.queue</span>(jID, <span class="at">clear=</span><span class="cn">TRUE</span>))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">&quot;chunkID </span><span class="sc">\&quot;</span><span class="st">&quot;</span>, <span class="fu">format</span>(cID), <span class="st">&quot;</span><span class="sc">\&quot;</span><span class="st"> found; associating...</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">sep=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">chunkID</span>(x) <span class="ot">&lt;-</span> cID</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">get</span>(<span class="st">&quot;CHUNK_ID&quot;</span>, x)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>do.call.distChunk <span class="ot">&lt;-</span> <span class="cf">function</span>(what, chunkArg, <span class="at">distArgs=</span><span class="cn">NULL</span>, <span class="at">staticArgs=</span><span class="cn">NULL</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>                  <span class="at">assign=</span><span class="cn">TRUE</span>, <span class="at">wait=</span><span class="cn">FALSE</span>) {</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    jID <span class="ot">&lt;-</span> <span class="fu">jobID</span>()</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Requesting to perform function&quot;</span>, <span class="fu">format</span>(what), <span class="st">&quot;on chunk&quot;</span>,</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>        <span class="fu">chunkID</span>(chunkArg), <span class="st">&quot;with&quot;</span>,</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (assign) <span class="st">&quot;assignment&quot;</span> <span class="cf">else</span> <span class="st">&quot;no assignment&quot;</span>, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">send</span>(<span class="at">OP =</span> <span class="cf">if</span> (assign) <span class="st">&quot;ASSIGN&quot;</span> <span class="cf">else</span> <span class="st">&quot;DOFUN&quot;</span>, <span class="at">FUN =</span> what,</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">CHUNK =</span> chunkArg, <span class="at">DIST_ARGS =</span> distArgs, <span class="at">STATIC_ARGS =</span> staticArgs,</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>         <span class="at">JOB_ID =</span> jID, <span class="at">to =</span> <span class="fu">chunkID</span>(chunkArg))</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    dc <span class="ot">&lt;-</span> <span class="cf">if</span> (assign) {</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="sc">!</span>wait){</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>            <span class="fu">cat</span>(<span class="st">&quot;not waiting, using job ID&quot;</span>, <span class="fu">format</span>(jID), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>            <span class="fu">distChunk</span>(jID)</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        } <span class="cf">else</span> {</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>            <span class="fu">distChunk</span>(<span class="fu">chunkID</span>(<span class="fu">read.queue</span>(jID, <span class="at">clear=</span><span class="cn">TRUE</span>)))</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    } } <span class="cf">else</span> {</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>        <span class="fu">val</span>(<span class="fu">read.queue</span>(jID, <span class="at">clear=</span><span class="cn">TRUE</span>))</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    dc</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>format.distChunk <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    c <span class="ot">&lt;-</span> <span class="fu">do.call.distChunk</span>(identity, x, <span class="at">assign=</span><span class="cn">FALSE</span>)</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">format</span>(c)</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="lst:wo-ass-shared" class="listing R">
+<p>Listing 8: Shared functions of client and server in server-Originated chunk names for assignment</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Generics and setters</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>distChunk <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">missing</span>(x)) {</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        dc <span class="ot">&lt;-</span> <span class="fu">new.env</span>()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">class</span>(dc) <span class="ot">&lt;-</span> <span class="st">&quot;distChunk&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(dc)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">UseMethod</span>(<span class="st">&quot;distChunk&quot;</span>, x)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>chunkID <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">missing</span>(x)) {</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        cID <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;C&quot;</span>, rediscc<span class="sc">::</span><span class="fu">redis.inc</span>(<span class="fu">conn</span>(), <span class="st">&quot;CHUNK_ID&quot;</span>))</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">class</span>(cID) <span class="ot">&lt;-</span> <span class="st">&quot;chunkID&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(cID)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">UseMethod</span>(<span class="st">&quot;chunkID&quot;</span>, x)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="st">`</span><span class="at">chunkID&lt;-</span><span class="st">`</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(x, value) {</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">assign</span>(<span class="st">&quot;CHUNK_ID&quot;</span>, value, x)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    x</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>jobID <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">missing</span>(x)) {</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        jID <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;J&quot;</span>, rediscc<span class="sc">::</span><span class="fu">redis.inc</span>(<span class="fu">conn</span>(), <span class="st">&quot;JOB_ID&quot;</span>))</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="fu">class</span>(jID) <span class="ot">&lt;-</span> <span class="st">&quot;jobID&quot;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>        <span class="fu">return</span>(jID)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">UseMethod</span>(<span class="st">&quot;jobID&quot;</span>, x)</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="st">`</span><span class="at">jobID&lt;-</span><span class="st">`</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(x, value) {</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">assign</span>(<span class="st">&quot;JOB_ID&quot;</span>, value, x)</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    x</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>chunk <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) <span class="fu">UseMethod</span>(<span class="st">&quot;chunk&quot;</span>, x)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>dist <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) <span class="fu">UseMethod</span>(<span class="st">&quot;dist&quot;</span>, x)</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>dist.default <span class="ot">&lt;-</span> stats<span class="sc">::</span>dist</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="co"># jobID methods</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>distChunk.jobID <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>    dc <span class="ot">&lt;-</span> <span class="fu">distChunk</span>()</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">jobID</span>(dc) <span class="ot">&lt;-</span> x</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>    dc</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a><span class="co"># chunkID methods</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>distChunk.chunkID <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) {</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    dc <span class="ot">&lt;-</span> <span class="fu">distChunk</span>()</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">chunkID</span>(dc) <span class="ot">&lt;-</span> x</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>    dc</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialisation</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>init <span class="ot">&lt;-</span> <span class="fu">local</span>({</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    rsc <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>    distInit <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">queueHost=</span><span class="st">&quot;localhost&quot;</span>, <span class="at">queuePort=</span>6379L, ...) {</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Place for starting up worker nodes</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>        rsc <span class="ot">&lt;&lt;-</span> rediscc<span class="sc">::</span><span class="fu">redis.connect</span>(queueHost, queuePort)</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>    conn <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="fu">is.null</span>(rsc))</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>            <span class="fu">stop</span>(<span class="st">&quot;Redis connection not found. Use `distInit` to initialise.&quot;</span>)</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>        rsc</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>distInit <span class="ot">&lt;-</span> <span class="fu">get</span>(<span class="st">&quot;distInit&quot;</span>, <span class="fu">environment</span>(init))</span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>conn <span class="ot">&lt;-</span> <span class="fu">get</span>(<span class="st">&quot;conn&quot;</span>, <span class="fu">environment</span>(init))</span></code></pre></div>
+</div>
+<div id="lst:wo-ass-messages" class="listing R">
+<p>Listing 9: Message functions of client and server in server-Originated chunk names for assignment</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># messaging functions</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>msg <span class="ot">&lt;-</span> <span class="cf">function</span>(...) {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">structure</span>(<span class="fu">list</span>(...), <span class="at">class =</span> <span class="st">&quot;msg&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>send <span class="ot">&lt;-</span> <span class="cf">function</span>(..., to) {</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    items <span class="ot">&lt;-</span> <span class="fu">list</span>(...)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    m <span class="ot">&lt;-</span> <span class="fu">do.call</span>(msg, items)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">write.msg</span>(m, to)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>write.msg <span class="ot">&lt;-</span> <span class="cf">function</span>(m, to) {</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">rawToChar</span>(<span class="fu">serialize</span>(m, <span class="cn">NULL</span>, T))</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    rediscc<span class="sc">::</span><span class="fu">redis.push</span>(<span class="fu">conn</span>(), to, serializedMsg)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;wrote message: &quot;</span>, <span class="fu">format</span>(m),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot; to queue belonging to chunk </span><span class="sc">\&quot;</span><span class="st">&quot;</span>, to, <span class="st">&quot;</span><span class="sc">\&quot;\n</span><span class="st">&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>read.queue <span class="ot">&lt;-</span> <span class="cf">function</span>(queue, <span class="at">clear =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Awaiting message on queues: &quot;</span>, <span class="fu">format</span>(queue),  <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>, <span class="at">sep=</span><span class="st">&quot;&quot;</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> rediscc<span class="sc">::</span><span class="fu">redis.pop</span>(<span class="fu">conn</span>(), queue, <span class="at">timeout=</span><span class="cn">Inf</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (clear) rediscc<span class="sc">::</span><span class="fu">redis.rm</span>(<span class="fu">conn</span>(), queue)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    m <span class="ot">&lt;-</span> <span class="fu">unserialize</span>(<span class="fu">charToRaw</span>(serializedMsg))</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="st">&quot;Received message:&quot;</span>, <span class="fu">format</span>(m), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    m</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co"># message field accessors</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>msgField <span class="ot">&lt;-</span> <span class="cf">function</span>(field) <span class="cf">function</span>(x, ...) x[[field]]</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Requesters</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;OP&quot;</span>); fun <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;FUN&quot;</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>static <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;STATIC_ARGS&quot;</span>)</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>chunk.msg <span class="ot">&lt;-</span> <span class="cf">function</span>(x, ...) <span class="fu">get</span>(<span class="fu">chunkID</span>(<span class="fu">msgField</span>(<span class="st">&quot;CHUNK&quot;</span>)(x)))</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>jobID.msg <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;JOB_ID&quot;</span>); dist.msg <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;DIST_ARGS&quot;</span>)</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Responders</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>val <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;VAL&quot;</span>); chunkID.msg <span class="ot">&lt;-</span> <span class="fu">msgField</span>(<span class="st">&quot;CHUNK_ID&quot;</span>)</span></code></pre></div>
+</div>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-lamport1978ordering" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">L. Lamport, <span>“Time, clocks, and the ordering of events in a distributed system,”</span> <em>Communications of the ACM</em>, vol. 21, no. 7, 1978.</div>
+</div>
+</div>
+</body>
+</html>
