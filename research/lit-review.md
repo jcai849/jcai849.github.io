@@ -54,11 +54,11 @@ Parallelisation of a computational process can potentially offer speedups propor
 Most general-purpose personal computers produced in the past 5 years have multiple processor cores to enable parallel computation.
 
 Parallelism can afford major speedups, albeit with certain limitations.
-Amdahl's law, formulated in 1967, aims to capture the speedup limitations, with a model derived from the argument given below in [@eqn:amdahlsform][@amdahl1967law; @gustafson1988law]:
+Amdahl's law, formulated in 1967, aims to capture the speedup limitations, with a model derived from the argument given below in [@eq:amdahlsform][@amdahl1967law; @gustafson1988law]:
 
 $$
 	\textrm{Speedup} = \frac{1}{s+\frac{p}{N}}
-$$ {#eqn:amdahlsform}
+$$ {#eq:amdahlsform}
 
 Where,
 
@@ -71,11 +71,11 @@ The implication is that speedup of an entire task when parallelised is granted o
 Thus a measure of skepticism is contained in Amdahl's argument, with many tasks predicted to show no benefit to parallelise - and in reality, some likely to slow down with increased overhead given in parallelisation.
 
 The major response to the skepticism of Amdahl's law is given by Gustafson's law, generated from timing results in a highly parallelised system.
-Gustafson's law presents a scaled speedup as per [@eqn:gustafsonsform]
+Gustafson's law presents a scaled speedup as per [@eq:gustafsonsform]
 
 $$
 	\textrm{Scaled speedup} = s' + p'N = N + (1-N)s'
-$$ {#eqn:gustafsonsform}
+$$ {#eq:gustafsonsform}
 
 Where,
 
@@ -525,12 +525,12 @@ Methods for dplyr Generics
 
 | Feature                              | RHadoop        | sparklyr         | pbdR             | disk.frame  | foreach      |
 |--------------------------------------|----------------|------------------|------------------|-------------|--------------|
-| Distributed Computation              | yes[^1x1]      | yes[^1x2]        | yes[^1x3]        | no          | yes[^0x5]    |
+| Distributed Computation              | yes[^1x1]      | yes[^1x2]        | yes[^1x3]        | no          | yes[^1x5]    |
 | Evaluation of User-Specified Code    | yes[^2x1]      | mostly[^2x2]     | mostly[^2x3]     | some[^2x4]  | mostly[^2x5] |
 | Native Support for Iteration         | no             | no[^3x2]         | yes              | no[^3x4]    | no[^3x5]     |
 | Object Persistence at Nodes          | no             | yes[^4x2]        | yes              | NA          | no           |
 | Support for Distributed File Systems | yes[^5x1]      | yes[^5x2]        | no               | no          | yes[^5x5]    |
-| Ease of Setup                        | mediocre[^6x1] | acceptable[^6x3] | acceptable[^6x3] | simple      | simple       |
+| Ease of Setup                        | mediocre[^6x1] | acceptable[^6x2] | acceptable[^6x3] | simple      | simple       |
 | Inter-Node Communication             | no             | no               | yes[^7x3]        | NA          | no           |
 | Interactive Usage                    | yes            | yes              | no               | yes         | yes          |
 | Backend Decoupling                   | no[^9x1]       | no[^9x2]         | no[^9x3]         | no          | yes          |
@@ -570,7 +570,7 @@ Methods for dplyr Generics
 [^2x4]: Many functions used for grouped summarisation are only estimates, such as `median`[@zj19:_group_by]
 
 [^1x5]: Through the use of additional packages such as doMPI and sparklyr[@weston17][@luraschi20]
-[^2x5]: `\%dopar\%` accepts any expression, and tries its best to handle references to global variables, however it is still recommended to manually define the global references as well as packages used
+[^2x5]: `%dopar%` accepts any expression, and tries its best to handle references to global variables, however it is still recommended to manually define the global references as well as packages used
 [^3x5]: foreach makes use of iterators, which can be defined to perform recurrance relations (see doc/review-foreach.tex, subsection "Form of Iteration") but these rely on closures and may in fact be slower than serial relations
 [^5x5]: Through sparklyr as a backend
 [^10x5]: foreach makes use of iterator objects, which any class can inherit from to define `nextElem()`{.R}
@@ -836,7 +836,7 @@ From snow, distributed computing is enabled for multiple nodes.
 multicore was developed by Simon Urbanek (!).
 snow was developed by Luke Tierney, a professor at the University of Iowa, who also originated the byte-compiler for R
 
-## pbdR {#sec:pbdr}
+## pbdR
 
 pbdR is a collection of packages allowing for distributed computing with R[@pbdBASEpackage], with the name being the abbreviation of Programming with Big Data in R.
 The packages include high-performance communication and computation capabilities, including RPC, ZeroMQ, and MPI interfaces.
@@ -888,7 +888,7 @@ The easiest means of setup for it is to use a VM, and for all Hadoop computation
 There is currently no support for the most recent version of Hadoop, and it doesn't appear to be under active open development, with the last commit being 2015.
 RHIPE has mostly been subsumed into the backend of DeltaRho, a simple frontend.
 
-## sparklyr {#sec:sparklyr}
+## sparklyr
 
 sparklyr is an interface to Spark from within R[@luraschi20].
 The user connects to spark and accumulates instructions for the manipulation of a Spark DataFrame object using dplyr commands, then executing the request on the Spark cluster.
@@ -980,7 +980,7 @@ The reverse dependencies/imports have all been authored by Matloff, so aren't en
 
 biglm is described succinctly as
 
-> bounded memory linear and generalized linear models[@lumley13].
+> bounded memory linear and generalized linear models[@lumley2013biglm].
 
 biglm has been extended by other packages, and can integrate with bigmemory matrices through biganalytics.
 The package is developed by Dr.Thomas Lumley of the University of Auckland.
@@ -1145,426 +1145,217 @@ It is introduced on it's main page with the following description:
 The project seeks especially to serve minimal wrappers around the BLAS and LAPACK libraries along with their distributed derivatives, with the intention of introducing as little overhead as possible.
 Standard R also uses routines from the library for most matrix operations, but suffers from numerous inefficiencies relating to the structure of the language; for example, copies of all objects being manipulated will be typically be created, often having devastating performance aspects unless specific functions are used for linear algebra operations, as discussed in [@schmidt2017programming] (e.g., `crossprod(X)`{.R} instead of `t(X) %*% X`{.R})
 
-Distributed linear algebra operations in pbdR depend further on the ScaLAPACK
-library, which can be provided through the pbdSLAP package [@Chen2012pbdSLAPpackage].
+Distributed linear algebra operations in pbdR depend further on the ScaLAPACK library, which can be provided through the pbdSLAP package [@Chen2012pbdSLAPpackage].
 
-The principal interface for direct distributed computations is the pbdMPI
-package, which presents a simplified API to MPI through R
-[@Chen2012pbdMPIpackage].
-All major MPI libraries are supported, but the
-project tends to make use of openMPI in explanatory documentation.
-A very
-important consideration that isn't immediately clear  is that pbdMPI can only
-be used in batch mode through MPI, rather than any interactive option as in
-Rmpi [@yu02:_rmpi].
+The principal interface for direct distributed computations is the pbdMPI package, which presents a simplified API to MPI through R [@Chen2012pbdMPIpackage].
+All major MPI libraries are supported, but the project tends to make use of openMPI in explanatory documentation.
+A very important consideration that isn't immediately clear  is that pbdMPI can only be used in batch mode through MPI, rather than any interactive option as in Rmpi [@yu02:_rmpi].
 
-The actual manipulation of distributed matrices is enabled through the pbdDMAT
-package, which offers S4 classes encapsulating distributed matrices
-[@pbdDMATpackage].
-These are specialised for dense matrices through the
-`ddmatrix` class, though the project offers some support for other
-matrices.
-The `ddmatrix` class has nearly all of the standard matrix
-generics implemented for it, with nearly identical syntax for all.
-
-## Package Interaction
-
-The packages can be made to interact directly, for example with pbdDMAT
-constructing and performing basic manipulations on distributed matrices, and
-pbdMPI being used to perform further fine-tuned processing through
-communicating results across nodes manually, taking advantage of the
-persistence of objects at nodes through MPI.
-
-## pbdR in Practice
-
-The package is geared heavily towards matrix operations in a statistical
-programming language, so a test of it's capabilities would quite reasonably
-involve statistical linear algebra.
-An example non-trivial routine is that of
-generating data, to test randomisation capability, then fitting a generalised
-linear model to the data through iteratively reweighted least squares.
-In this
-way, not only are the basic algebraic qualities considered, but communication
-over iteration on distributed objects is tested.
-
-To work comparatively, a simple working local-only version of the algorithm is
-produced in listing [@lst:local-rwls].
-
-\begin{listing}
-\inputminted{r}{R/review-rwls.R}
-	\caption{Local GLM with RWLS}
-	\label{lst:local-rwls}
-\end{listing}
-
-It outputs a $\hat{\beta}$ matrix after several seconds of computation.
-
-Were pbdDMAT to function transparently as regular matrices, as the package
-README implies, then all that would be required to convert a local algorithm to
-distributed would be to prefix a `dd` to every `matrix` call, and
-bracket the program with a template as per listing [@lst:bracket].
-
-\begin{listing}
-\begin{minted}{r}
-suppressMessages(library(pbdDMAT))
-init.grid()
-
-# program code with `dd` prefixed to every `matrix` call
-
-finalize()
-\end{minted}
-\caption={Idealised Common Wrap for Local to Distributed Matrices}\label{lst:bracket}
-\end{listing}
-
-This is the form of transparency offered by packages such as *parallel*,
-*foreach*, or *sparklyr* in relation to dplyr.
-The program would then be written to disk, then executed, for example with the
-following:
-
-\begin{listing}
-\begin{minted}{bash}
-mpirun -np <# of cores> Rscript <script name>
-\end{minted}
-\end{listing}
-
-The program halts however, as forms of matrix creation other than through
-explicit `matrix()`{.R} calls are not necessarily picked up by that process;
-`cbind` requires a second formation of a `ddmatrix`.
-The first
-issue comes when performing conditional evaluation;
-predicates involving distributed matrices are themselves distributed matrices,
-and can't be mixed in logical evaluation with local predicates.
-
-Turning local predicates to distributed matrices, then converting them all back
-to a local matrix for the loop to understand, finally results in a program run,
-however the results are still not accurate.
-This is due to `diag()<-`
-assignment not having been implemented, so several further changes are
-necessary, including specifying return type of the diag matrix as a replacement.
-The final working code of pbdDMAT GLM through RWLS is given in listing
-[@lst:dmat], with the code diff given in listing [@lst:diff].
-Execution time was longer for the pbdR code on a dual-core laptop, however it
-is likely faster over a cluster.
-
-\begin{listing}
-\inputminted{r}{R/review-pbdr.R}
-	\caption{pbdDMAT GLM with RWLS}
-	\label{lst:dmat}
-\end{listing}
-
-\begin{listing}
-\inputminted{r}{R/review-pbdr.diff}
-	\caption{Diff between local and pbdR code}
-	\label{lst:diff}
-\end{listing}
-
-It is worth noting that options for optimisation and tuning are far more
-extensive than those utilised in this example, including the capacity to set
-grid parameters, blocking factors, and BLACS contexts, among others.
+The actual manipulation of distributed matrices is enabled through the pbdDMAT package, which offers S4 classes encapsulating distributed matrices [@pbdDMATpackage].
+These are specialised for dense matrices through the `ddmatrix` class, though the project offers some support for other matrices.
+The `ddmatrix` class has nearly all of the standard matrix generics implemented for it, with nearly identical syntax for all.
 
 ## Setup
 
-The setup for pbdR is simple, being no more than a CRAN installation, but a
-well tuned environment, which is the main purpose for using the package in the
-first place, requires BLAS, LAPACK and derivatives, a parallel file system with
-data in an appropriate format such as HDF5, and a standard MPI library.
-Much of
-the pain of setup is ameliorated with a docker container, provided by the
-project.
+The setup for pbdR is simple, being no more than a CRAN installation, but a well tuned environment, which is the main purpose for using the package in the first place, requires BLAS, LAPACK and derivatives, a parallel file system with data in an appropriate format such as HDF5, and a standard MPI library.
+Much of the pain of setup is ameliorated with a docker container, provided by the project.
 
 # A Detail of future
 
 ## Overview {#sec:overview}
-\nocite{bengtsson19:_futur_r}
 
-future is introduced with the following summary: \blockquote{The
-purpose of this package is to provide a lightweight and unified
-future API for sequential and parallel processing of R expression
-via futures.
-The simplest way to evaluate an expression in parallel
-is to use `x \%<-\% { expression `} with
-`plan(multiprocess)`.
-This package implements sequential,
-multicore, multisession, and cluster futures.
-With these, R
-expressions can be evaluated on the local machine, in parallel a set
-of local machines, or distributed on a mix of local and remote
-machines.
-Extensions to this package implement additional backends
-for processing futures via compute cluster schedulers etc.
-Because
-of its unified API, there is no need to modify any code in order
-switch from sequential on the local machine to, say, distributed
-processing on a remote compute cluster.
-Another strength of this
-package is that global variables and functions are automatically
-identified and exported as needed, making it straightforward to
-tweak existing code to make use of futures.[@bengtsson20]}
-futures are abstractions for values that may be available at some
-point in the future, taking the form of objects possessing state,
-being either resolved and therefore available immediately, or
-unresolved, wherein the process blocks until resolution.
+future is introduced with the following summary:
+
+> The purpose of this package is to provide a lightweight and unified future API for sequential and parallel processing of R expression via futures.
+
+The simplest way to evaluate an expression in parallel is to use `x %<-% { expression }`{.R} with `plan(multiprocess)`{.R}.
+This package implements sequential, multicore, multisession, and cluster futures.
+With these, R expressions can be evaluated on the local machine, in parallel a set of local machines, or distributed on a mix of local and remote machines.
+Extensions to this package implement additional backends for processing futures via compute cluster schedulers etc.
+Because of its unified API, there is no need to modify any code in order switch from sequential on the local machine to, say, distributed processing on a remote compute cluster.
+Another strength of this package is that global variables and functions are automatically identified and exported as needed, making it straightforward to tweak existing code to make use of futures.[@bengtsson20]}
+futures are abstractions for values that may be available at some point in the future, taking the form of objects possessing state, being either resolved and therefore available immediately, or unresolved, wherein the process blocks until resolution.
 
 futures find their greatest use when run asynchronously.
-The future
-package has the inbuilt capacity to resolve futures asynchronously,
-including in parallel and through a cluster, making use of the
-parallel package.
-This typically runs a separate process for each
-future, resolving separately to the current R session and modifying
-the object state and value according to it's resolution status.
+The future package has the inbuilt capacity to resolve futures asynchronously, including in parallel and through a cluster, making use of the parallel package.
+This typically runs a separate process for each future, resolving separately to the current R session and modifying the object state and value according to it's resolution status.
 
 ## Comparison with Substitution and Quoting {#sec:comparison-with-non}
 
-R lays open a powerful set of metaprogramming functions, which bear
-similarity to future.
-R expressions can be captured in a
-`quote()`{.R}, then evaluated in an environment with `eval()`{.R}
+R lays open a powerful set of metaprogramming functions, which bear similarity to future.
+R expressions can be captured in a `quote()`{.R}, then evaluated in an environment with `eval()`{.R}
 at some point in the future.
-Additionally, `substitute()`{.R}
-substitutes any variables in the expression passed to it with the
-values bound in an environment argument, thus allowing "non-standard
-evaluation" in functions.
+Additionally, `substitute()`{.R} substitutes any variables in the expression passed to it with the values bound in an environment argument, thus allowing "non-standard evaluation" in functions.
 
-future offers a delay of evaluation as well, however such a delay is
-not due to manual control of the programmer through `eval()`{.R}
-functions and the like, but due to background computation of an
-expression instead.
+future offers a delay of evaluation as well, however such a delay is not due to manual control of the programmer through `eval()`{.R} functions and the like, but due to background computation of an expression instead.
 
 ## Example Usage {#sec:examples}
 
-Through substitution and quoting, R can, for example, run a console within the
-language.
+Through substitution and quoting, R can, for example, run a console within the language.
 Futures allows the extension of this to a parallel evaluation scheme.
-Listing [@lst:console] gives a simple implementation of this idea: a console
-that accepts basic expressions, evaluating them in the background and
-presenting them upon request when complete.
-Error handling and shared
-variables are not implemented.
+Listing [@lst:console] gives a simple implementation of this idea: a console that accepts basic expressions, evaluating them in the background and presenting them upon request when complete.
+Error handling and shared variables are not implemented.
 
-\begin{listing}
-\inputminted{r}{R/review-future.R}
-\caption{Usage of future to implement a basic multicore console} {#lst:console}
-\end{listing}
+```{#lst:console .R caption="Usage of future to implement a basic multicore console"}
+library(future)
+
+multicore.console <- function(){
+    get.input <- function(){
+        cat("Type \"e\" to enter an expression for",
+            "evaluation \nand \"r\" to see",
+            "resolved expressions\n", sep="")
+        readline()
+    }
+
+    send.expr <- function(){
+        cat("Multicore Console> ")
+        input <- readline()
+        futs[[i]] <<- future(eval(str2expression(input)))
+        cat("\nResolving as: ", as.character(i), "\n")
+    }
+
+    see.resolved <- function(){
+        for (i in 1:length(futs)){
+            if (is(futs[[i]], "Future") &
+                resolved(futs[[i]])) {
+                cat("Resolved: ", as.character(i), " ")
+                print(value(futs[[i]]))
+            }
+        }
+    }
+
+    plan(multicore)
+    futs <- list()
+    i <- 1
+    while(TRUE){
+        input <- get.input()
+        if (input == "e") {
+            send.expr()
+            i <- i + 1
+        } else if (input == "r") {
+            see.resolved()
+        } else {
+            cat("Try again")
+        }
+    }
+}
+
+multicore.console()
+```
 
 ## Extension Packages {#sec:extension-packages}
 
-\begin{description}
 doFuture
-: [@bengtsson20do] provides an adapter for
-	      foreach[@microsoft20] that works on a future-based backend.
-	      Note
-	      that this does does not return foreach() calls as futures.
-	      The
-	      multicore features enabled with future are redundant over the
-	      existing parallel package, but because future backends can include
-	      other clusters, such as those provided by batchtools, there is some
-	      additional functionality, including additional degrees of control
-	      over backends.
+: [@bengtsson20do] provides an adapter for foreach[@microsoft20] that works on a future-based backend.
+  Note that this does does not return foreach() calls as futures.
+  The multicore features enabled with future are redundant over the existing parallel package, but because future backends can include other clusters, such as those provided by batchtools, there is some additional functionality, including additional degrees of control over backends.
+
 future.batchtools
-: [@bengtsson19batch] provides a future API
-	      for batchtools[@lang17], or equivalently, a batchtools backend
-	      for future.
-	      This allows the use of various cluster schedulers such
-	      as TORQUE, Slurm, Docker Swarm, as well as custom cluster functions.
+: [@bengtsson19batch] provides a future API for batchtools[@lang17], or equivalently, a batchtools backend for future.
+  This allows the use of various cluster schedulers such as TORQUE, Slurm, Docker Swarm, as well as custom cluster functions.
+
 future.apply
-: [@bengtsson20apply] provides equivalent
-	      functions to R's `apply` procedures, with a future backend
-	      enabling parallel, cluster, and other functionality as enabled by
-	      backends such as batchtools through future.batchtools.
+: [@bengtsson20apply] provides equivalent functions to R's `apply` procedures, with a future backend enabling parallel, cluster, and other functionality as enabled by backends such as batchtools through future.batchtools.
+
 future.callr
-: [@bengtsson19callr] provides a
-	      callr[@csardi20] backend to future, with all of the associated
-	      advantages and overhead.
-	      Callr \enquote{call[s] R from R}.
-	      It
-	      provides functions to run expressions in a background R process,
-	      beginning a new session.
-	      An advantage of callr is that it allows
-	      more than 125 connections, due to not making use of R-specific
-	      connections.
-	      Additionally, no ports are made use of, unlike the
-	      SOCKcluster provided by the snow component of parallel.
+: [@bengtsson19callr] provides a callr[@csardi20] backend to future, with all of the associated advantages and overhead.
+  Callr "call[s] R from R".
+  It provides functions to run expressions in a background R process, beginning a new session.
+  An advantage of callr is that it allows more than 125 connections, due to not making use of R-specific connections.
+  Additionally, no ports are made use of, unlike the SOCKcluster provided by the snow component of parallel.
+
 furrr
-: [@vaughan18] allows the use of future as a backend to
-	      purrr functions.
-	      purrr is a set of functional programming tools for
-	      R, including map, typed map, reduce, predicates, and monads.
-	      Much of
-	      it is redundant to what already exists in R, but it has the
-	      advantage and goal of adhering to a consistent standard.
-\end{description}
+: [@vaughan18] allows the use of future as a backend to purrr functions.
+  purrr is a set of functional programming tools for R, including map, typed map, reduce, predicates, and monads.
+  Much of it is redundant to what already exists in R, but it has the advantage and goal of adhering to a consistent standard.
 
 ## Further Considerations {#sec:further-considerations}
 
-One initial drawback to future is the lack of callback functionality, which
-would open enormous potential.
-However, this feature is made available in the
-*promises* package, which has been developed by Joe Cheng at RStudio,
-which allows for user-defined handlers to be applied to futures upon
-resolution[@Cheng19].
+One initial drawback to future is the lack of callback functionality, which would open enormous potential.
+However, this feature is made available in the *promises* package, which has been developed by Joe Cheng at RStudio, which allows for user-defined handlers to be applied to futures upon resolution[@Cheng19].
 
-Issues that aren't resolved by other packages include the copying of objects
-referenced by future, with mutable objects thereby unable to be directly
-updated by future (though this may be ameliorated with well-defined callbacks).
-This also means that data movement is mandatory, and costly; future raises an
-error if the data to be processed is over 500Mb, though this can be overridden.
+Issues that aren't resolved by other packages include the copying of objects referenced by future, with mutable objects thereby unable to be directly updated by future (though this may be ameliorated with well-defined callbacks).
+This also means that data movement is mandatory, and costly; future raises an error if the data to be processed is over 500Mb, though this can be overridden.
 
-Referencing variables automatically is a major unsung feature of future, though
-it doesn't always work reliably; future relies on code inspection, and allows a
-`global` parameter to have manual variable specification.
+Referencing variables automatically is a major unsung feature of future, though it doesn't always work reliably; future relies on code inspection, and allows a `global` parameter to have manual variable specification.
 
-It seems likely that the future package will have some value to it's use,
-especially if asynchronous processing is required on the R end; it is the
-simplest means of enabling asynchrony in R without having to manipulate
-networks or threads.
+It seems likely that the future package will have some value to it's use, especially if asynchronous processing is required on the R end; it is the simplest means of enabling asynchrony in R without having to manipulate networks or threads.
 
 # A Review of foreach
 
 ## Introduction {#sec:introduction}
 
 foreach introduces itself on CRAN with the following description:
-\begin{displaycquote}{microsoft20}
-	Support for the foreach looping construct.
-	Foreach is an idiom that
-	allows for iterating over elements in a collection, without the use
-	of an explicit loop counter.
-	This package in particular is intended
-	to be used for its return value, rather than for its side effects.
-	In that sense, it is similar to the standard lapply function, but
-	doesn't require the evaluation of a function.
-	Using foreach without
-	side effects also facilitates executing the loop in parallel.
-\end{displaycquote}
 
-From the user end, the package is conceptually simple, revolving
-entirely around a looping construct and the one-off backend
-registration.
+> Support for the foreach looping construct.
+> Foreach is an idiom that allows for iterating over elements in a collection, without the use of an explicit loop counter.
+> This package in particular is intended to be used for its return value, rather than for its side effects.
+> In that sense, it is similar to the standard lapply function, but doesn't require the evaluation of a function.
+> Using foreach without side effects also facilitates executing the loop in parallel.
 
-The principal goal of the package, which it hasn't strayed from, is
-the enabling of parallelisation through backend transparency within
-the foreach construct.
-Notably, more complex functionality, such as
-side effects and parallel recurrance, are not part of the package's
-intention.
+From the user end, the package is conceptually simple, revolving entirely around a looping construct and the one-off backend registration.
 
-Thus, the primary driver for the practicality of the package, beyond
-the support offered for parallel backends, is the backends themselves,
-currently enabling a broad variety of parallel systems.
+The principal goal of the package, which it hasn't strayed from, is the enabling of parallelisation through backend transparency within the foreach construct.
+Notably, more complex functionality, such as side effects and parallel recurrance, are not part of the package's intention.
+
+Thus, the primary driver for the practicality of the package, beyond the support offered for parallel backends, is the backends themselves, currently enabling a broad variety of parallel systems.
 
 foreach is developed by Steve Weston and Hoong Ooi.
 
 ## Usage {#sec:usage}
 
-foreach doesn't require setup for simple serial execution, but
-parallel backends require registration by the user, typically with a
-single function as in the registration for doParallel,
-`registerDoParallel()`{.R}.
+foreach doesn't require setup for simple serial execution, but parallel backends require registration by the user, typically with a single function as in the registration for doParallel, `registerDoParallel()`{.R}.
 
-The syntax of foreach consists of a `foreach()`{.R} function call
-next to a `\%do\%` operator, and some expression to the
-right[@weston19:_using].
-Without loss in generality, the syntactic
-form is given in Listing~[@lst:syntax].
+The syntax of foreach consists of a `foreach()`{.R} function call next to a `%do%` operator, and some expression to the right[@weston19:_using].
+Without loss in generality, the syntactic form is given in [@lst:syntax].
 
-\begin{listing}
-\begin{minted}{r}
+```{#lst:syntax .R caption="Standard foreach syntax"}
 foreach(i=1:n) %do% {expr}
-\end{minted}
-\caption{Standard foreach syntax}\label{lst:syntax}
-\end{listing}
+```
 
-The `foreach()`{.R} function can take other arguments including
-changing the means of combination along iterations, whether iterations
-should be performed in order, as well as the export of environmental
-variables and packages to each iteration instance.
+The `foreach()`{.R} function can take other arguments including changing the means of combination along iterations, whether iterations should be performed in order, as well as the export of environmental variables and packages to each iteration instance.
 
-In addition to `\%do\%`, other binary operators can be appended
-or substituted.
-Parallel iteration is performed by simply replacing
-`\%do\%` with `\%dopar\%`.
-Nested loops can be created
-by inserting `\%:\%` between main and nested foreach functions,
-prior to the `\%do\%` call[@weston19:_nestin_loops].
-The
-last step to composition of foreach as capable of list comprehension
-is the filtering function `\%when\%`, which filters iterables
-based on some predicate to control evaluation.
-
+In addition to `%do%`, other binary operators can be appended or substituted.
+Parallel iteration is performed by simply replacing `%do%` with `%dopar%`.
+Nested loops can be created by inserting `%:%` between main and nested foreach functions,
+prior to the `%do%` call[@weston19:_nestin_loops].
+The last step to composition of foreach as capable of list comprehension is the filtering function `%when%`, which filters iterables based on some predicate to control evaluation.
 
 ## Implementation {#sec:implementation}
 
-The mechanism of action in foreach is often forgotten in the face of
-the atypical form of the standard syntax.
-Going one-by-one, the
-`foreach()`{.R} function returns an iterable object,
-`\%do\%` and derivatives are binary functions operating on the
-iterable object returned by `foreach()`{.R} on the left, and the
-expression on the right; the rightmost expression is simply captured
-as such in `\%do\%`.
-Thus, the main beast of burder is the
-`\%do\%` function, where the evaluation of the iteration takes
-place.
+The mechanism of action in foreach is often forgotten in the face of the atypical form of the standard syntax.
+Going one-by-one, the `foreach()`{.R} function returns an iterable object,
+`%do%` and derivatives are binary functions operating on the iterable object returned by `foreach()`{.R} on the left, and the expression on the right; the rightmost expression is simply captured as such in `%do%`.
+Thus, the main beast of burder is the `%do%` function, where the evaluation of the iteration takes place.
 
-In greater detail, `\%do\%` captures and creates environments, enabling
-sequential evaluation.
-`\%dopar\%` captures the environment of an
-expression, as well taking as a formal parameter a vector of names of libraries
-used in the expression, then passing that to the backend, which will in turn do
-additional work on capturing references to variables in expressions and adding
-them to evaluation environment, as well as ensure packages are loaded on worker
-nodes.
+In greater detail, `%do%` captures and creates environments, enabling sequential evaluation.
+`%dopar%` captures the environment of an expression, as well taking as a formal parameter a vector of names of libraries used in the expression, then passing that to the backend, which will in turn do additional work on capturing references to variables in expressions and adding them to evaluation environment, as well as ensure packages are loaded on worker nodes.
 
-`\%do\%` and `\%dopar\%`, after correct error checking,
-send calls to `getDoSeq()`{.R} and `getDoPar()`{.R}
-respectively, which return lists determined by the registered backend,
-which contain a function used backend, used to operate on the main
-expression along with other environmental data.
+`%do%` and `%dopar%`, after correct error checking, send calls to `getDoSeq()`{.R} and `getDoPar()`{.R} respectively, which return lists determined by the registered backend, which contain a function used backend, used to operate on the main expression along with other environmental data.
 
-foreach depends strongly upon the iterators package, which gives the
-ability to construct custom iterators.
-These custom iterators can be
-used in turn with the `foreach()`{.R} function, as the interface to
-them is transparent.
+foreach depends strongly upon the iterators package, which gives the ability to construct custom iterators.
+These custom iterators can be used in turn with the `foreach()`{.R} function, as the interface to them is transparent.
 
-## Form of Iteration}\label{sec:form-iter
+## Form of Iteration} {#sec:form-iter}
 
-The name of the package and function interface refer to the `foreach`
-programming language construct, present in many other languages.
-By definition, the `foreach` construct performs traversal over some
-collection, not necessarily requiring any traversal order.
-In this case, the collection is an iterator object or an object coercible to
-one, but in other languages with foreach as part of the core language, such as
-python (whose for loop is actually only a foreach loop), collections can
-include sets, lists, and a variety of other classes which have an
-`__iter__` and `__next__` defined[@python2020iter].
+The name of the package and function interface refer to the `foreach` programming language construct, present in many other languages.
+By definition, the `foreach` construct performs traversal over some collection, not necessarily requiring any traversal order.
+In this case, the collection is an iterator object or an object coercible to one, but in other languages with foreach as part of the core language, such as python (whose for loop is actually only a foreach loop), collections can include sets, lists, and a variety of other classes which have an `__iter__`{.python} and `__next__`{.python} defined[@python2020iter].
 
-Due to the constraints imposed by a foreach construct, loop optimisation is
-simplified relative to a for loop, and the lack of explicit traversal ordering
-permits parallelisation, which is the primary reason for usage of the
-`foreach` package.
-The constraints are not insignificant however, and they do impose a limit on
-what can be expressed through their usage.
-Most notably, iterated functions, wherein the function depends on it's prior
-output, are not necessarily supported, and certainly not supported in parallel.
-This is a result of the order of traversal being undefined, and when order is
-essential to maintain coherent state, as in iterated functions, the two
-concepts are mutually exclusive.
+Due to the constraints imposed by a foreach construct, loop optimisation is simplified relative to a for loop, and the lack of explicit traversal ordering permits parallelisation, which is the primary reason for usage of the `foreach` package.
+The constraints are not insignificant however, and they do impose a limit on what can be expressed through their usage.
+Most notably, iterated functions, wherein the function depends on it's prior output, are not necessarily supported, and certainly not supported in parallel.
+This is a result of the order of traversal being undefined, and when order is essential to maintain coherent state, as in iterated functions, the two concepts are mutually exclusive.
 
-In spite of the constraints, iterated functions can actually be emulated in
-foreach through the use of destructive reassignment within the passed
-expression, or through the use of stateful iterators.
-Examples of both are given in listings [@lst:serial] and [@lst:serial-iter].
+In spite of the constraints, iterated functions can actually be emulated in foreach through the use of destructive reassignment within the passed expression, or through the use of stateful iterators.
+Examples of both are given in [@lst:serial; @lst:serial-iter].
 
-\begin{listing}
-\begin{minted}{R}
+```{#lst:serial .R caption="Serial iterated function through destructive reassignment"}
 x <- 10
 foreach(i=1:5) %do% {x <- x+1}
-\end{minted}
-\caption{Serial iterated function through destructive reassignment}\label{lst:serial}
-\end{listing}
+```
 
-\begin{listing}
-\begin{minted}{R}
+```{#lst:serial-iter .R caption="Serial iterated function through creation of a stateful iterator"}
 addsone <- function(start, to) {
 	nextEl <- function(){
 		start <<- start + 1
@@ -1581,378 +1372,199 @@ it <- addsone(10, 15)
 nextElem(it)
 
 foreach(i = addsone(10, 15), .combine = c) %do% i
-\end{minted}
-\caption{Serial iterated function through creation of a stateful iterator}\label{lst:serial-iter}
-\end{listing}
+```
 
-As alluded to earlier, the functionality breaks down when attempting to run
-them in parallel.
-Listings [@lst:parallel] and [@lst:parallel-iter] demonstrate attempts to
-evaluate these iterated functions in parallel.
-They only return a list of 5 repetitions of the same "next" number, not
-iterating beyond it.
+As alluded to earlier, the functionality breaks down when attempting to run them in parallel.
+[@lst:parallel; @lst:parallel-iter] demonstrate attempts to evaluate these iterated functions in parallel.
+They only return a list of 5 repetitions of the same "next" number, not iterating beyond it.
 
-\begin{listing}
-\begin{minted}{R}
+```{#lst:parallel .R caption="Parallel Iteration attempt through destructive reassignment"}
 cl <- makeCluster(2)
 doParallel::registerDoParallel(cl)
 x <- 10
 foreach(i=1:5) %dopar% {x <- x+1}
-\end{minted}
-\caption{Parallel Iteration attempt through destructive reassignment}\label{lst:parallel}
-\end{listing}
+```
 
 \begin{listing}
 \begin{minted}{R}
+```{#lst:parallel-iter .R caption="Parallel Iteration attempt through a stateful iterator"}
 doParallel::registerDoParallel
 foreach(i = addsone(10, 15), .combine = c) %dopar% i
-\end{minted}
-\caption{Parallel Iteration attempt through a stateful iterator}\label{lst:parallel-iter}
-\end{listing}
+```
 
 ## Extensions {#sec:extensions}
 
-The key point of success in foreach is it's backend extensibility,
-without which, foreach would lack any major advantages over a standard
-`for` loop.
+The key point of success in foreach is it's backend extensibility, without which, foreach would lack any major advantages over a standard `for` loop.
 
-Other parallel backends are enabled through specific functions made
-available by the foreach package.
-The packages define their parallel
-evaluation procedures with reference to the iterator and accumulator
-methods from foreach.
+Other parallel backends are enabled through specific functions made available by the foreach package.
+The packages define their parallel evaluation procedures with reference to the iterator and accumulator methods from foreach.
 
 Numerous backends exist, most notably:
-\begin{description}
+
 doParallel
-: the primary parallel backend for foreach, using the
-	      parallel package[@corporation19].
+: the primary parallel backend for foreach, using the parallel package[@corporation19].
+
 doRedis
 : provides a Redis backend, through the redux package[@lewis20].
+
 doFuture
-: uses the future package to make use of future's many
-	      backends[@bengtsson20do].
+: uses the future package to make use of future's many backends[@bengtsson20do].
+
 doAzureParallel
-: allows for direct submission of parallel
-	      workloads to an Azure Virtual Machine[@hoang20].
+: allows for direct submission of parallel workloads to an Azure Virtual Machine[@hoang20].
+
 doMPI
 : provides MPI access as a backend, using Rmpi[@weston17].
+
 doRNG
-: provides for reproducible random number usage within
-	      parallel iterations, using L'Ecuyer's method; provides
-	      `\%dorng\%`[@gaujoux20].
+: provides for reproducible random number usage within parallel iterations, using L'Ecuyer's method; provides `%dorng%`[@gaujoux20].
+
 doSNOW
-: provides an ad-hoc cluster backend, using the snow
-	      package[@dosnow19].
-\end{description}
+: provides an ad-hoc cluster backend, using the snow package[@dosnow19].
 
-## Relevance {#sec:relevance}
+## Relevance
 
-foreach serves as an example of a well-constructed package supported
-by it's transparency and extensibility.
+foreach serves as an example of a well-constructed package supported by it's transparency and extensibility.
 
-For packages looking to provide any parallel capabilities, a foreach
-extension would certainly aid it's potential usefulness and
-visibility.
+For packages looking to provide any parallel capabilities, a foreach extension would certainly aid it's potential usefulness and visibility.
 
 # A Disk.Frame Case Study
 
-## Introduction {#sec:introduction}
+## Introduction
 
-The mechanism of disk.frame is introduced on it's homepage with the
-following explanation:
-
-\begin{displaycquote}{zj20:_larger_ram_disk_based_data}
-	{disk.frame} works by breaking large datasets into smaller
-	individual chunks and storing the chunks in fst files inside a
-	folder.
-	Each chunk is a fst file containing a data.frame/data.table.
-	One can construct the original large dataset by loading all the
-	chunks into RAM and row-bind all the chunks into one large
-	data.frame.
-	Of course, in practice this isn't always possible; hence
-	why we store them as smaller individual chunks.
-
-		{disk.frame} makes it easy to manipulate the underlying chunks by
-	implementing dplyr functions/verbs and other convenient functions
-	(e.g.
-	the (`cmap(a.disk.frame, fn, lazy = F)` function which
-	applies the function fn to each chunk of a.disk.frame in parallel).
-	So that {disk.frame} can be manipulated in a similar fashion to
-	in-memory data.frames.
-\end{displaycquote}
-
-It works through two main principles: chunking, and generic function
-implementation (alongside special functions).
-Another component that
-isn't mentioned in the explanation, but is crucial to performance, is
-the parallelisation offered transparently by the package.
+disk.frame works through two main principles: chunking, and generic function implementation (alongside special functions).
+Another component that isn't mentioned in the explanation, but is crucial to performance, is the parallelisation offered transparently by the package.
 
 disk.frame is developed by Dai ZJ.
 
 ## Chunks and Chunking {#sec:chunking}
 
 ### Chunk Representation {#sec:chunk-representation}
-% \item files in folder (https://diskframe.com/articles/04-ingesting-data.html#exploiting-the-structure-of-a-disk-frame)
 
-disk.frames are actually references to numbered `fst` files in
-a folder, with each file serving as a chunk.
-This is made use of
-through manipulation of each chunk separately, sparing RAM from
-dealing with a single monolithic file[@zj19:_inges_data].
+disk.frames are actually references to numbered `fst` files in a folder, with each file serving as a chunk.
+This is made use of through manipulation of each chunk separately, sparing RAM from dealing with a single monolithic file[@zj19:_inges_data].
 
-% \item Fst
-Fst is a means of serialising dataframes, as an alternative to RDS
-files[@klik19].
-It makes use of an extremely fast compression
-algorithm developed at facebook, with the R package enabling fst
-written on in \href{survey-r-packages-for-local-large-scale-computing.pdf}{R
-	Packages for Local Large-Scale Computing}.
+Fst is a means of serialising dataframes, as an alternative to RDS files[@klik19].
+It makes use of an extremely fast compression algorithm developed at facebook, with the R package enabling fst written on in [R Packages for Local Large-Scale Computing](survey-r-packages-for-local-large-scale-computing.html).
 
-% \item fst [ interface for disk.frame using fst backend, see internals
-From inspection of the source code, data.table manipulations are
-enabled directly through transformations of each chunk to data.tables
-through the fst backend.
+From inspection of the source code, data.table manipulations are enabled directly through transformations of each chunk to data.tables through the fst backend.
 
 ### Chunk Usage {#sec:making-chunks}
 
-% \item ingesting data (https://diskframe.com/articles/04-ingesting-data.html),
-% \item lazy evaluation
-%   (https://diskframe.com/articles/02-intro-disk-frame.html#simple-dplyr-verbs-and-lazy-evaluation)
-Chunks are created transparently by disk.frame; the user can
-theoretically remain ignorant of chunking.
-In R, the disk.frame object
-serves as a reference to the chunk files.
-Operations on disk.frame
-objects are by default lazy, waiting until the `collect()`{.R}
-command to perform the collected operations and pull the chunks into R
-as a single data.table.
-As noted in
-[@zj19:_simpl_verbs_lazy_evaluat], this form of lazy evaluation is
-similar to the implementation of sparklyr.
+Chunks are created transparently by disk.frame; the user can theoretically remain ignorant of chunking.
+In R, the disk.frame object serves as a reference to the chunk files.
+Operations on disk.frame objects are by default lazy, waiting until the `collect()`{.R} command to perform the collected operations and pull the chunks into R as a single data.table.
+As noted in [@zj19:_simpl_verbs_lazy_evaluat], this form of lazy evaluation is similar to the implementation of sparklyr.
 
-Chunks are by default assigned rows through hashing the source rows,
-but can be composed of individual levels of some source column, which
-can provide an enormous efficiency boost for grouped operations, where
-the computation visits the data, rather than the other way around.
+Chunks are by default assigned rows through hashing the source rows, but can be composed of individual levels of some source column, which can provide an enormous efficiency boost for grouped operations, where the computation visits the data, rather than the other way around.
 
-% \item add_chunk()
-% \item get_chunk()
-% \item remove_chunk()
-Chunks can be manipulated individually, having individual ID's,
-through `get_chunk()`{.R}, as well as added or removed from
-additional fst files directly, through `add_chunk()`{.R} and
-`remove_chunk()`{.R}, respectively.
+Chunks can be manipulated individually, having individual ID's, through `get_chunk()`{.R}, as well as added or removed from additional fst files directly, through `add_chunk()`{.R} and `remove_chunk()`{.R}, respectively.
 
-% \item rechunk()
-In a computationally intensive procedure, the rows can be rearranged
-between chunks based on a particular column level as a hash, through
-functions such as `rechunk()`{.R}.
+In a computationally intensive procedure, the rows can be rearranged between chunks based on a particular column level as a hash, through functions such as `rechunk()`{.R}.
 
 ## Functions {#sec:functions}
 
-% \item constructor (as.disk.frame(), csv_to_disk.frame() (shard()) etc., and
-%   accessors (collect())
-The disk.frame object has standard procedures for construction and
-access.
-disk.frame can be constructed from data.frames and data.tables
-through `as.disk.frame()`{.R}, single or multiple csv files through
-`csv_to_disk.frame()`{.R}, as well as zip files holding csv files.
-Time can be saved later on through the application of functions to the
-data during the conversion, as well as specifying what to chunk by,
-keeping like data together.
-The process of breaking up data into
-chunks is referred to by disk.frame as "sharding", enabled for
-data.frames and data.tables through the `shard()`{.R} function.
+The disk.frame object has standard procedures for construction and access.
+disk.frame can be constructed from data.frames and data.tables through `as.disk.frame()`{.R}, single or multiple csv files through `csv_to_disk.frame()`{.R}, as well as zip files holding csv files.
+Time can be saved later on through the application of functions to the data during the conversion, as well as specifying what to chunk by, keeping like data together.
+The process of breaking up data into chunks is referred to by disk.frame as "sharding", enabled for data.frames and data.tables through the `shard()`{.R} function.
 
-% \item mapping: applying same function to all chunks cmap()
-After creating a disk.frame object, functions can be applied directly
-to all chunks invisibly through using the `cmap()`{.R} family of
-functions in a form similar to base R `*apply()`{.R}
+After creating a disk.frame object, functions can be applied directly to all chunks invisibly through using the `cmap()`{.R} family of functions in a form similar to base R `*apply()`{.R}
 
-% \item dplyr verbs
-A highly publicised aspect of disk.frame is the functional
-cross-compatibility with dplyr verbs.
-These operate on disk.frame
-objects lazily, and are applied through translation by disk.frame;
-they are just S3 methods defined for the disk.frame class.
-They are
-fully functioning, with the exception of `group_by` (and it's
-data.table cognate, `[by=]`, considered in more detail in
-subsection [@sec:spec-cons-group-by].
+A highly publicised aspect of disk.frame is the functional cross-compatibility with dplyr verbs.
+These operate on disk.frame objects lazily, and are applied through translation by disk.frame; they are just S3 methods defined for the disk.frame class.
+They are fully functioning, with the exception of `group_by` (and it's data.table cognate, `[by=]`, considered in more detail in subsection [@sec:spec-cons-group-by].
 
-% \item dfglm()
-Beyond higher-order functions and dplyr or data.table analogues for
-data manipulation, the direct modelling function of `dfglm()`{.R}
-is implemented to allow for fitting glms to the data.
-From inspection
-of the source code, the function is a utility wrapper for streaming
-disk.frame data by default into bigglm, a biglm derivative.
+Beyond higher-order functions and dplyr or data.table analogues for data manipulation, the direct modelling function of `dfglm()`{.R} is implemented to allow for fitting glms to the data.
+From inspection of the source code, the function is a utility wrapper for streaming disk.frame data by default into bigglm, a biglm derivative.
 
 ### Grouping {#sec:spec-cons-group-by}
 
-% \item group_by (https://diskframe.com/articles/group-by.html)
-For a select set of functions, disk.frame offers a transparent grouped
-\textrm{summarise()}.
-These are mainly composed of simple statistics
-such as `mean()`{.R}, `min()`{.R}, etc.
+For a select set of functions, disk.frame offers a transparent grouped `summarise()`{.R}.
+These are mainly composed of simple statistics such as `mean()`{.R}, `min()`{.R}, etc.
 
-For other grouped functions, there is more complexity involved, due to
-the chunked nature of disk.frame.
-When functions are applied, they are
-by default applied to each chunk.
-If groups don't correspond
-injectively to chunks, then the syntactic chunk-wise summaries and
-their derivatives may not correspond to the semantic group-wise
-summaries expected.
-For example, summarising the median is performed
-by using a median-of-medians method; finding the overall median of all
-chunks' respective medians.
-Therefore, computing grouped medians in
-disk.frame result in estimates only --- this is also true of other
-software, such as spark, as noted in [@zj19:_group_by].
+For other grouped functions, there is more complexity involved, due to the chunked nature of disk.frame.
+When functions are applied, they are by default applied to each chunk.
+If groups don't correspond injectively to chunks, then the syntactic chunk-wise summaries and their derivatives may not correspond to the semantic group-wise summaries expected.
+For example, summarising the median is performed by using a median-of-medians method; finding the overall median of all chunks' respective medians.
+Therefore, computing grouped medians in disk.frame result in estimates only --- this is also true of other software, such as spark, as noted in [@zj19:_group_by].
 
-% \item chunk_summarize(), chunk_group_by()
 Grouped functions are thereby divided into one-stage and two-stage;
-one-stage functions "just work" with the `group_by()`{.R}
-function, and two-stage functions requiring manual chunk aggregation
-(using `chunk_group_by` and `chunk_summarize`),
-followed by an overall collected aggregation (using regular
-`group_by()`{.R} and `summarise()`{.R}).
-[@zj19:_group_by] points out that explicit two-stage approach
-is similar to a MapReduce operation.
+one-stage functions "just work" with the `group_by()`{.R} function, and two-stage functions requiring manual chunk aggregation (using `chunk_group_by` and `chunk_summarize`), followed by an overall collected aggregation (using regular `group_by()`{.R} and `summarise()`{.R}).
+[@zj19:_group_by] points out that explicit two-stage approach is similar to a MapReduce operation.
 
-% \item custom one stage functions (https://diskframe.com/articles/custom-group-by.html )
-Custom one-stage functions can be created, where user-defined chunk
-aggregation and collected aggregation functions are converted into
-one-stage functions by
-disk.frame[@zj19:_custom_one_stage_group_by_funct].
-These take the
-forms `fn_df.chunk_agg.disk.frame()`{.R} and
-`fn_df.collected_agg.disk.frame()`{.R} respectively, where
-"`fn`" is used as the name of the function, and appended to
-the defined name by disk.frame, through meta-programming.
+Custom one-stage functions can be created, where user-defined chunk aggregation and collected aggregation functions are converted into one-stage functions by disk.frame[@zj19:_custom_one_stage_group_by_funct].
+These take the forms `fn_df.chunk_agg.disk.frame()`{.R} and `fn_df.collected_agg.disk.frame()`{.R} respectively, where "`fn`" is used as the name of the function, and appended to the defined name by disk.frame, through meta-programming.
 
-% \item hard group-by
-To de-complicate the situation, but add one-off computational
-overhead, chunks can be rearranged to correspond to groups, thereby
-allowing for one-stage summaries just through
-`chunk_summarize()`{.R}, and exact computations of group medians.
+To de-complicate the situation, but add one-off computational overhead, chunks can be rearranged to correspond to groups, thereby allowing for one-stage summaries just through `chunk_summarize()`{.R}, and exact computations of group medians.
 
 ## Parallelism {#sec:parallelisation}
 
-An essential component of disk.frame's speed is parallelisation; as
-chunks are conceptually separate entities, function application to
-each can take place with no side effects to other chunks, and can
-therefore be trivially parallelised.
+An essential component of disk.frame's speed is parallelisation; as chunks are conceptually separate entities, function application to each can take place with no side effects to other chunks, and can therefore be trivially parallelised.
 
-% \item future
-For parallelisation, future is used as the backend package, with most
-function mappings on chunks making use of
-`future::future_lapply()`{.R} to have each chunk mapped with the
-intended function in parallel.
-Future is a package with complexities
-in it's own right; I have written more on future in the document,
-\href{detail-future.pdf}{A Detail of Future}
+For parallelisation, future is used as the backend package, with most function mappings on chunks making use of `future::future_lapply()`{.R} to have each chunk mapped with the intended function in parallel.
+Future is a package with complexities in it's own right; I have written more on future in the document, [A Detail of Future](detail-future.html)
 
-% \item setup_disk.frame()
-% \item https://diskframe.com/articles/concepts.html
-future is initialised with access to cores through the wrapper
-function, `setup_disk.frame()`{.R}[@zj19:_key].
-This sets up
-the correct number of workers, with the minimum of workers and chunks
-being processed in parallel.
+future is initialised with access to cores through the wrapper function, `setup_disk.frame()`{.R}[@zj19:_key].
+This sets up the correct number of workers, with the minimum of workers and chunks being processed in parallel.
 
-% \item
-%   https://diskframe.com/articles/data-table-syntax.html#external-variables-are-captured:
-%   external variables are captured
-An important aspect to parallelisation through future is that, for
-purposes of cross-platform compatibility, new R processes are started
-for each worker[@zj19:_using].
-Each process will possess it's own
-environment, and disk.frame makes use of future's detection
-capabilities to capture external variables referred to in calls, and
-send them to each worker.
+An important aspect to parallelisation through future is that, for purposes of cross-platform compatibility, new R processes are started for each worker[@zj19:_using].
+Each process will possess it's own environment, and disk.frame makes use of future's detection capabilities to capture external variables referred to in calls, and send them to each worker.
 
 ## Relevance {#sec:relevance}
 
-disk.frame serves as an example of a very well-received and used
-package for larger-than-RAM processing.
-The major keys to it's success
-have been it's chart-topping performance, even in comparison with dask
-and Julia, and it's user-friendliness enabled through procedural
-transparency and well-articulated concepts.
+disk.frame serves as an example of a very well-received and used package for larger-than-RAM processing.
+The major keys to it's success have been it's chart-topping performance, even in comparison with dask and Julia, and it's user-friendliness enabled through procedural transparency and well-articulated concepts.
 
 disk.frame as a concept also lends itself well to extension:
 
-The storage of chunks is currently file-based and managed by an
-operating system; if fault tolerance was desired, HDFS support for
-chunk storage would likely serve this purpose well.
+The storage of chunks is currently file-based and managed by an operating system; if fault tolerance was desired, HDFS support for chunk storage would likely serve this purpose well.
 
-Alternatively, OS-based file manipulation could be embraced in greater
-depth, focussing on interaction with faster external tools for file
-manipulation; this would lead to issues with portability, but with
-reasonable checks, could enable great speedups through making use of
-system utilities such as `sort` on UNIX-based systems.
+Alternatively, OS-based file manipulation could be embraced in greater depth, focussing on interaction with faster external tools for file manipulation; this would lead to issues with portability, but with reasonable checks, could enable great speedups through making use of system utilities such as `sort` on UNIX-based systems.
 
-The type of file may also be open to extension, with other file
-formats competing for high speeds and cross-language communication
-including \href{https://github.com/wesm/feather}{feather}, developed
-by Wes McKinney and Hadley Wickham[@wes16].
+The type of file may also be open to extension, with other file formats competing for high speeds and cross-language communication including [feather](https://github.com/wesm/feather), developed by Wes McKinney and Hadley Wickham[@wes16].
 
-In terms of finer-grained extension, more functionality for direct
-manipulation of individual chunks would potentially aid computation
-when performing iterative algorithms and others of greater complexity.
-% \item inspiration: transparency (find better word); disconnect between
-% interface and implementation, with good access to internals
-% \item good performance (https://diskframe.com/articles/vs-dask-juliadb.html)
-% \item extension: HDFS storage of chunks
-% \item single-chunk applications? map_chunk_id() map function on
-%   individual chunk by id
-% \item more external file operations on fst files outside R
+In terms of finer-grained extension, more functionality for direct manipulation of individual chunks would potentially aid computation when performing iterative algorithms and others of greater complexity.
 
 # A Survey of s-u
 
 ## Introduction
 
-%  Why s-u
-%  overview of major areas
-%  relevance to research
+-  Why s-u
+-  overview of major areas
+-  relevance to research
 
 ## iotools and DistributedR
 
-% purpose and place
-% download and run examples
-% https://github.com/s-u/iotools
-% https://github.com/s-u/iotools/wiki
-% https://github.com/s-u/iotools/wiki/DistributedR
-% read source
+- purpose and place
+- download and run examples
+- https://github.com/s-u/iotools
+- https://github.com/s-u/iotools/wiki
+- https://github.com/s-u/iotools/wiki/DistributedR
+- read source
 
 ## Rserve and RSclient
 
-% purpose and place
-% download and run examples
-% http://rforge.net/Rserve/doc.html
-% https://github.com/s-u/RSclient
-% read source
+- purpose and place
+- download and run examples
+- http://rforge.net/Rserve/doc.html
+- https://github.com/s-u/RSclient
+- read source
 
 ## hmr, hdfsc, and hbase
 
-% purpose and place
-% download and run examples
-% https://github.com/s-u/hmr
-% http://rforge.net/hmr/
-% http://www.rforge.net/hdfsc/
-% https://github.com/s-u/hbase
-% http://www.rforge.net/hdfsc/
-% read source
+- purpose and place
+- download and run examples
+- https://github.com/s-u/hmr
+- http://rforge.net/hmr/
+- http://www.rforge.net/hdfsc/
+- https://github.com/s-u/hbase
+- http://www.rforge.net/hdfsc/
+- read source
 
 ## roctopus
 
-% purpose and place
-% download and run examples
-% https://github.com/s-u/roctopus
-% read source
-
-\printbibliography
-\end{document}
+- purpose and place
+- download and run examples
+- https://github.com/s-u/roctopus
+- read source
