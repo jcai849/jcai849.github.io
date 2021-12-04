@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-10-07" />
+  <title>DistObj Non-Assigned Data Return</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">DistObj Non-Assigned Data Return</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-10-07</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>While most operations over the distributed system explicitly produce values that are to be assigned and saved, there comes a point, particularly with interactive data analysis, where values are to be explicitly returned without assignment. Many high-level operations implicitly depend on value returns, such as map-reduce style operations as part of the data collation prior to the reduce step.</p>
+<p>While the structure of assigned operations is well-defined, there remains plenty of room for discussion of value-return architecture.</p>
+<h1 data-number="2" id="current-implementation"><span class="header-section-number">2</span> Current Implementation</h1>
+<p>As it currently stands, assignment or not is indicated through an argument to the <code class="sourceCode r"><span class="fu">do.call.distObjRef</span>()</code> function, with a similar procedure being followed to assignment, in terms of messaging and the like, though instead of returning a reference to the new distributed object, <code class="sourceCode r"><span class="fu">do.call.distObjRef</span>()</code> waits for a message containing values to be returned, and returning those. This pattern, while reasonable in the macro scale, sits on an inefficient and ad-hoc implementation where value-containing messages pass as queues through the redis server. This means that an extra node is added to the journey of the value from server to client, as well as potentially overloading the redis server and slowing all communication down at the central point of failure.</p>
+<h1 data-number="3" id="proposed-form"><span class="header-section-number">3</span> Proposed Form</h1>
+<p>An improved form would make use of the osrv package to enable point-to-point data movement. There is more work than just replacing messages with polling the server for the value, due to polling being an expensive operation for both sides. A better form would involve going through the regular assignment procedure, then waiting for resolution and taking advantage of the existing <code class="sourceCode r"><span class="fu">emerge</span>()</code> function to transfer the result, followed by a new command to delete the unnecessary values from the server.</p>
+</body>
+</html>

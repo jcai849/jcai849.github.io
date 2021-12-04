@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-08-19" />
+  <title>Message Queues for Communication in a Distributed Object System</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Message Queues for Communication in a Distributed Object System</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-08-19</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>A problem exists in the present architecture as described in <a href="experiment-eager-dist-obj-supp.html">Distributed Object supplementary report</a>. At base, the co-ordination between nodes in the cluster requires significant effort from the master, with little room for additional features, with all inter-node communication being remote procedure calls only. This issue compromises nearly every aspect of operations on distributed objects, particularly in the initial reading in of data, and later data movement. The proposed amendments as described in <a href="current-proposed-info-structures.html">Proposed Information Structures</a> provide some degree of amelioration, however the root of the issue in requiring full co-ordinating facilities from the master node is still not solved.</p>
+<p>A potential solution exists in the use of message queues. Message queues are commonly used for inter-process communication, consisting of queues through which applications may communicate over <span class="citation" data-cites="curry2004message"><a href="#ref-curry2004message" role="doc-biblioref">[1]</a></span>. The use of message queues for communication between nodes will allow for significantly less knowledge required about other nodes within the system, and enabling greater independence of action within each node. Further benefits include allowing for asynchrony in more operations, the ability to monitor the system externally through watching queues, as well as the attendant benefits of decentralisation such as potentially greater resilience and decreased central complexity.</p>
+<p>Message queues are well established, seeing use from Operating Systems to Web Services. For example, the QNX OS makes heavy use of message queues for its microkernel architecture <span class="citation" data-cites="hildebrand1992qnx"><a href="#ref-hildebrand1992qnx" role="doc-biblioref">[2]</a></span>. Tech companies Stack Overflow and flickr also use message queues from redis as central components of their infrastructure <span class="citation" data-cites="nolan2011flickr montrose2016stack"><a href="#ref-nolan2011flickr" role="doc-biblioref">[3]</a>, <a href="#ref-montrose2016stack" role="doc-biblioref">[4]</a></span>. In this platform, the flexibility of Redis lists and the availability of the rediscc package suggests the use of Redis in the implementation of message queues <span class="citation" data-cites="sanfilippo2009redis urbanek2020rediscc"><a href="#ref-sanfilippo2009redis" role="doc-biblioref">[5]</a>, <a href="#ref-urbanek2020rediscc" role="doc-biblioref">[6]</a></span>. Alternatives include Apache ActiveMQ, Kafka, and Disque, among others <span class="citation" data-cites="snyder2011activemq garg2013kafka sanfilippo2016disque"><a href="#ref-snyder2011activemq" role="doc-biblioref">[7]</a>–<a href="#ref-sanfilippo2016disque" role="doc-biblioref">[9]</a></span>.</p>
+<h1 data-number="2" id="architecture-concept"><span class="header-section-number">2</span> Architecture Concept</h1>
+<p>The concept retains the notion of data divided into uniquely identified chunks, existing on nodes. The nodes each subscribe to queues dedicated to chunks that they possess, undertaking action dependent on messages received in their queue. In this way, nodes function as state machines, reading messages, performing some operation (or not) depending on the message content, and writing back in some form.</p>
+<p>For example, some node has a chunk <span class="math inline"><em>x</em></span>, and receives a message on the <span class="math inline"><em>x</em></span> queue to add it to another chunk <span class="math inline"><em>y</em></span>; if it didn’t have the chunk <span class="math inline"><em>y</em></span>, it may post a message on the <span class="math inline"><em>y</em></span> queue, requesting it. It is likely that the semantics are more general, and the initial message of operation actually won’t specify which chunk to add to <span class="math inline"><em>x</em></span>, giving it a more general request of addition between distributed objects, and the node will have to determine for itself which chunks to pull to it, if any.</p>
+<p>A very simple example is given by lsts. <a href="#lst:msg-q-master">1</a>, <a href="#lst:msg-q-worker">2</a>, demonstrating the master and worker node routines respectively.</p>
+<div id="lst:msg-q-master" class="listing R">
+<p>Listing 1: Message queue master node</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rediscc)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>REDIS_HOST <span class="ot">&lt;-</span> <span class="st">&quot;localhost&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>REDIS_PORT <span class="ot">&lt;-</span> 6379L</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>QUEUE <span class="ot">&lt;-</span> <span class="st">&quot;chunk&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>MSG <span class="ot">&lt;-</span> <span class="fu">quote</span>({ chunk <span class="sc">+</span> <span class="dv">1</span>})</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    rsc <span class="ot">&lt;-</span> <span class="fu">redis.connect</span>(REDIS_HOST, REDIS_PORT)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">writeMsg</span>(MSG, <span class="at">to=</span>QUEUE, <span class="at">conn=</span>rsc)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>writeMsg <span class="ot">&lt;-</span> <span class="cf">function</span>(msg, to, conn) {</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">rawToChar</span>(<span class="fu">serialize</span>(msg, <span class="cn">NULL</span>, T))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">redis.push</span>(conn, to, serializedMsg)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<div id="lst:msg-q-worker" class="listing R">
+<p>Listing 2: Message queue worker node</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rediscc)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>REDIS_HOST <span class="ot">&lt;-</span> <span class="st">&quot;LOCALHOST&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>REDIS_PORT <span class="ot">&lt;-</span> 6379L</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>QUEUE <span class="ot">&lt;-</span> <span class="st">&quot;chunk&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>chunk <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">10</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    rsc <span class="ot">&lt;-</span> <span class="fu">redis.connect</span>(REDIS_HOST, REDIS_PORT)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="cn">TRUE</span>) {</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        msg <span class="ot">&lt;-</span> <span class="fu">readMessage</span>(QUEUE, <span class="at">conn=</span>rsc)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">print</span>(<span class="fu">eval</span>(msg))</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>readMessage <span class="ot">&lt;-</span> <span class="cf">function</span>(queues, conn) {</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    serializedMsg <span class="ot">&lt;-</span> <span class="fu">redis.pop</span>(conn, queues, <span class="at">timeout=</span><span class="cn">Inf</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unserialize</span>(<span class="fu">charToRaw</span>(serializedMsg))</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">main</span>()</span></code></pre></div>
+</div>
+<p>The master simply pushes serialised calls to the appropriate queue, and the worker loops reading messages from it’s particular queue(s), unserialising and evaluating any messages. The master node and the worker node can be initialised in any order and with any time difference, demonstrating the asynchrony. In this particular example, the master puts out a call to add the number 1 to a predefined chunk named “chunk”, with the worker executing the call as expected. The master doesn’t have to have any knowledge about where the chunk exists, and the worker likewise doesn’t necessarily require information on where the message originated from.</p>
+<p>With relation to the queues, the aggregate functionality of nodes in a cluster, can be considered distinctly to the functionality of a singular node. The cluster must have some means of initialising the queues to listen to for the individual nodes, for the reading in of an external dataset. The process of operating based on queues is straightforward at the outset, but requires considerable thought on the representation and existence of objects other than the referent object of a queue when the queues operations require those other objects.</p>
+<p>The issue of data movement also requires consideration; while this is largely an implementation-specific issue, it has a strong bearing on conceptual architecture. These three considerations mirror the state machine concept at an aggregate level, with resultant decisions affecting the architecture at large.</p>
+<h1 data-number="3" id="plausible-extensions"><span class="header-section-number">3</span> Plausible Extensions</h1>
+<p>While the use of message queues looks to ease many significant issues, there are additional problems that it require addressing, primarily resulting from the asynchrony and decentralisation.</p>
+<p>Most pressingly, the issue of deadlock, in the context of data movement; in the process of nodes requesting and transferring data, a deadlock is almost certain to occur if not dealt with. This specific instance may be helped through careful implementation and more processing on the initiator node (bringing it closer to a master node), but a possibly superior extension is to have queue-adjacent servers on each node that are able to operate concurrently with the main R session that has as it’s sole purpose the transfer of chunks, leaving everything else to the main R session. These servers would also be ideal vertices at which to implement data-duplication as a feature enabling redundancy in the system</p>
+<p>In a similar vein, failure detection can be implemented through a concurrent “heartbeat” server, in the same manner as Hadoop <span class="citation" data-cites="white2012hadoop"><a href="#ref-white2012hadoop" role="doc-biblioref">[10]</a></span>.</p>
+<p>These extensions are worth bearing in mind for now, however the considerations brought up in the prior section need to be answered first.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-curry2004message" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">E. Curry, <span>“Message-oriented middleware,”</span> <em>Middleware for communications</em>, pp. 1–28, 2004.</div>
+</div>
+<div id="ref-hildebrand1992qnx" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">D. Hildebrand, <span>“An architectural overview of <span>QNX.</span>”</span> in <em>USENIX workshop on microkernels and other kernel architectures</em>, 1992, pp. 113–126.</div>
+</div>
+<div id="ref-nolan2011flickr" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">N. Walker and N. Caudill, <span>“Real-time updates on the cheap for fun and profit,”</span> Oct. 2011.</div>
+</div>
+<div id="ref-montrose2016stack" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">K. Montrose, <span>“Does stack exchange use caching and if so, how?”</span> Meta Stack Exchange, Aug. 2016.</div>
+</div>
+<div id="ref-sanfilippo2009redis" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">S. Sanfilippo and P. Noordhuis, <span>“Redis.”</span> 2009.</div>
+</div>
+<div id="ref-urbanek2020rediscc" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">S. Urbanek, <em>Rediscc: <span>Redis</span> client</em>. 2020.</div>
+</div>
+<div id="ref-snyder2011activemq" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">B. Snyder, D. Bosnanac, and R. Davies, <em>ActiveMQ in action</em>, vol. 47. Manning Greenwich Conn., 2011.</div>
+</div>
+<div id="ref-garg2013kafka" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">N. Garg, <em>Apache kafka</em>. Packt Publishing Ltd, 2013.</div>
+</div>
+<div id="ref-sanfilippo2016disque" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">S. Sanfilippo, <span>“Disque.”</span> 2016.</div>
+</div>
+<div id="ref-white2012hadoop" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">T. White, <em>Hadoop: <span>The</span> definitive guide</em>. " O’Reilly Media, Inc.", 2012.</div>
+</div>
+</div>
+</body>
+</html>
