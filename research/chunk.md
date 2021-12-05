@@ -15,14 +15,14 @@ The provenance of the concept can be found in many programs operating with distr
 
 # Interface {#sec:int}
 
-The chunk as a type has at minimum two operations for its interface: `data()`, and `do()`, as shown in [@tbl:chunk].
-These correspond to access and execution on an abstract chunk, where `data()` returns the underlying data encapsulated by the chunk, and `do()` takes a function and a variable number of chunk arguments, returning a chunk representing the result.
-`do()` and `data()` are intimately cohered, in that the `data()` function must be called at some point to access the underlying data for the actual calling of whatever function is given to the `do()` function, and the result of the `do()` operation can be accessed only through `data()`.
+The chunk as a type has at minimum two operations for its interface: `data()`{.R}, and `do()`{.R}, as shown in [@tbl:chunk].
+These correspond to access and execution on an abstract chunk, where `data()`{.R} returns the underlying data encapsulated by the chunk, and `do()`{.R} takes a function and a variable number of chunk arguments, returning a chunk representing the result.
+`do()`{.R} and `data()`{.R} are intimately cohered, in that the `data()`{.R} function must be called at some point to access the underlying data for the actual calling of whatever function is given to the `do()`{.R} function, and the result of the `do()`{.R} operation can be accessed only through `data()`{.R}.
 
-Responsibility      Operation                 Return Type
---------------      ---------                 -----------
-Data access         `data(chunk)`             `<data>`
-Execution on Data   `do(function, ...chunk)`  `<chunk>`
+Responsibility      Operation                     Return Type
+--------------      ---------                     -----------
+Data access         `data(chunk)`{.R}             `<data>`
+Execution on Data   `do(function, ...chunk)`{.R}  `<chunk>`
 
 Table: Interface for the chunk type {#tbl:chunk}
 
@@ -30,8 +30,8 @@ Table: Interface for the chunk type {#tbl:chunk}
 
 The implementation of such an interface strongly depends on the fact that the data underlying a chunk may be in one of several different states.
 
-Most notably, an instance of a `chunk` may be returned by `do()`, whose underlying data may still be computed either concurrently, or at some point in the future; the limitation of present data availability has purposely not been placed, in order that concurrent operation scheduling may be dynamic.
-With this in mind, the chunk will adopt different behaviours internally depending on the status of the data; for example, data that is still being computed will not allow immediate access via `data()`, and may require communications set up in order to be transferred, while fixed and pre-computed data may be immediately accessible or even cached locally.
+Most notably, an instance of a `chunk` may be returned by `do()`{.R}, whose underlying data may still be computed either concurrently, or at some point in the future; the limitation of present data availability has purposely not been placed, in order that concurrent operation scheduling may be dynamic.
+With this in mind, the chunk will adopt different behaviours internally depending on the status of the data; for example, data that is still being computed will not allow immediate access via `data()`{.R}, and may require communications set up in order to be transferred, while fixed and pre-computed data may be immediately accessible or even cached locally.
 
 A simple subclassed form of this particular implementation is given in [@fig:chunk1].
 
@@ -65,8 +65,8 @@ The notion of a *composite chunk* is therefore introduced, in order to capture t
 This is equivalent in many respects to the *distributed object* as used in earlier prototypes, but serves a far more general role.
 
 A composite chunk is a special type of chunk that possesses an ordered list of children, and can therefore be recursively composed in a tree structure.
-Methods for combination of children, which either overrides the `data()` method or is delegated thereto, would be required.
-It is conceivable that the same could be required of the `do()` method, where different representations of chunk composition would alter standard requested functions.
+Methods for combination of children, which either overrides the `data()`{.R} method or is delegated thereto, would be required.
+It is conceivable that the same could be required of the `do()`{.R} method, where different representations of chunk composition would alter standard requested functions.
 Example variations of composite chunks include row-block matrices, column-block matrices, ordered lists, unordered lists (sets), etc.
 The implementation of a new composite chunk can involve the creation of a new subclass of composite chunk, and perhaps some subclass variation of an atomic chunk.
 

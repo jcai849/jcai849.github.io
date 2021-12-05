@@ -1,0 +1,11 @@
+digraph G {
+Data_Identifier_546740  ->  Computation_Identifier_686206 ;
+Computation_Identifier_686206  ->  Data_Identifier_187927 ;
+Data_Identifier_187927  ->  Computation_Identifier_891278 ;
+Computation_Identifier_891278  ->  Data_Identifier_452060 ;
+Data_Identifier_452060  ->  Computation_Identifier_740676 ;
+Computation_Identifier_740676  ->  " formula " ;
+Computation_Identifier_740676  ->  Data_Identifier_543373 ;
+Data_Identifier_543373  ->  Computation_Identifier_218822 ;
+Computation_Identifier_218822  ->  " character " ;
+}

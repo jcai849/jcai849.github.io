@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2021-09-20" />
+  <title>Self-healing Data in Largerscale</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Self-healing Data in Largerscale</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2021-09-20</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p><a href="https://github.com/jcai849/largerscale/blob/b3bd66fd42f2d4b984026c280298dc8e7c943492/demo/recover.Rmd">This demonstration</a> continues on from the previous <a href="general.html">general</a> demonstration. Here, self-healing of missing data is performed</p>
+<h2 data-number="1.1" id="remote-machine"><span class="header-section-number">1.1</span> REMOTE MACHINE</h2>
+<p>From the previous demonstration, a remote dataframe was initially generated. From this dataframe and a formula, a linear model was fit. A summary was derived from the linear model, and from the summary, coefficients were extracted. The variables made use of were <code class="sourceCode r">cdata</code>, <code class="sourceCode r">sdata</code>, <code class="sourceCode r">lmdata</code>, and <code class="sourceCode r">dfdata</code>. <code class="sourceCode r">cfdata</code> depended on <code class="sourceCode r">sdata</code>, which depended on <code class="sourceCode r">lmdata</code>, depending on <code class="sourceCode r">dfdata</code> in turn. Let’s remove the fixed value for <code class="sourceCode r">cdata</code>, which is equivalent to removing the machine storing <code class="sourceCode r">cdata</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">computationqueue</span>()</span></code></pre></div>
+<pre><code>    ## Queue: 0 Elements</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datapool</span>()</span></code></pre></div>
+<pre><code>    ## Pool: 16 Items</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unstore</span>(cdata)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datapool</span>()</span></code></pre></div>
+<pre><code>    ## Pool: 15 Items</code></pre>
+<h2 data-number="1.2" id="local-machine"><span class="header-section-number">1.2</span> LOCAL MACHINE</h2>
+<p>Upon <code class="sourceCode r">cdata</code> being removed, an error is thrown if access is attempted, and a recovery signal is sent.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tryCatch</span>(<span class="fu">value</span>(cdata), <span class="at">error=</span>identity)</span></code></pre></div>
+<pre><code>    ## &lt;simpleError in value.data(cdata): Data lost. Recovering...&gt;</code></pre>
+<h2 data-number="1.3" id="remote-machine-1"><span class="header-section-number">1.3</span> REMOTE MACHINE</h2>
+<p>A remote machine storing the computation resulting in <code class="sourceCode r">cdata</code> performs the recovery.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str</span>(<span class="fu">computationqueue</span>())</span></code></pre></div>
+<pre><code>    ## Queue: 1 Elements 
+    ## [ Back to Front ]
+    ##  $ :Computation:
+    ## Identifier: Identifier:  139053  
+    ## Input:   List of 1
+    ##    $ :Computation:
+    ##   Identifier: Identifier:  722666  
+    ##   Input:   List of 1
+    ##      $ :Data:
+    ##     Identifier: Identifier:  876653  
+    ##     Computation Identifier: Identifier:  365220  
+    ##   Value: function (object, ...)   
+    ##   Output: Identifier:  995977  
+    ## Value: function (x, ...)   
+    ## Output:  NULL</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">do</span>(<span class="fu">receive</span>())</span></code></pre></div>
+<pre><code>    ##                  Estimate   Std. Error       t value     Pr(&gt;|t|)
+    ## (Intercept) -5.684342e-14 5.598352e-15 -1.015360e+01 5.618494e-17
+    ## x            1.000000e+00 9.624477e-17  1.039018e+16 0.000000e+00</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">computationqueue</span>()</span></code></pre></div>
+<pre><code>    ## Queue: 0 Elements</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datapool</span>()</span></code></pre></div>
+<pre><code>    ## Pool: 17 Items</code></pre>
+<h2 data-number="1.4" id="local-machine-1"><span class="header-section-number">1.4</span> LOCAL MACHINE</h2>
+<p>And <code class="sourceCode r">cdata</code> is now accessible again.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tryCatch</span>(<span class="fu">value</span>(cdata), <span class="at">error=</span>identity)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="do">##                  Estimate   Std. Error       t value     Pr(&gt;|t|)</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="do">## (Intercept) -5.684342e-14 5.598352e-15 -1.015360e+01 5.618494e-17</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="do">## x            1.000000e+00 9.624477e-17  1.039018e+16 0.000000e+00</span></span></code></pre></div>
+<h2 data-number="1.5" id="remote-machine-2"><span class="header-section-number">1.5</span> REMOTE MACHINE</h2>
+<p>If the entire chain of dependencies is deleted, recovery is still possible, as long as there is some self-sufficient computation, equivalent to checkpointing. Here, the initial computation leading to <code class="sourceCode r">dfdata</code> has no dependencies, so it is able to regenerate <code class="sourceCode r">dfdata</code> as well as the chain.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unstore</span>(cdata)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unstore</span>(sdata)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unstore</span>(lmdata)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unstore</span>(dfdata)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datapool</span>()</span></code></pre></div>
+<pre><code>    ## Pool: 13 Items</code></pre>
+<h2 data-number="1.6" id="local-machine-2"><span class="header-section-number">1.6</span> LOCAL MACHINE</h2>
+<p>An error occurs if trying to access the now-deleted data</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tryCatch</span>(<span class="fu">value</span>(cdata), <span class="at">error=</span>identity)</span></code></pre></div>
+<pre><code>    ## &lt;simpleError in value.data(cdata): Data lost. Recovering...&gt;</code></pre>
+<h2 data-number="1.7" id="remote-machine-3"><span class="header-section-number">1.7</span> REMOTE MACHINE</h2>
+<p>And the regeneration process takes place, making use of continuations to return control in the case of missing dependencies. Note that the choice of queue as data structure is exceedingly inefficient; a stack will be used in place next week, with only <em>O</em>(<em>n</em>) operations required for recovery.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(<span class="sc">!</span><span class="fu">is.null</span>(r <span class="ot">&lt;-</span> <span class="fu">receive</span>())) {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">print</span>(<span class="fu">computationqueue</span>())</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>            <span class="fu">callCC</span>(<span class="cf">function</span>(k) <span class="fu">do</span>(r, k))</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre></div>
+<pre><code>    ## Queue: 0 Elements 
+    ## Queue: 1 Elements 
+    ## Queue: 2 Elements 
+    ## Queue: 3 Elements 
+    ## Queue: 4 Elements 
+    ## Queue: 5 Elements 
+    ## Queue: 6 Elements 
+    ## Queue: 7 Elements 
+    ## Queue: 6 Elements 
+    ## Queue: 5 Elements 
+    ## Queue: 4 Elements 
+    ## Queue: 3 Elements 
+    ## Queue: 2 Elements 
+    ## Queue: 1 Elements 
+    ## Queue: 0 Elements</code></pre>
+<h2 data-number="1.8" id="local-machine-3"><span class="header-section-number">1.8</span> LOCAL MACHINE</h2>
+<p>After recovery, the value is available again.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tryCatch</span>(<span class="fu">value</span>(cdata), <span class="at">error=</span>identity)</span></code></pre></div>
+<pre><code>    ##                  Estimate   Std. Error       t value     Pr(&gt;|t|)
+    ## (Intercept) -5.684342e-14 5.598352e-15 -1.015360e+01 5.618494e-17
+    ## x            1.000000e+00 9.624477e-17  1.039018e+16 0.000000e+00</code></pre>
+</body>
+</html>
