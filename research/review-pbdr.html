@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-04-17" />
+  <title>A Review of pbdR</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">A Review of pbdR</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-04-17</p>
+</header>
+<h1 data-number="1" id="sec:pbdr"><span class="header-section-number">1</span> Introduction</h1>
+<p>pbdR is a collection of packages allowing for distributed computing with R<span class="citation" data-cites="pbdBASEpackage"><a href="#ref-pbdBASEpackage" role="doc-biblioref">[1]</a></span>. The name is an acronym for the collection’s purpose; Programming with Big Data in R. It is introduced on it’s main page with the following description:</p>
+<blockquote>
+<p>The “Programming with Big Data in R” project (pbdR) is a set of highly scalable R packages for distributed computing and profiling in data science. &gt; Our packages include high performance, high-level interfaces to MPI, ZeroMQ, ScaLAPACK, NetCDF4, PAPI, and more. While these libraries shine brightest on large distributed systems, they also work rather well on small clusters and usually, surprisingly, even on a laptop with only two cores. &gt; Winner of the Oak Ridge National Laboratory 2016 Significant Event Award for “Harnessing HPC Capability at OLCF with the R Language for Deep Data Science.” OLCF is the Oak Ridge Leadership Computing Facility, which currently includes Summit, the most powerful computer system in the world.<span class="citation" data-cites="pbdR2012"><a href="#ref-pbdR2012" role="doc-biblioref">[2]</a></span></p>
+</blockquote>
+<h1 data-number="2" id="interface-and-backend"><span class="header-section-number">2</span> Interface and Backend</h1>
+<p>The project seeks especially to serve minimal wrappers around the BLAS and LAPACK libraries along with their distributed derivatives, with the intention of introducing as little overhead as possible. Standard R also uses routines from the library for most matrix operations, but suffers from numerous inefficiencies relating to the structure of the language; for example, copies of all objects being manipulated will be typically be created, often having devastating performance aspects unless specific functions are used for linear algebra operations, as discussed in <span class="citation" data-cites="schmidt2017programming"><a href="#ref-schmidt2017programming" role="doc-biblioref">[3]</a></span> (e.g., <code class="sourceCode r"><span class="fu">crossprod</span>(X)</code> instead of <code class="sourceCode r"><span class="fu">t</span>(X) <span class="sc">%*%</span> X</code>)</p>
+<p>Distributed linear algebra operations in pbdR depend further on the ScaLAPACK library, which can be provided through the pbdSLAP package <span class="citation" data-cites="Chen2012pbdSLAPpackage"><a href="#ref-Chen2012pbdSLAPpackage" role="doc-biblioref">[4]</a></span>.</p>
+<p>The principal interface for direct distributed computations is the pbdMPI package, which presents a simplified API to MPI through R <span class="citation" data-cites="Chen2012pbdMPIpackage"><a href="#ref-Chen2012pbdMPIpackage" role="doc-biblioref">[5]</a></span>. All major MPI libraries are supported, but the project tends to make use of openMPI in explanatory documentation. A very important consideration that isn’t immediately clear is that pbdMPI can only be used in batch mode through MPI, rather than any interactive option as in Rmpi <span class="citation" data-cites="yu02:_rmpi"><a href="#ref-yu02:_rmpi" role="doc-biblioref">[6]</a></span>.</p>
+<p>The actual manipulation of distributed matrices is enabled through the pbdDMAT package, which offers S4 classes encapsulating distributed matrices <span class="citation" data-cites="pbdDMATpackage"><a href="#ref-pbdDMATpackage" role="doc-biblioref">[7]</a></span>. These are specialised for dense matrices through the <code class="sourceCode r">ddmatrix</code> class, though the project offers some support for other matrices. The <code class="sourceCode r">ddmatrix</code> class has nearly all of the standard matrix generics implemented for it, with nearly identical syntax for all.</p>
+<h1 data-number="3" id="package-interaction"><span class="header-section-number">3</span> Package Interaction</h1>
+<p>The packages can be made to interact directly, for example with pbdDMAT constructing and performing basic manipulations on distributed matrices, and pbdMPI being used to perform further fine-tuned processing through communicating results across nodes manually, taking advantage of the persistence of objects at nodes through MPI.</p>
+<h1 data-number="4" id="pbdr-in-practice"><span class="header-section-number">4</span> pbdR in Practice</h1>
+<p>The package is geared heavily towards matrix operations in a statistical programming language, so a test of it’s capabilities would quite reasonably involve statistical linear algebra. An example non-trivial routine is that of generating data, to test randomisation capability, then fitting a generalised linear model to the data through iteratively reweighted least squares. In this way, not only are the basic algebraic qualities considered, but communication over iteration on distributed objects is tested.</p>
+<p>To work comparatively, a simple working local-only version of the algorithm is produced in lst. <a href="#lst:local-rwls">1</a>.</p>
+<div id="lst:local-rwls" class="listing R">
+<p>Listing 1: Local GLM with RWLS</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the data</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>x0 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, n)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(x0, x1)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span> X <span class="sc">%*%</span> B))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, p)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Base comparison</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">#glm(y ~ x1, family = &quot;binomial&quot;)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># RWLS as Newton-Raphson for GLM (logistic regression here)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>logReg <span class="ot">&lt;-</span> <span class="cf">function</span>(X, y, <span class="at">maxIter=</span><span class="dv">80</span>, <span class="at">tolerance=</span><span class="fl">0.01</span>){</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    pr <span class="ot">&lt;-</span> <span class="cf">function</span>(X, B){</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>X  <span class="sc">%*%</span> B))</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="do">##</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    weights <span class="ot">&lt;-</span> <span class="cf">function</span>(X, B, y){</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="fu">diag</span>(<span class="fu">as.vector</span>(<span class="fu">pr</span>(X, B)))</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="do">##</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    oldB <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="cn">Inf</span>,<span class="cn">Inf</span>))</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    newB <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    nIter <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">colSums</span>((newB <span class="sc">-</span> oldB)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">&gt;</span> tolerance <span class="sc">&amp;&amp;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>           nIter <span class="sc">&lt;</span> maxIter) {</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        oldB <span class="ot">&lt;-</span> newB</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="do">## N-R as RWLS</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        W <span class="ot">&lt;-</span> <span class="fu">weights</span>(X, oldB, y)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        hessian <span class="ot">&lt;-</span> <span class="sc">-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> W <span class="sc">%*%</span> X</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>        z <span class="ot">&lt;-</span> X <span class="sc">%*%</span> oldB <span class="sc">+</span> <span class="fu">solve</span>(W) <span class="sc">%*%</span> (y <span class="sc">-</span> <span class="fu">pr</span>(X, oldB))</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        newB <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="sc">-</span>hessian) <span class="sc">%*%</span> <span class="fu">crossprod</span>(X, W <span class="sc">%*%</span> z)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="do">##</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        nIter <span class="ot">&lt;-</span> nIter <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>    newB</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">logReg</span>(X, y, <span class="at">tolerance=</span><span class="fl">1E-6</span>, <span class="at">maxIter=</span><span class="dv">100</span>))</span></code></pre></div>
+</div>
+<p>It outputs a <span class="math inline"><em>β̂</em></span> matrix after several seconds of computation.</p>
+<p>Were pbdDMAT to function transparently as regular matrices, as the package README implies, then all that would be required to convert a local algorithm to distributed would be to prefix a <code>dd</code> to every <code class="sourceCode r"><span class="fu">matrix</span>()</code> call, and bracket the program with a template as per lst. <a href="#lst:bracket">2</a>.</p>
+<div id="lst:bracket" class="listing R">
+<p>Listing 2: Idealised Common Wrap for Local to Distributed Matrices</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">suppressMessages</span>(<span class="fu">library</span>(pbdDMAT))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init.grid</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># program code with `dd` prefixed to every `matrix` call</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">finalize</span>()</span></code></pre></div>
+</div>
+<p>This is the form of transparency offered by packages such as <em>parallel</em>, <em>foreach</em>, or <em>sparklyr</em> in relation to dplyr. The program would then be written to disk, then executed, for example with the following:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mpirun</span> <span class="at">-np</span> <span class="op">&lt;</span># of cores<span class="op">&gt;</span> Rscript <span class="op">&lt;</span>script name<span class="op">&gt;</span></span></code></pre></div>
+<p>The program halts however, as forms of matrix creation other than through explicit <code class="sourceCode r"><span class="fu">matrix</span>()</code> calls are not necessarily picked up by that process; <code class="sourceCode r">cbind</code> requires a second formation of a <code class="sourceCode r">ddmatrix</code>. The first issue comes when performing conditional evaluation; predicates involving distributed matrices are themselves distributed matrices, and can’t be mixed in logical evaluation with local predicates.</p>
+<p>Turning local predicates to distributed matrices, then converting them all back to a local matrix for the loop to understand, finally results in a program run, however the results are still not accurate. This is due to <code class="sourceCode r"><span class="fu">diag</span>()<span class="ot">&lt;-</span></code> assignment not having been implemented, so several further changes are necessary, including specifying return type of the diag matrix as a replacement. The final working code of pbdDMAT GLM through RWLS is given in lst. <a href="#lst:dmat">3</a>, with the code diff given in lst. <a href="#lst:diff">4</a>. Execution time was longer for the pbdR code on a dual-core laptop, however it is likely faster over a cluster.</p>
+<div id="lst:dmat" class="listing R">
+<p>Listing 3: pbdDMAT GLM with RWLS</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">suppressMessages</span>(<span class="fu">library</span>(pbdDMAT))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init.grid</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1234</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate the data</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">ddmatrix</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>x0 <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, n)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.ddmatrix</span>(<span class="fu">cbind</span>(x0, x1))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span> X <span class="sc">%*%</span> B))</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">ddmatrix</span>(<span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fu">as.vector</span>(p)))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Base comparison</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#glm(y ~ x1, family = &quot;binomial&quot;)</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># RWLS as Newton-Raphson for GLM (logistic regression here)</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>logReg <span class="ot">&lt;-</span> <span class="cf">function</span>(X, y, <span class="at">maxIter=</span><span class="dv">80</span>, <span class="at">tolerance=</span><span class="fl">0.01</span>){</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    pr <span class="ot">&lt;-</span> <span class="cf">function</span>(X, B){</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>X  <span class="sc">%*%</span> B))</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="do">##</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    weights <span class="ot">&lt;-</span> <span class="cf">function</span>(X, B, y){</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        <span class="fu">diag</span>(<span class="fu">as.vector</span>(<span class="fu">pr</span>(X, B)), <span class="at">type=</span><span class="st">&quot;ddmatrix&quot;</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="do">##</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    oldB <span class="ot">&lt;-</span> <span class="fu">ddmatrix</span>(<span class="fu">c</span>(<span class="cn">Inf</span>,<span class="cn">Inf</span>))</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    newB <span class="ot">&lt;-</span> <span class="fu">ddmatrix</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    nIter <span class="ot">&lt;-</span> <span class="fu">ddmatrix</span>(<span class="dv">0</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    maxIter <span class="ot">&lt;-</span> <span class="fu">as.ddmatrix</span>(maxIter)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">as.matrix</span>(<span class="fu">colSums</span>((newB <span class="sc">-</span> oldB)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">&gt;</span> tolerance <span class="sc">&amp;</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>           nIter <span class="sc">&lt;</span> maxIter)) {</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        oldB <span class="ot">&lt;-</span> newB</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="do">## N-R as RWLS</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        W <span class="ot">&lt;-</span> <span class="fu">weights</span>(X, oldB, y)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>        hessian <span class="ot">&lt;-</span> <span class="sc">-</span> <span class="fu">t</span>(X) <span class="sc">%*%</span> W <span class="sc">%*%</span> X</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>        z <span class="ot">&lt;-</span> X <span class="sc">%*%</span> oldB <span class="sc">+</span> <span class="fu">solve</span>(W) <span class="sc">%*%</span> (y <span class="sc">-</span> <span class="fu">pr</span>(X, oldB))</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>        newB <span class="ot">&lt;-</span> <span class="fu">solve</span>(<span class="sc">-</span>hessian) <span class="sc">%*%</span> <span class="fu">crossprod</span>(X, W <span class="sc">%*%</span> z)</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="do">##</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>        nIter <span class="ot">&lt;-</span> nIter <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    newB</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">logReg</span>(X, y, <span class="at">tolerance=</span><span class="fl">1E-6</span>, <span class="at">maxIter=</span><span class="dv">100</span>))</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="fu">finalize</span>()</span></code></pre></div>
+</div>
+<div id="lst:diff" class="listing diff">
+<p>Listing 4: Diff between local and pbdR code</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">0a1,3</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; suppressMessages(library(pbdDMAT))</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; init.grid()</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; </span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">5c8</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="st">&lt; B &lt;- matrix(c(1,3))</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="kw">---</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; B &lt;- ddmatrix(c(1,3))</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="dt">8c11</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="st">&lt; X &lt;- cbind(x0, x1)</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="kw">---</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; X &lt;- as.ddmatrix(cbind(x0, x1))</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="dt">10c13</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="st">&lt; y &lt;- rbinom(n, 1, p)</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="kw">---</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; y &lt;- ddmatrix(rbinom(n, 1, as.vector(p)))</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="dt">23c26</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;       diag(as.vector(pr(X, B)))</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="kw">---</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;       diag(as.vector(pr(X, B)), type=&quot;ddmatrix&quot;)</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="dt">26,30c29,34</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;   oldB &lt;- matrix(c(Inf,Inf))</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;   newB &lt;- matrix(c(0, 0))</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;   nIter &lt;- 0</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;   while (colSums((newB - oldB)^2) &gt; tolerance &amp;&amp;</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="st">&lt;          nIter &lt; maxIter) {</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="kw">---</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;   oldB &lt;- ddmatrix(c(Inf,Inf))</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;   newB &lt;- ddmatrix(c(0, 0))</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;   nIter &lt;- ddmatrix(0)</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;   maxIter &lt;- as.ddmatrix(maxIter)</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;   while (as.matrix(colSums((newB - oldB)^2) &gt; tolerance &amp;</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="va">&gt;          nIter &lt; maxIter)) {</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="dt">43a48,49</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; </span></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="va">&gt; finalize()</span></span></code></pre></div>
+</div>
+<p>It is worth noting that options for optimisation and tuning are far more extensive than those utilised in this example, including the capacity to set grid parameters, blocking factors, and BLACS contexts, among others.</p>
+<h1 data-number="5" id="setup"><span class="header-section-number">5</span> Setup</h1>
+<p>The setup for pbdR is simple, being no more than a CRAN installation, but a well tuned environment, which is the main purpose for using the package in the first place, requires BLAS, LAPACK and derivatives, a parallel file system with data in an appropriate format such as HDF5, and a standard MPI library. Much of the pain of setup is ameliorated with a docker container, provided by the project.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-pbdBASEpackage" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">D. Schmidt, W.-C. Chen, S. L. de la Chapelle, G. Ostrouchov, and P. Patel, <span>“<span class="nocase">pbdBASE</span>: <span class="nocase">pbdR</span> base wrappers for distributed matrices.”</span> 2020.</div>
+</div>
+<div id="ref-pbdR2012" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">G. Ostrouchov, W.-C. Chen, D. Schmidt, and P. Patel, <span>“Programming with big data in r.”</span> 2012.</div>
+</div>
+<div id="ref-schmidt2017programming" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">D. Schmidt, W.-C. Chen, M. A. Matheson, and G. Ostrouchov, <span>“Programming with <span>BIG</span> data in r: <span>Scaling</span> analytics from one to thousands of nodes,”</span> <em>Big Data Research</em>, vol. 8, pp. 1–11, 2017.</div>
+</div>
+<div id="ref-Chen2012pbdSLAPpackage" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">W.-C. Chen, D. Schmidt, G. Ostrouchov, and P. Patel, <span>“<span class="nocase">pbdSLAP</span>: <span>Programming</span> with big data – scalable linear algebra packages.”</span> 2012.</div>
+</div>
+<div id="ref-Chen2012pbdMPIpackage" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">W.-C. Chen, G. Ostrouchov, D. Schmidt, P. Patel, and H. Yu, <span>“<span class="nocase">pbdMPI</span>: <span>Programming</span> with big data – interface to <span>MPI</span>.”</span> 2012.</div>
+</div>
+<div id="ref-yu02:_rmpi" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">H. Yu, <span>“Rmpi: <span>Parallel</span> statistical computing in r,”</span> <em>R News</em>, vol. 2, no. 2, pp. 10–14, 2002.</div>
+</div>
+<div id="ref-pbdDMATpackage" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">D. Schmidt, W.-C. Chen, S. L. de la Chapelle, G. Ostrouchov, and P. Patel, <span>“<span class="nocase">pbdDMAT</span>: <span class="nocase">pbdR</span> distributed matrix methods.”</span> 2020.</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-05-14" />
+  <title>A Review of Iteration with sparklyr</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">A Review of Iteration with sparklyr</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-05-14</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Given that iteration is cited by a principal author of Spark as a motivating factor in it’s development when compared to Hadoop, it is reasonable to consider whether the most popular R interface to Spark, sparklyr, has support for iteration<span class="citation" data-cites="zaharia2010spark luraschi20"><a href="#ref-zaharia2010spark" role="doc-biblioref">[1]</a>, <a href="#ref-luraschi20" role="doc-biblioref">[2]</a></span>. One immediate hesitation to the suitability of sparklyr to iteration is the syntactic rooting in dplyr; dplyr is a “Grammar of Data Manipulation” and part of the tidyverse, which in turn is an ecosystem of packages with a shared philosophy<span class="citation" data-cites="wickham2019welcome wickham2016r"><a href="#ref-wickham2019welcome" role="doc-biblioref">[3]</a>, <a href="#ref-wickham2016r" role="doc-biblioref">[4]</a></span>. The promoted paradigm is functional in nature, with iteration using for loops in R being described as “not as important” as in other languages; map functions from the tidyverse purrr package are instead promoted as providing greater abstraction and taking much less time to solve iteration problems. Maps do provide a simple abstraction for function application over elements in a collection, similar to internal iterators, however they offer no control over the form of traversal, and most importantly, lack mutable state between iterations that standard loops or generators allow<span class="citation" data-cites="cousineau1998functional"><a href="#ref-cousineau1998functional" role="doc-biblioref">[5]</a></span>. A common functional strategy for handling a changing state is to make use of recursion, with tail-recursive functions specifically referred to as a form of iteration in <span class="citation" data-cites="abelson1996structure"><a href="#ref-abelson1996structure" role="doc-biblioref">[6]</a></span>. Reliance on recursion for iteration is naively non-optimal in R however, as it lacks tail-call elimination and call stack optimisations<span class="citation" data-cites="rcore2020lang"><a href="#ref-rcore2020lang" role="doc-biblioref">[7]</a></span>; at present the elements for efficient, idiomatic functional iteration are not present in R, given that it is not as functional a language as the tidyverse philosophy considers it to be, and sparklyr’s attachment to the the ecosystem prevents a cohesive model of iteration until said elements are in place.</p>
+<h1 data-number="2" id="iteration"><span class="header-section-number">2</span> Iteration</h1>
+<p>Iteration takes place in Spark through caching results in memory, allowing faster access speed and decreased data movement than MapReduce<span class="citation" data-cites="zaharia2010spark"><a href="#ref-zaharia2010spark" role="doc-biblioref">[1]</a></span>. sparklyr can use this functionality through the <code class="sourceCode r"><span class="fu">tbl_cache</span>()</code> function to cache Spark dataframes in memory, as well as caching upon import with <code class="sourceCode r">memory<span class="ot">=</span><span class="cn">TRUE</span></code> as a formal parameter to <code class="sourceCode r"><span class="fu">sdf_copy_to</span>()</code>. Iteration can also make use of persisting Spark Dataframes to memory, forcing evaluation then caching; performed in sparklyr through <code class="sourceCode r"><span class="fu">sdf_persist</span>()</code>.</p>
+<p>The Babylonian method for calculating a square root is a simple iterative procedure, used here as an example. A standard form in R with non-optmimised initial value is given in listing lst. <a href="#lst:basicbab">1</a>.</p>
+<div id="lst:basicbab" class="listing R">
+<p>Listing 1: Simple Iteration with the Babylonian Method</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>basic_sqrt <span class="ot">&lt;-</span> <span class="cf">function</span>(S, <span class="at">frac_tolerance=</span><span class="fl">0.01</span>, <span class="at">initial=</span><span class="dv">1</span>){</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> initial</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(<span class="fu">abs</span>(x\<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> S)<span class="sc">/</span>S <span class="sc">&gt;</span> frac_tolerance){</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        x <span class="ot">&lt;-</span> (x <span class="sc">+</span> S<span class="sc">/</span>x)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    x</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<p>This iterative function is trivial, but translation to sparklyr is not entirely so.</p>
+<p>The first aspect that must be considered is that sparklyr works on Spark Data Frames; <code class="sourceCode r">x</code> and <code class="sourceCode r">S</code> must be copied to Spark with the aforementioned <code class="sourceCode r"><span class="fu">sdf_copy_to</span>()</code> function.</p>
+<p>The execution of the function in Spark is the next consideration, and sparklyr provides two means for this to occur; <code class="sourceCode r"><span class="fu">spark_apply</span>()</code> evaluates arbitrary R code over an entire data frame. The means of operation vary across Spark versions, ranging from launching and running RScripts in Spark 1.5.2, to Apache Arrow conversion in Spark 3.0.0. The evaluation strategy of 1.5.2 is unsuitable in this instance as it is excessive overhead to launch RScripts every iteration. The other form of evaluation is through using dplyr generics, which is what will be made use of in this example.</p>
+<p>An important aspect of consideration is that sparklyr methods for dplyr generics execute through a translation of the formal parameters to Spark SQL. This is particularly relevant in that separate Spark Data Frames can’t be accessed together as in a multivariable function. In addition, very R-specific functions such as those from the <code class="sourceCode r">stats</code> and <code class="sourceCode r">matrix</code> core libraries are not able to be evaluated, as there is no Spark SQL cognate for them. The SQL query generated by the methods can be accessed and “explained” through <code class="sourceCode r"><span class="fu">show_query</span>()</code> and <code class="sourceCode r"><span class="fu">explain</span>()</code> respectively; When attempting to combine two Spark Data Frames in a single query without joining them, <code class="sourceCode r"><span class="fu">show_query</span>()</code> reveals that the Data Frame that is referenced through the <code class="sourceCode r">.data</code> variable is translated, but the other Data Frame has it’s list representation passed through, which Spark SQL doesn’t have the capacity to parse; an example is given in listing lst. <a href="#lst:computer-no">3</a> (generated through listing lst. <a href="#lst:bad">2</a>), showing an attempt to create a new column from the difference between two seperate Data Frames</p>
+<div id="lst:bad" class="listing R">
+<p>Listing 2: Attempt in R to form new column from the difference between two separate Spark data frames `S`{.R} and `x`{.R}</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_query</span>(<span class="fu">mutate</span>(S, <span class="at">S =</span> S <span class="sc">-</span> x)</span></code></pre></div>
+</div>
+<div id="lst:computer-no" class="listing sql">
+<p>Listing 3: Spark SQL query generated from attempt to form the difference from two seperate data frames</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> `S` <span class="op">-</span> <span class="kw">list</span>(con <span class="op">=</span> <span class="kw">list</span>(<span class="kw">master</span> <span class="op">=</span> <span class="ot">&quot;yarn&quot;</span>, <span class="kw">method</span> <span class="op">=</span> <span class="ot">&quot;shell&quot;</span>, app_name <span class="op">=</span> <span class="ot">&quot;sparklyr&quot;</span>, config <span class="op">=</span> <span class="kw">list</span>(spark.env.SPARK_LOCAL_IP.<span class="kw">local</span> <span class="op">=</span> <span class="ot">&quot;127.0.0.1&quot;</span>, sparklyr.<span class="kw">connect</span>.csv.embedded <span class="op">=</span> <span class="ot">&quot;\^1.*&quot;</span>, spark.sql.legacy.utcTimestampFunc.enabled <span class="op">=</span> <span class="kw">TRUE</span>, sparklyr.<span class="kw">connect</span>.cores.<span class="kw">local</span> <span class="op">=</span> <span class="dv">4</span>, spark.sql.shuffle.<span class="kw">partitions</span>.<span class="kw">local</span> <span class="op">=</span> <span class="dv">4</span>), state <span class="op">=</span> <span class="op">&lt;</span>environment<span class="op">&gt;</span>, extensions <span class="op">=</span> <span class="kw">list</span>(jars <span class="op">=</span> <span class="dt">character</span>(<span class="dv">0</span>), <span class="kw">packages</span> <span class="op">=</span> <span class="dt">character</span>(<span class="dv">0</span>), initializers <span class="op">=</span> <span class="kw">list</span>(), catalog_jars <span class="op">=</span> <span class="dt">character</span>(<span class="dv">0</span>)), spark_home <span class="op">=</span> <span class="ot">&quot;/shared/spark-3.0.0-preview2-bin-hadoop3.2&quot;</span>, backend <span class="op">=</span> <span class="dv">4</span>,</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">monitoring</span> <span class="op">=</span> <span class="dv">5</span>, gateway <span class="op">=</span> <span class="dv">3</span>, output_file <span class="op">=</span> <span class="ot">&quot;/tmp/Rtmpbi2dqk/file44ec187daaf4_spark.log&quot;</span>, sessionId <span class="op">=</span> <span class="dv">58600</span>, home_version <span class="op">=</span> <span class="ot">&quot;3.0.0&quot;</span>)) <span class="kw">AS</span> `S1`, `S` <span class="op">-</span> <span class="kw">list</span>(x <span class="op">=</span> <span class="ot">&quot;x&quot;</span>, vars <span class="op">=</span> <span class="ot">&quot;initial&quot;</span>) <span class="kw">AS</span> `S2`</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> `S`</span></code></pre></div>
+</div>
+<p>Global variables that evaluate to SQL-friendly objects can be passed and are evaluated prior to translation. An example is given through listing lst. <a href="#lst:global-ok">4</a>, generated through listing lst. <a href="#lst:ok-generator">5</a>, where the difference between a variable holding a numeric and a Spark Data Frame is translated into the evaluation of the variable, transformed to a float for Spark SQL, and its difference with the Spark Data Frame, referenced directly.</p>
+<div id="lst:global-ok" class="listing sql">
+<p>Listing 4: Spark SQL query generated from attempt to form the difference between a data frame and a numeric</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> `S` <span class="op">-</span> <span class="fl">3.0</span> <span class="kw">AS</span> `S`</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> `S`</span></code></pre></div>
+</div>
+<div id="lst:ok-generator" class="listing R">
+<p>Listing 5: Capacity in sparklyr to form new column from the difference between a spark data frame and a numeric</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>S</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Source: spark&lt;S&gt; [?? x 1]</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">#      S</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#  &lt;dbl&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     9</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>x <span class="ot">=</span> <span class="dv">3</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(S, <span class="at">S =</span> S <span class="sc">-</span> x)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Source: spark&lt;?&gt; [?? x 1]</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#      S</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#  &lt;dbl&gt;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     6</span></span></code></pre></div>
+</div>
+<p>A reasonable approach to implementing a Babylonian method in sparklyr is then to combine <code class="sourceCode r">S</code> and <code class="sourceCode r">x</code> in one dataframe, and iterate within columns.</p>
+<div id="lst:sparklyr-bab" class="listing R">
+<p>Listing 6: Babylonian method implementation using sparklyr</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sparklyr)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>sc <span class="ot">&lt;-</span> <span class="fu">spark_connect</span>(<span class="at">master =</span> <span class="st">&quot;yarn&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>sparklyr_sqrt <span class="ot">&lt;-</span> <span class="cf">function</span>(S, sc, <span class="at">frac_tolerance=</span><span class="fl">0.01</span>, <span class="at">initial=</span><span class="dv">1</span>){</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        bab <span class="ot">=</span> <span class="fu">sdf_copy_to</span>(sc,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                          <span class="fu">data.frame</span>(<span class="at">x=</span>initial, <span class="at">S=</span>S, <span class="at">unfinished=</span><span class="cn">TRUE</span>),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                          <span class="st">&quot;bab&quot;</span>, <span class="at">memory =</span> <span class="cn">TRUE</span>, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(<span class="fu">any</span>(<span class="fu">collect</span>(bab)\<span class="sc">$</span>unfinished)){</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                <span class="fu">compute</span>(<span class="fu">mutate</span>(bab, <span class="at">x =</span> (x <span class="sc">+</span> S<span class="sc">/</span>x)<span class="sc">/</span><span class="dv">2</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                               <span class="at">unfinished =</span> <span class="fu">abs</span>(x<span class="sc">^</span><span class="dv">2</span> <span class="sc">-</span> S)<span class="sc">/</span>S <span class="sc">&gt;</span> frac_tolerance),</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                        <span class="st">&quot;bab&quot;</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">collect</span>(bab)<span class="sc">$</span>x</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<h1 data-number="3" id="sec:conclusion"><span class="header-section-number">3</span> Conclusion</h1>
+<p>sparklyr is excellent when used for what it is designed for. Iteration, in the form of an iterated function, does not appear to be part of this design; this was clear in the abuse required to implement a simple iterated function in the form of the Babylonian Method. Furthermore, all references to “iteration” in the primary sparklyr literature refer either to the iteration inherent in the inbuilt Spark ML functions, or the “wrangle-visualise-model” process popularised by Hadley Wickham<span class="citation" data-cites="luraschi2019mastering wickham2016r"><a href="#ref-wickham2016r" role="doc-biblioref">[4]</a>, <a href="#ref-luraschi2019mastering" role="doc-biblioref">[8]</a></span>. None of such references connect with iterated functions.</p>
+<p>Thus, it is fair to conclude that sparklyr is incapable of sensible iteration of arbitrary R code beyond what maps directly to SQL; even with mutate, it is a very convoluted interface for attempting any iteration more complex than the Babylonian Method. Implementation of a GLM function with sparklyr iteration was initially planned, but the point was already proven by something far simpler, and the point is one that did not need to be laboured.</p>
+<p>Ultimately, sparklyr is excellent at what it does, but convoluted and inefficient when abused, as when attempting to implement iterated functions.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-zaharia2010spark" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">M. Zaharia, M. Chowdhury, M. J. Franklin, S. Shenker, I. Stoica, <em>et al.</em>, <span>“Spark: <span>Cluster</span> computing with working sets.”</span> <em>HotCloud</em>, vol. 10, no. 10–10, p. 95, 2010.</div>
+</div>
+<div id="ref-luraschi20" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">J. Luraschi, K. Kuo, K. Ushey, J. Allaire, and T. A. S. Foundation, <em>Sparklyr: <span>R</span> interface to apache spark</em>. 2020.</div>
+</div>
+<div id="ref-wickham2019welcome" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">H. Wickham <em>et al.</em>, <span>“Welcome to the tidyverse,”</span> <em>Journal of Open Source Software</em>, vol. 4, no. 43, p. 1686, 2019.</div>
+</div>
+<div id="ref-wickham2016r" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">H. Wickham and G. Grolemund, <em>R for data science: <span>Import,</span> tidy, transform, visualize, and model data</em>. " O’Reilly Media, Inc.", 2016.</div>
+</div>
+<div id="ref-cousineau1998functional" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">G. Cousineau and M. Mauny, <em>The functional approach to programming</em>. Cambridge University Press, 1998.</div>
+</div>
+<div id="ref-abelson1996structure" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">H. Abelson, G. J. Sussman, and J. Sussman, <em>Structure and interpretation of computer programs</em>. Justin Kelly, 1996.</div>
+</div>
+<div id="ref-rcore2020lang" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">R. C. Team, <em>R language definition</em>. 2020.</div>
+</div>
+<div id="ref-luraschi2019mastering" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">J. Luraschi, <em>Mastering spark with r : <span>The</span> complete guide to large-scale analysis and modeling</em>. Sebastopol, CA: O’Reilly Media, 2019.</div>
+</div>
+</div>
+</body>
+</html>

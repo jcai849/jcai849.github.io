@@ -807,7 +807,7 @@ Parallelisation is enabled by some backends, with doParallel allowing parallel c
 foreach is managed by Revolution Analytics, with many of the Do*X* corollary packages also being produced by them.
 Further information of foreach is given in [@weston19:_using].
 
-I have written more on future in [A Detail of foreach](detail-foreach.html)
+I have written more on future in [A Detail of foreach](review-foreach.html)
 
 ## future {#sec:future-furrr}
 
@@ -816,7 +816,7 @@ Such parallelisation uses the standard MPI or SOCK protocols.
 
 The author of future is Henrik Bengtsson, Associate Professor at UCSF.
 Development on the package remains strong, with Dr. Bengtsson possessing a completely full commit calendar and 81,328 contributions on GitHub.
-I have written more on future in the document, [A Detail of future](detail-future.html).
+I have written more on future in the document, [A Detail of future](review-future.html).
 future has many aspects to it, captured in it's extensive series of vignettes[@bengtsson20:_futur_r; @bengtsson20:_futur_r2; @bengtsson20:_futur_r3; @bengtsson20:_futur_r4; @bengtsson20:_futur_r5; @bengtsson20:_futur_r6].
 
 Furrr is a frontend to future, amending the functions from the package purrr to be compatible with future, thus enabling parallelisation in a similar form to multicore, though with a tidyverse style[@vaughan18].
@@ -1503,7 +1503,7 @@ To de-complicate the situation, but add one-off computational overhead, chunks c
 An essential component of disk.frame's speed is parallelisation; as chunks are conceptually separate entities, function application to each can take place with no side effects to other chunks, and can therefore be trivially parallelised.
 
 For parallelisation, future is used as the backend package, with most function mappings on chunks making use of `future::future_lapply()`{.R} to have each chunk mapped with the intended function in parallel.
-Future is a package with complexities in it's own right; I have written more on future in the document, [A Detail of Future](detail-future.html)
+Future is a package with complexities in it's own right; I have written more on future in the document, [A Detail of Future](review-future.html)
 
 future is initialised with access to cores through the wrapper function, `setup_disk.frame()`{.R}[@zj19:_key].
 This sets up the correct number of workers, with the minimum of workers and chunks being processed in parallel.

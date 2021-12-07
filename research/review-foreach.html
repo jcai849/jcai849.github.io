@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2020-04-02" />
+  <title>A Review of foreach</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">A Review of foreach</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2020-04-02</p>
+</header>
+<h1 data-number="1" id="sec:introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>foreach introduces itself on CRAN with the following description:</p>
+<blockquote>
+<p>Support for the foreach looping construct. Foreach is an idiom that allows for iterating over elements in a collection, without the use of an explicit loop counter. This package in particular is intended to be used for its return value, rather than for its side effects. In that sense, it is similar to the standard lapply function, but doesn’t require the evaluation of a function. Using foreach without side effects also facilitates executing the loop in parallel.<span class="citation" data-cites="microsoft20"><a href="#ref-microsoft20" role="doc-biblioref">[1]</a></span></p>
+</blockquote>
+<p>From the user end, the package is conceptually simple, revolving entirely around a looping construct and the one-off backend registration.</p>
+<p>The principal goal of the package, which it hasn’t strayed from, is the enabling of parallelisation through backend transparency within the foreach construct. Notably, more complex functionality, such as side effects and parallel recurrance, are not part of the package’s intention.</p>
+<p>Thus, the primary driver for the practicality of the package, beyond the support offered for parallel backends, is the backends themselves, currently enabling a broad variety of parallel systems.</p>
+<p>foreach is developed by Steve Weston and Hoong Ooi.</p>
+<h1 data-number="2" id="sec:usage"><span class="header-section-number">2</span> Usage</h1>
+<p>foreach doesn’t require setup for simple serial execution, but parallel backends require registration by the user, typically with a single function as in the registration for doParallel, <code class="sourceCode r"><span class="fu">registerDoParallel</span>()</code>.</p>
+<p>The syntax of foreach consists of a <code class="sourceCode r"><span class="fu">foreach</span>()</code> function call next to a <code class="sourceCode r"><span class="sc">%do%</span></code> operator, and some expression to the right<span class="citation" data-cites="weston19:_using"><a href="#ref-weston19:_using" role="doc-biblioref">[2]</a></span>. Without loss in generality, the syntactic form is given in lst. <a href="#lst:syntax">1</a>.</p>
+<div id="lst:syntax" class="listing R">
+<p>Listing 1: Standard foreach syntax</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span>n) <span class="sc">%do%</span> {expr}</span></code></pre></div>
+</div>
+<p>The <code class="sourceCode r"><span class="fu">foreach</span>()</code> function can take other arguments including changing the means of combination along iterations, whether iterations should be performed in order, as well as the export of environmental variables and packages to each iteration instance.</p>
+<p>In addition to <code class="sourceCode r"><span class="sc">%do%</span></code>, other binary operators can be appended or substituted. Parallel iteration is performed by simply replacing <code class="sourceCode r"><span class="sc">%do%</span></code> with <code class="sourceCode r"><span class="sc">%dopar%</span></code>. Nested loops can be created by inserting <code class="sourceCode r"><span class="sc">%:%</span></code> between main and nested foreach functions, prior to the <code class="sourceCode r"><span class="sc">%do%</span></code> call<span class="citation" data-cites="weston19:_nestin_loops"><a href="#ref-weston19:_nestin_loops" role="doc-biblioref">[3]</a></span>. The last step to composition of foreach as capable of list comprehension is the filtering function <code class="sourceCode r"><span class="sc">%when%</span></code>, which filters iterables based on some predicate to control evaluation.</p>
+<h1 data-number="3" id="sec:implementation"><span class="header-section-number">3</span> Implementation</h1>
+<p>The mechanism of action in foreach is often forgotten in the face of the atypical form of the standard syntax. Going one-by-one, the <code class="sourceCode r"><span class="fu">foreach</span>()</code> function returns an iterable object, <code class="sourceCode r"><span class="sc">%do%</span></code> and derivatives are binary functions operating on the iterable object returned by <code class="sourceCode r"><span class="fu">foreach</span>()</code> on the left, and the expression on the right; the rightmost expression is simply captured as such in <code class="sourceCode r"><span class="sc">%do%</span></code>. Thus, the main beast of burder is the <code class="sourceCode r"><span class="sc">%do%</span></code> function, where the evaluation of the iteration takes place.</p>
+<p>In greater detail, <code class="sourceCode r"><span class="sc">%do%</span></code> captures and creates environments, enabling sequential evaluation. <code class="sourceCode r"><span class="sc">%dopar%</span></code> captures the environment of an expression, as well taking as a formal parameter a vector of names of libraries used in the expression, then passing that to the backend, which will in turn do additional work on capturing references to variables in expressions and adding them to evaluation environment, as well as ensure packages are loaded on worker nodes.</p>
+<p><code class="sourceCode r"><span class="sc">%do%</span></code> and <code class="sourceCode r"><span class="sc">%dopar%</span></code>, after correct error checking, send calls to <code class="sourceCode r"><span class="fu">getDoSeq</span>()</code> and <code class="sourceCode r"><span class="fu">getDoPar</span>()</code> respectively, which return lists determined by the registered backend, which contain a function used backend, used to operate on the main expression along with other environmental data.</p>
+<p>foreach depends strongly upon the iterators package, which gives the ability to construct custom iterators. These custom iterators can be used in turn with the <code class="sourceCode r"><span class="fu">foreach</span>()</code> function, as the interface to them is transparent.</p>
+<h1 data-number="4" id="sec:form-iter"><span class="header-section-number">4</span> Form of Iteration</h1>
+<p>The name of the package and function interface refer to the <code class="sourceCode r">foreach</code> programming language construct, present in many other languages. By definition, the <code class="sourceCode r">foreach</code> construct performs traversal over some collection, not necessarily requiring any traversal order. In this case, the collection is an iterator object or an object coercible to one, but in other languages with foreach as part of the core language, such as python (whose for loop is actually only a foreach loop), collections can include sets, lists, and a variety of other classes which have an <code class="sourceCode r">__iter__</code> and <code class="sourceCode r">__next__</code> defined<span class="citation" data-cites="python2020iter"><a href="#ref-python2020iter" role="doc-biblioref">[4]</a></span>.</p>
+<p>Due to the constraints imposed by a foreach construct, loop optimisation is simplified relative to a for loop, and the lack of explicit traversal ordering permits parallelisation, which is the primary reason for usage of the <code class="sourceCode r">foreach</code> package. The constraints are not insignificant however, and they do impose a limit on what can be expressed through their usage. Most notably, iterated functions, wherein the function depends on it’s prior output, are not necessarily supported, and certainly not supported in parallel. This is a result of the order of traversal being undefined, and when order is essential to maintain coherent state, as in iterated functions, the two concepts are mutually exclusive.</p>
+<p>In spite of the constraints, iterated functions can actually be emulated in foreach through the use of destructive reassignment within the passed expression, or through the use of stateful iterators. Examples of both are given in listings lst. <a href="#lst:serial">2</a> and lst. <a href="#lst:serial-iter">3</a>.</p>
+<div id="lst:serial" class="listing R">
+<p>Listing 2: Serial iterated function through destructive reassignment</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">%do%</span> {x <span class="ot">&lt;-</span> x<span class="sc">+</span><span class="dv">1</span>}</span></code></pre></div>
+</div>
+<div id="lst:serial-iter" class="listing R">
+<p>Listing 3: Serial iterated function through creation of a stateful iterator</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>addsone <span class="ot">&lt;-</span> <span class="cf">function</span>(start, to) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    nextEl <span class="ot">&lt;-</span> <span class="cf">function</span>(){</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        start <span class="ot">&lt;&lt;-</span> start <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (start <span class="sc">&gt;=</span> to) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">stop</span>(<span class="st">&#39;StopIteration&#39;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        start}</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    obj <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">nextElem=</span>nextEl)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">class</span>(obj) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;addsone&#39;</span>, <span class="st">&#39;abstractiter&#39;</span>, <span class="st">&#39;iter&#39;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    obj</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>it <span class="ot">&lt;-</span> <span class="fu">addsone</span>(<span class="dv">10</span>, <span class="dv">15</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">nextElem</span>(it)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">addsone</span>(<span class="dv">10</span>, <span class="dv">15</span>), <span class="at">.combine =</span> c) <span class="sc">%do%</span> i</span></code></pre></div>
+</div>
+<p>As alluded to earlier, the functionality breaks down when attempting to run them in parallel. Listings lst. <a href="#lst:parallel">4</a> and lst. <a href="#lst:parallel-iter">5</a> demonstrate attempts to evaluate these iterated functions in parallel. They only return a list of 5 repetitions of the same “next” number, not iterating beyond it.</p>
+<p>\begin{listing}</p>
+<div id="lst:parallel" class="listing R">
+<p>Listing 4: Parallel Iteration attempt through destructive reassignment</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cl <span class="ot">&lt;-</span> <span class="fu">makeCluster</span>(<span class="dv">2</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>doParallel<span class="sc">::</span><span class="fu">registerDoParallel</span>(cl)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">i=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) <span class="sc">%dopar%</span> {x <span class="ot">&lt;-</span> x<span class="sc">+</span><span class="dv">1</span>}</span></code></pre></div>
+</div>
+<div id="lst:parallel-iter" class="listing R">
+<p>Listing 5: Parallel Iteration attempt through a stateful iterator</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>doParallel<span class="sc">::</span>registerDoParallel</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">addsone</span>(<span class="dv">10</span>, <span class="dv">15</span>), <span class="at">.combine =</span> c) <span class="sc">%dopar%</span> i</span></code></pre></div>
+</div>
+<h1 data-number="5" id="sec:extensions"><span class="header-section-number">5</span> Extensions</h1>
+<p>The key point of success in foreach is it’s backend extensibility, without which, foreach would lack any major advantages over a standard <code class="sourceCode r"><span class="cf">for</span></code> loop.</p>
+<p>Other parallel backends are enabled through specific functions made available by the foreach package. The packages define their parallel evaluation procedures with reference to the iterator and accumulator methods from foreach.</p>
+<dl>
+<dt>doParallel</dt>
+<dd>the primary parallel backend for foreach, using the parallel package<span class="citation" data-cites="corporation19"><a href="#ref-corporation19" role="doc-biblioref">[5]</a></span>.
+</dd>
+<dt>doRedis</dt>
+<dd>provides a Redis backend, through the redux package<span class="citation" data-cites="lewis20"><a href="#ref-lewis20" role="doc-biblioref">[6]</a></span>.
+</dd>
+<dt>doFuture</dt>
+<dd>uses the future package to make use of future’s many backends<span class="citation" data-cites="bengtsson20do"><a href="#ref-bengtsson20do" role="doc-biblioref">[7]</a></span>.
+</dd>
+<dt>doAzureParallel</dt>
+<dd>allows for direct submission of parallel workloads to an Azure Virtual Machine<span class="citation" data-cites="hoang20"><a href="#ref-hoang20" role="doc-biblioref">[8]</a></span>.
+</dd>
+<dt>doMPI</dt>
+<dd>provides MPI access as a backend, using Rmpi<span class="citation" data-cites="weston17"><a href="#ref-weston17" role="doc-biblioref">[9]</a></span>.
+</dd>
+<dt>doRNG</dt>
+<dd>provides for reproducible random number usage within parallel iterations, using L’Ecuyer’s method; provides <code class="sourceCode r"><span class="sc">%dorng%</span></code><span class="citation" data-cites="gaujoux20"><a href="#ref-gaujoux20" role="doc-biblioref">[10]</a></span>.
+</dd>
+<dt>doSNOW</dt>
+<dd>provides an ad-hoc cluster backend, using the snow package<span class="citation" data-cites="dosnow19"><a href="#ref-dosnow19" role="doc-biblioref">[11]</a></span>.
+</dd>
+</dl>
+<h1 data-number="6" id="sec:relevance"><span class="header-section-number">6</span> Relevance</h1>
+<p>foreach serves as an example of a well-constructed package supported by it’s transparency and extensibility.</p>
+<p>For packages looking to provide any parallel capabilities, a foreach extension would certainly aid it’s potential usefulness and visibility.</p>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-microsoft20" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">Microsoft and S. Weston, <em>Foreach: <span>Provides</span> foreach looping construct</em>. 2020.</div>
+</div>
+<div id="ref-weston19:_using" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">S. Weston and H. Oi, <em>Using the foreach package</em>. 2019.</div>
+</div>
+<div id="ref-weston19:_nestin_loops" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">S. Weston, <em>Nesting foreach loops</em>. 2019.</div>
+</div>
+<div id="ref-python2020iter" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">P. S. Foundation, <span>“The python standard library documentation. <span class="nocase">Built-in</span> types.”</span> 2020.</div>
+</div>
+<div id="ref-corporation19" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">M. Corporation and S. Weston, <em>doParallel: <span>Foreach</span> parallel adaptor for the ’parallel’ package</em>. 2019.</div>
+</div>
+<div id="ref-lewis20" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">B. W. Lewis, <em>doRedis: <span>’Foreach’</span> parallel adapter using the ’redis’ database</em>. 2020.</div>
+</div>
+<div id="ref-bengtsson20do" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">H. Bengtsson, <em>doFuture: <span>A</span> universal foreach parallel adapter using the future <span>API</span> of the ’future’ package</em>. 2020.</div>
+</div>
+<div id="ref-hoang20" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">B. Hoang, <em>doAzureParallel: <span class="nocase">doAzureParallel</span></em>. 2020.</div>
+</div>
+<div id="ref-weston17" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">S. Weston, <em>doMPI: <span>Foreach</span> parallel adaptor for the rmpi package</em>. 2017.</div>
+</div>
+<div id="ref-gaujoux20" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">R. Gaujoux, <em>doRNG: <span>Generic</span> reproducible parallel backend for ’foreach’ loops</em>. 2020.</div>
+</div>
+<div id="ref-dosnow19" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">M. Corporation and S. Weston, <em>doSNOW: <span>Foreach</span> parallel adaptor for the ’snow’ package</em>. 2019.</div>
+</div>
+</div>
+</body>
+</html>
