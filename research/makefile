@@ -7,8 +7,9 @@ OUT   = ${DOCS:S/.md/.html/g}
 
 all: ${OUT} index.html
 
-index.html: ${OUT}
-	./bin/make-index ${OUT} | pandoc ${PFLAGS} -f markdown >${.TARGET}
+index.html: ${OUT} research-index
+	printf "%s\n\n%s" "`cat research-index`" "`./bin/make-index ${OUT}`" |\
+	pandoc ${PFLAGS} -f markdown >${.TARGET}
 
 pandoc-crossref: pandoc
 	cabal install pandoc-crossref
