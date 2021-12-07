@@ -1,5 +1,6 @@
 # Need cabal, graphviz, java, jq, curl
-PFLAGS= -F pandoc-crossref -NCst html5 --metadata-file=metadata.yaml -c style/style.css --template template.html5
+PFLAGS = -st html5 --template template.html5 -c style/style.css
+PFLAGSMD = -F pandoc-crossref -NC --metadata-file=metadata.yaml ${PFLAGS}
 DOCS != find . -name '*.md' -exec basename {} \;
 OUT   = ${DOCS:S/.md/.html/g}
 
@@ -23,7 +24,7 @@ bin/plantuml.jar:
 
 .SUFFIXES: .html .md .svg .gv .puml
 .md.html:
-	pandoc ${PFLAGS} ${.IMPSRC} >${.TARGET}
+	pandoc ${PFLAGSMD} ${.IMPSRC} >${.TARGET}
 .puml.svg: bin/plantuml.jar
 	java -jar bin/plantuml.jar ${.IMPSRC} -tsvg
 .gv.svg:
