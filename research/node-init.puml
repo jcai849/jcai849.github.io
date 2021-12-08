@@ -1,0 +1,20 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam style strictuml
+skinparam LifelineStrategy nosolid
+skinparam sequenceMessageAlign center
+title Initialisation of Node by Another
+
+
+participant Initiator as parent
+participant Initiatee as child
+database "Location Service" as ls
+
+autoactivate on
+parent -> child **: Initialisation and Address of location service
+activate child
+child -> ls: Announce node join
+return ACK
+return ACK
+@enduml

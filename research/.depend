@@ -2,3 +2,4 @@ chunk.md: chunk1.svg chunk2.svg chunk3.svg chunkcomp.svg
 dreduce.md: dreduce.svg dreduce-rc.svg
 mutability.md: modifyref.svg modifyrefprop.svg
 general.md: ls-obj.svg
+comm-model.md: node-init.svg comm-la.svg comm-lp.svg comm-ep.svg largerscale-class.svg
