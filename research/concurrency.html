@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2021-11-29" />
+  <title>An Exploration of Concurrency in R</title>
+  <link rel="stylesheet" href="style/style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">An Exploration of Concurrency in R</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2021-11-29</p>
+</header>
+<blockquote>
+<p>Quod est superius est sicut quod inferius, et quod inferius est sicut quod est superius.</p>
+<p>That which is above is like to that which is below, and that which is below is like to that which is above.<span class="citation" data-cites="steele1928table"><a href="#ref-steele1928table" role="doc-biblioref">[1]</a></span></p>
+</blockquote>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>In a complex distributed system of coarse or fine grain, I/O by way of inter-node communication leads to major constraints on the individual nodes. Synchronous blocking I/O is more than just a speed bottleneck; it has the potential to lock and completely prevent essential sections of program execution. Distributed systems are invariable concurrent at a system-level. A concurrent system in the macro scale (inter-node) is well supported by concurrency in the micro scale (in-process).</p>
+<p>While not utterly essential, concurrency in R would be exceptionally useful in the implementation of the project distributed system. If lacking, perhaps it can be added. This report follows the investigation into what exists, and what the possibilities are for concurrency in R. The TL;DR is given in sec. <a href="#sec:no">6</a>. Note that this report follows the definition of concurrency in the strict sense, and is not to be conflated with parallelism, as described by Rob Pike<span class="citation" data-cites="pike2012concurrency"><a href="#ref-pike2012concurrency" role="doc-biblioref">[2]</a></span>.</p>
+<h1 data-number="2" id="promises"><span class="header-section-number">2</span> Promises</h1>
+<p>Promises are a data structure-based mechanism of handling concurrency<span class="citation" data-cites="liskov1988promises"><a href="#ref-liskov1988promises" role="doc-biblioref">[3]</a></span>. Promise objects serve to represent operations that may occur at some point in time, with the completion of the operation marking a change in state of the promise object from “unresolved” to “resolved”. Most importantly, promise objects posses a <code class="sourceCode r"><span class="fu">then</span>()</code> method, which registers a callback to be run at some point following the resolution of the associated promise, itself returning a promise representing the completion of said callback. Chains of <code class="sourceCode r"><span class="fu">then</span>()</code>s are then used to cleanly compose concurrent operations.</p>
+<p>R has a <em>promises</em> package, clearly influenced by JavaScript’s A+ promises<span class="citation" data-cites="cheng2021promises"><a href="#ref-cheng2021promises" role="doc-biblioref">[4]</a></span>. If it can do as “promised”, much of the problem of concurrency is solved in R.</p>
+<p>An initial test is given in lst. <a href="#lst:promise-work">1</a>. Note in this listing that there is a very mild race condition in that the prompt is printed in the final line, with the operation of the <code class="sourceCode r"><span class="fu">then</span>()</code> immediately following. So far it looks like it is functioning.</p>
+<div id="lst:promise-work" class="listing R">
+<p>Listing 1: A fully-functioning promise</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">library</span>(promises)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> p <span class="ot">&lt;-</span> <span class="fu">promise</span>(<span class="cf">function</span>(resolve, reject) <span class="fu">resolve</span>(<span class="cn">TRUE</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">print</span>(p)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="sc">&lt;</span>Promise [fulfilled<span class="sc">:</span> logical]<span class="sc">&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="er">&gt;</span> <span class="fu">then</span>(p, <span class="at">onFulfilled =</span> <span class="cf">function</span>(value) <span class="fu">print</span>(value))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="cn">TRUE</span></span></code></pre></div>
+</div>
+<p>Attempting a simple equivalent outside of an empty stack leads to problems, as shown in lst. <a href="#lst:promise-not-work">2</a>. Here, as long as there are frames on the stack, the <code class="sourceCode r"><span class="fu">then</span>()</code> callback is never triggered. This may make sense in the avoidance of re-entrancy problems, though it is hardly very well advertised.</p>
+<div id="lst:promise-not-work" class="listing R">
+<p>Listing 2: A non-functioning promise</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> {<span class="cf">function</span>() {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     p <span class="ot">&lt;-</span> <span class="fu">promise</span>(<span class="cf">function</span>(resolve, reject) <span class="fu">resolve</span>(<span class="cn">TRUE</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     <span class="fu">print</span>(p)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     <span class="fu">then</span>(p, <span class="at">onFulfilled =</span> <span class="cf">function</span>(value) <span class="fu">print</span>(value))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     <span class="cf">repeat</span> {}</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span> }}()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="sc">&lt;</span>Promise [fulfilled<span class="sc">:</span> logical]<span class="sc">&gt;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="er">^</span>C</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> [<span class="dv">1</span>] <span class="cn">TRUE</span></span></code></pre></div>
+</div>
+<p>Can this be worked around? <a href="https://gist.github.com/jcheng5/b1c87bb416f6153643cd0470ac756231">Promise domains</a> appear to be an immediate answer to this, however it remains unsatisfactory, due to the requirement that they are eventually called at the top level; forcing evaluation on a busy stack isn’t what they were designed for. Perhaps this can be solved by investigating the reason for this constraint. If <code class="sourceCode r"><span class="fu">then</span>()</code>s could just be evaluated anywhere in the stack, race conditions far more serious than a prompt mis-print are certain to manifest. If it were possible to <a href="http://ithare.com/eight-ways-to-handle-non-blocking-returns-in-message-passing-programs-with-script/">explicitly state</a> where evaluation may be safe to take place, perhaps this could be avoided.</p>
+<p>Analysis of the <em>promises</em> source code reveals a dependency on the <em>later</em> package for asynchronous execution, and this is what has lead to the leaky abstraction <span class="citation" data-cites="chang2021later"><a href="#ref-chang2021later" role="doc-biblioref">[5]</a></span>. The central <code class="sourceCode r"><span class="fu">later</span>()</code> function offered by the package is equivalent to JavaScript’s <code class="sourceCode javascript"><span class="fu">setTimout</span>()</code> function, and also only executes when there is no other R code on the execution stack. Operations may be forced in <em>later</em> with <code>run_now()</code>, however, and this may serve as an appropriate mechanism for forcing evaluation. This is shown in lst. <a href="#lst:promise-forced">3</a>.</p>
+<div id="lst:promise-forced" class="listing R">
+<p>Listing 3: A forced promise</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> {<span class="cf">function</span>() {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     p <span class="ot">&lt;-</span> <span class="fu">promise</span>(<span class="cf">function</span>(resolve, reject) <span class="fu">resolve</span>(<span class="cn">TRUE</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     <span class="fu">print</span>(p)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     <span class="fu">then</span>(p, <span class="at">onFulfilled =</span> <span class="cf">function</span>(value) <span class="fu">print</span>(value))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     <span class="cf">repeat</span> {</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     later<span class="sc">::</span><span class="fu">run_now</span>()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span>     }</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="sc">+</span> }}()</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="sc">&lt;</span>Promise [fulfilled<span class="sc">:</span> logical]<span class="sc">&gt;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>] <span class="cn">TRUE</span></span></code></pre></div>
+</div>
+<p>Jumping down a layer of abstraction does appear to solve this problem. However, given that <code class="sourceCode r"><span class="fu">run_now</span>()</code> must be manually called, a new problem is added; scheduling of <code class="sourceCode r"><span class="fu">then</span>()</code>s is now partially in “userspace”. At this point it is worth looking at alternatives, because the code is starting to become complex, with manual event-loop cycling guaranteed to lead to bugs.</p>
+<p>A layer up is the <em>coro</em> package<span class="citation" data-cites="henry21coro"><a href="#ref-henry21coro" role="doc-biblioref">[6]</a></span>. This makes use of <em>promises</em> as part of an emulation of coroutines. Analysing the source code reveals the creation of a state machine that attempts to replicate R’s evaluator, but with allowances for re-entrancy. This is an impressive piece of work, but to build a serious platform on such a Rube Goldberg contraption is to massively constrain the platform to very implementation-dependent details. At this point, it is worth considering custom solutions.</p>
+<h1 data-number="3" id="attempted-solution"><span class="header-section-number">3</span> Attempted Solution</h1>
+<p>An initial attempt at a solution was to use continuations in R to implement promises, with coroutines as a base <a href="https://ds26gte.github.io/tyscheme/index-Z-H-15.html#TAG:__tex2page_sec_13.4">in a similar manner to how it may be implemented in scheme</a>. Unfortunately, continuations in R are downwards-only, and so can’t be relied upon for proper coroutine or promise implementation.</p>
+<p>I <a href="https://github.com/jcai849/promise">attempted a solution without continuations</a>: replicate promises, but have the <code class="sourceCode r"><span class="fu">then</span>()</code> run at any point, without needing to force it or be on the top level. This involved the creation of a package that was mostly written in C, to create Promise types, as given in lst. <a href="#lst:promise-struct">4</a>, and perform their evaluation.</p>
+<div id="lst:promise-struct" class="listing C">
+<p>Listing 4: Internal structure of promises</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode C"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> Promise <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> fd<span class="op">;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> state<span class="op">[</span>STATE_SIZE<span class="op">+</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    SEXP value<span class="op">;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">struct</span> Promise <span class="op">*</span>then<span class="op">[</span>MAX_THENS<span class="op">];</span> <span class="co">/* private */</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> then_i<span class="op">;</span>                  <span class="co">/* private */</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    SEXP onFulfilled<span class="op">;</span> <span class="co">/* used only for then */</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    SEXP onRejected<span class="op">;</span>  <span class="co">/* used only for then */</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> Promise<span class="op">;</span></span></code></pre></div>
+</div>
+<p>The intention was to attach it to R’s event loop, using the <code class="sourceCode c">addInputHandler<span class="op">()</span></code> function from <code>R_ext/eventloop.h</code>. This didn’t achieve the goal, as R’s event loop only scans the input handlers at the top level (or when <code class="sourceCode r"><span class="fu">Sys.sleep</span>()</code>ing), leaving us back to where we started.</p>
+<p>At this point I decided to look at how other languages enabled concurrency, as the options had run dry within R.</p>
+<h1 data-number="4" id="other-concurrency-paradigms"><span class="header-section-number">4</span> Other Concurrency Paradigms</h1>
+<p>Most other mainstream languages have explicit concurrency as a part of the language. This isn’t necessarily a failing of R. Much of the uptake of concurrency among languages only began in earnest relatively recently, motivated by web servers and services. Furthermore, R is still at heart a DSL for statistics - it is not teleologically dependent on concurrency as a feature of the language.</p>
+<p>Regardless, concurrency has proven to be extremely useful, and it’s value is clear in a distributed system; it is worth exploring further models in detail.</p>
+<h2 data-number="4.1" id="threading"><span class="header-section-number">4.1</span> Threading</h2>
+<p>Threading is a very low-level model of <a href="https://en.wikipedia.org/wiki/Preemption_(computing)">preemptive multitasking</a>, where independent “threads” run within a process and are interrupted and context switched by some scheduler, typically the operating system. R is strictly single-threaded. Foreign C functions can be called that themselves involve threading, but all direct interaction with R must remain single-threaded.</p>
+<p><a href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/pthread.h.html">pthreads</a> is the standard option for threading in C for R. The library offers aspects that may enable concurrency with R, such as mutexes for critical regions involving R code.</p>
+<p>However, it remains very low-level, not lending itself well to the rapid prototyping required for research computing. Furthermore, the scalability of threads is poor, with each thread taking up nontrivial memory, and facing operating system restrictions on total number.</p>
+<p>Threads certainly have their place, but can’t be depended upon as the central mechanism for concurrency.</p>
+<h2 data-number="4.2" id="asyncawait"><span class="header-section-number">4.2</span> Async/Await</h2>
+<p>Async/await is a recent pattern in many programming languages. The name stems from the syntactic constructs which between them enable <a href="https://en.wikipedia.org/wiki/Cooperative_multitasking">cooperative multitasking</a>. A function defined with an <code class="sourceCode python"><span class="cf">async</span></code> keyword may be <code class="sourceCode python"><span class="cf">await</span></code>ed upon in certain contexts. As explained well by <a href="https://bbc.github.io/cloudfit-public-docs/asyncio/asyncio-part-1.html">BBC’s Cloudfit</a>, what takes place is that when a scheduler or event loop encounters an <code class="sourceCode python"><span class="cf">await</span></code>, the scheduler may be thought of as “bookmarking” the position in program execution, and may jump to any other position that is being <code class="sourceCode python"><span class="cf">await</span></code>ed, and so on until one of the functions being <code class="sourceCode python"><span class="cf">await</span></code>ed returns, whereupon execution will continue from that point to the next <code class="sourceCode python"><span class="cf">await</span></code>. Key examples, though with very different implementations, include <a href="https://docs.python.org/3/library/asyncio.html">Python asyncio</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function">JavaScript’s async/await</a>. The async/await paradigm has had massive uptake, with nearly all major programming languages supporting it, though it is not without <a href="https://journal.stuffwithstuff.com/2015/02/01/what-color-is-your-function/">criticism</a>.</p>
+<p>An example of how async/await may appear within R in the context of the node in the distributed system, is given as lst. <a href="#lst:aior">5</a></p>
+<div id="lst:aior" class="listing R">
+<p>Listing 5: Imaginary async/await in R</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># N.B. await sleep immediately prior to non-blocking io is roughly equivalent to awaits on async io</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="fu">async</span>(<span class="cf">function</span>() <span class="cf">repeat</span> { <span class="co"># this spins; see main2 for a more efficient implementation</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">await</span>(<span class="fu">async_sleep</span>(<span class="dv">0</span>))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    request <span class="ot">&lt;-</span> <span class="fu">nonblocking_read</span>()</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">anything_read</span>(request))</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">create_task</span>(<span class="fu">process_request</span>(request))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>process_request <span class="ot">&lt;-</span> <span class="fu">async</span>(<span class="cf">function</span>(request) {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    args <span class="ot">&lt;-</span> <span class="fu">await_lapply</span>(<span class="fu">prereqs</span>(request), emerge)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="fu">do.call</span>(<span class="fu">computation</span>(request), args), <span class="at">error=</span>identity) <span class="co"># todo: parallel optimisation</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">response_needed</span>(request))</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">send</span>(<span class="fu">address</span>(request),result)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>emerge <span class="ot">&lt;-</span> <span class="fu">async</span>(<span class="cf">function</span>(id) { <span class="co"># Also spinning</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    val <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> (<span class="fu">is.null</span>(val)) {</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">await</span>(<span class="fu">async_sleep</span>(<span class="dv">0</span>))</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        val <span class="ot">&lt;-</span> <span class="fu">get_from_local_cache</span>()</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (<span class="fu">is.null</span>(val))</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>            val <span class="ot">&lt;-</span> <span class="fu">non_blocking_get_from_other_host</span>() <span class="co"># a la aiohttp</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">store</span>(id, val)</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    val</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="fu">async_run</span>(<span class="fu">main</span>())</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Non-spinning; relying on some imaginary external async io functions</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>main2 <span class="ot">&lt;-</span> <span class="fu">async</span>(<span class="cf">function</span>() <span class="cf">repeat</span> {</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    request <span class="ot">&lt;-</span> <span class="fu">await</span>(<span class="fu">async_read</span>(in_sock)) <span class="co"># c.f. aiohttp</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">anything_read</span>(request))</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>        <span class="fu">create_task</span>(<span class="fu">process_request</span>(request))</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>emerge2 <span class="ot">&lt;-</span> <span class="fu">async</span>(<span class="cf">function</span>(id) {</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    val <span class="ot">&lt;-</span> <span class="fu">async_gather</span>(<span class="fu">async_get_from_local_cache</span>(id),</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">async_get_from_other_host</span>(id))</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">store</span>(id, val)</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    val</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div>
+</div>
+<p>This depends on the ability to re-enter a context in R. Before exploring the potential for this, there is one other model to be investigated.</p>
+<h2 data-number="4.3" id="communicating-sequential-processes"><span class="header-section-number">4.3</span> Communicating Sequential Processes</h2>
+<p><em>Communicating Sequential Processes</em> as a model for concurrency stems from Tony Hoare’s formal language for describing interaction in a concurrent system<span class="citation" data-cites="hoare1978communicating"><a href="#ref-hoare1978communicating" role="doc-biblioref">[7]</a></span>. In this model, “processes” may be spawned, and can communicate between each other over channels. Upon sending a message, a process must wait for the receiver to read the message - channels are unbuffered, and the point of execution at a message being received from a sender is known as a “rendezvous” between sender and receiver. Like async/await, the rendezvous point is a signal for the scheduler or event loop to transfer control to any other point of rendezvous, thereby enabling asynchrony. The rendezvous is therefore a point of synchronisation, a powerful feature that implicitly sweeps away whole categories of race conditions. Go has made famous it’s goroutines as taking inspiration from CSP<span class="citation" data-cites="gomem2014"><a href="#ref-gomem2014" role="doc-biblioref">[8]</a></span>. More recently, Java is experimentally overhauling it’s threading model to use similar concepts in it’s <a href="https://cr.openjdk.java.net/~rpressler/loom/loom/sol1_part1.html">“Project Loom”</a>, and GNU Guile has recently included <a href="https://wingolog.org/archives/2017/06/27/growing-fibers">“fibers”</a> as a variation on CSP as inspired by Concurrent ML.</p>
+<p>An example of how a CSP-based concurrency may appear in a node of the distributed system is given in lst. <a href="#lst:csp">6</a>. Notably, it is the cleanest and clearest of all the concurrency models assessed thus far.</p>
+<div id="lst:csp" class="listing R">
+<p>Listing 6: CSP as imagined in R</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>main <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    server <span class="ot">&lt;-</span> <span class="fu">channel</span>()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    storage <span class="ot">&lt;-</span> <span class="fu">channel</span>()</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    waiting_worker <span class="ot">&lt;-</span> <span class="fu">channel</span>()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    complete_worker <span class="ot">&lt;-</span> <span class="fu">channel</span>()</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">spawn</span>(<span class="at">routine=</span>serve, <span class="at">channel=</span>server)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">spawn</span>(<span class="at">routine=</span>store, <span class="at">channel=</span>storage)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">repeat</span> {</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">select</span>(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">server =</span> <span class="cf">function</span>(request) {</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                <span class="fu">spawn</span>(<span class="at">routine=</span>work, <span class="at">channel=</span>waiting_worker)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>                <span class="fu">send</span>(<span class="at">channel=</span>waiting_worker, <span class="at">value=</span><span class="fu">c</span>(request, complete_worker))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>            },</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">complete_worker =</span> <span class="cf">function</span>(resolution) {</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>                <span class="fu">send</span>(<span class="at">channel=</span>storage, <span class="at">value=</span><span class="fu">value</span>(resolution))</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> (<span class="fu">response_needed</span>(resolution))</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">send</span>(<span class="at">channel=</span><span class="fu">return_address</span>(resolution),</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>                         <span class="at">value=</span><span class="fu">value</span>(resolution))</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>serve <span class="ot">&lt;-</span> <span class="cf">function</span>(channel) {</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    outside_world <span class="ot">&lt;-</span> <span class="fu">socket_init</span>()</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">repeat</span> <span class="fu">send</span>(channel, <span class="fu">receive</span>(outside_world))</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>work <span class="ot">&lt;-</span> <span class="cf">function</span>(channel) {</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    send_to_emerger <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>        emerger <span class="ot">&lt;-</span> <span class="fu">channel</span>()</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">spawn</span>(<span class="at">routine=</span>emerge, <span class="at">channel=</span>emerger)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">send</span>(<span class="at">channel=</span>emerger, <span class="at">value=</span>x)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        emerger</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    request_and_main <span class="ot">&lt;-</span> <span class="fu">receive</span>(channel)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    request <span class="ot">&lt;-</span> request_and_main[[<span class="dv">1</span>]]</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    main <span class="ot">&lt;-</span> request_and_main[[<span class="dv">2</span>]]</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    prereq_count <span class="ot">&lt;-</span> <span class="fu">length</span>(<span class="fu">prerequisites</span>(request))</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    emergers <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">prerequisites</span>(request), send_to_emerger)</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    prereqs <span class="ot">&lt;-</span> <span class="fu">select</span>(<span class="at">list=</span>emergers)</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    result <span class="ot">&lt;-</span> <span class="fu">do.call</span>(<span class="fu">computation</span>(request), prereqs)</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">send</span>(main, result)</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>store <span class="ot">&lt;-</span> <span class="cf">function</span>(channel) {</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>    storage <span class="ot">&lt;-</span> <span class="fu">new.env</span>()</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">repeat</span> {</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        item <span class="ot">&lt;-</span> <span class="fu">receive</span>(channel)</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>        <span class="fu">assign</span>(<span class="fu">id</span>(item), <span class="fu">value</span>(item), storage)</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>emerge <span class="ot">&lt;-</span> <span class="cf">function</span>(channel) {</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>    item <span class="ot">&lt;-</span> <span class="fu">receive</span>(channel)</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">send</span>(channel, <span class="fu">GET</span>(<span class="fu">id</span>(item), <span class="fu">address</span>(item)))</span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<h1 data-number="5" id="coroutines"><span class="header-section-number">5</span> Coroutines</h1>
+<p>This all lead to my grand realisation (nothing new, apparently everyone else already knew this): Under the hood, it’s effectively all coroutines, and these are largely just variations on coroutine access. Jumping in and out of a function at will is exactly what a coroutine offers. Surprisingly few languages possessed coroutines until recently, in spite of the clear need. Amusingly, Donald Knuth used a <a href="https://www-cs-faculty.stanford.edu/~knuth/mmix.html">constructed assemply language</a> for his Art of Computer Programming series, with a major contributing factor to this choice being the lack of coroutines in higher-level languages<span class="citation" data-cites="knuth1"><a href="#ref-knuth1" role="doc-biblioref">[9]</a></span>. Perhaps if coroutines were more common at the time of writing, several decades of computer science research could have been spared, TAOCP would have been infinitely more readable and delivered in it’s final form, along with the proof that <span class="math inline"><em>P</em> = <em>N</em><em>P</em></span>.</p>
+<h1 data-number="6" id="sec:no"><span class="header-section-number">6</span> R will never be concurrent</h1>
+<p>So, is it fixable? Effectively…</p>
+<blockquote>
+<p>No.</p>
+</blockquote>
+<p>The implementation of evaluation in R precludes any chance of re-entering contexts, and will remain that way unless there is a near-complete rewrite. According to Simon Urbanek of the R core team:</p>
+<blockquote>
+<p>I had a quick look at R and having non-linear contexts is by definition (close to) impossible. The contexts contain many global variables that are stacks themselves, so they can only be unwound linearly down. Hence you cannot have “forks” in contexts due to the stack nature of many things in R (handlers stacks, promise stacks, byte-compiler stacks, …). To make it even more fun, some are actually local C stack variables, so both R design and C stack is involved here. So allowing this would require some serious re-write of R internals… :/</p>
+</blockquote>
+<h1 class="unnumbered" id="references">References</h1>
+<div id="refs" class="references csl-bib-body" role="doc-bibliography">
+<div id="ref-steele1928table" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">R. Steele and D. W. Singer, <span>“The emerald table,”</span> <em>Proceedings of the Royal Society of Medicine</em>, vol. 21, no. 3, pp. 485–501, 1928, doi: <a href="https://doi.org/10.1177/003591572802100361">10.1177/003591572802100361</a>.</div>
+</div>
+<div id="ref-pike2012concurrency" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">R. Pike, <span>“Concurrency is not parallelism,”</span> 2012.Available: <a href="https://vimeo.com/49718712">https://vimeo.com/49718712</a></div>
+</div>
+<div id="ref-liskov1988promises" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">B. Liskov and L. Shrira, <span>“Promises: <span>Linguistic</span> support for efficient asynchronous procedure calls in distributed systems,”</span> <em>ACM SIGPLAN Notices</em>, vol. 23, no. 7, pp. 260–267, 1988.</div>
+</div>
+<div id="ref-cheng2021promises" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">J. Cheng, <em>Promises: Abstractions for promise-based asynchronous programming</em>. 2021.Available: <a href="https://CRAN.R-project.org/package=promises">https://CRAN.R-project.org/package=promises</a></div>
+</div>
+<div id="ref-chang2021later" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">W. Chang and J. Cheng, <em>Later: Utilities for scheduling functions to execute later with event loops</em>. 2021.Available: <a href="https://CRAN.R-project.org/package=later">https://CRAN.R-project.org/package=later</a></div>
+</div>
+<div id="ref-henry21coro" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">L. Henry, <em>Coro: ’Coroutines’ for r</em>. 2021.Available: <a href="https://CRAN.R-project.org/package=coro">https://CRAN.R-project.org/package=coro</a></div>
+</div>
+<div id="ref-hoare1978communicating" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">C. A. R. Hoare, <span>“Communicating sequential processes,”</span> <em>Communications of the ACM</em>, vol. 21, no. 8, pp. 666–677, 1978.</div>
+</div>
+<div id="ref-gomem2014" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">Go, <span>“The go memory model,”</span> 2014.Available: <a href="https://go.dev/ref/mem">https://go.dev/ref/mem</a></div>
+</div>
+<div id="ref-knuth1" class="csl-entry" role="doc-biblioentry">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">D. E. Knuth, <em>The art of computer programming, volume 1: <span>Fundamental</span> algorithms</em>. Addison-Wesley Professional, 1968.</div>
+</div>
+</div>
+</body>
+</html>
