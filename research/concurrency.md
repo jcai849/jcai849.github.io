@@ -282,9 +282,10 @@ emerge <- function(channel) {
 
 # Coroutines
 
-This all lead to my grand realisation (nothing new, apparently everyone else already knew this): Under the hood, it's effectively all coroutines, and these are largely just variations on coroutine access.
+This all lead to my grand realisation about cooperative multitasking (nothing new; apparently everyone else already knew this): Under the hood, it's effectively all coroutines, and these models of asynchrony are largely just variations on access to coroutines.
 Jumping in and out of a function at will is exactly what a coroutine offers.
 Surprisingly few languages possessed coroutines until recently, in spite of the clear need.
+I was actually familiar with coroutines as introduced by the Art of Computer Programming, but didn't quite recognise them in this context until late.
 Amusingly, Donald Knuth used a [constructed assemply language](https://www-cs-faculty.stanford.edu/~knuth/mmix.html) for his Art of Computer Programming series, with a major contributing factor to this choice being the lack of coroutines in higher-level languages[@knuth1].
 Perhaps if coroutines were more common at the time of writing, several decades of computer science research could have been spared, TAOCP would have been infinitely more readable and delivered in it's final form, along with the proof that $P=NP$.
 
