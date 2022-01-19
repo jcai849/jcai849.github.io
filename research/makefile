@@ -4,7 +4,7 @@ PFLAGSMD = -F pandoc-crossref -NC --metadata-file=metadata.yaml ${PFLAGS}
 DOCS != find . -name '*.md' -exec basename {} \;
 OUT   = ${DOCS:S/.md/.html/g}
 
-.PHONY: all
+.PHONY: all clean
 
 all: ${OUT} index.html
 
@@ -29,3 +29,6 @@ bin/plantuml.jar:
 	java -jar bin/plantuml.jar ${.IMPSRC} -tsvg
 .gv.svg:
 	dot -Tsvg ${.IMPSRC} >${.TARGET}
+clean:
+	rm -f *.html
+	rm -f *.svg
