@@ -1,8 +1,5 @@
-@import 'font/index.css';
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans&family=IBM+Plex+Serif&display=swap');
-
 h1, h2 {
-    font-family: 'IBM Plex Serif', serif;
+    font-family: serif;
     font-weight: 100;
     font-size: 1.5em
 }
@@ -12,8 +9,7 @@ header h1 {
 }
 
 body {
-    font-family: 'IBM Plex Mono', monospace;
-    /* font-family: 'IBM Plex Sans', sans-serif; */
+    font-family: monospace;
 }
 
 ul {

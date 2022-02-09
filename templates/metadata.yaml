@@ -1,7 +1,7 @@
 ---
 author: Jason Cairns
 linkReferences: true
-bibliography: bibliography.bib
-csl: ieee.csl
+bibliography: ../bib/bibliography.bib
+csl: ../bib/ieee.csl
 link-citations: true
 ---

@@ -9,6 +9,11 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 410.22)">
 <title>modref</title>
 <polygon fill="white" stroke="#000000" points="-4,4 -4,-410.22 490,-410.22 490,4 -4,4"/>
+<g id="clust3" class="cluster">
+<title>cluster_worker</title>
+<polygon fill="#f7f7f7" stroke="black" points="242,-8 242,-211.48 478,-211.48 478,-8 242,-8"/>
+<text text-anchor="middle" x="360" y="-196.28" font-family="Times,serif" font-size="14.00">worker</text>
+</g>
 <g id="clust1" class="cluster">
 <title>cluster_dobjref</title>
 <polygon fill="#c2a5cf" stroke="black" points="8,-110.74 8,-398.22 234,-398.22 234,-110.74 8,-110.74"/>
@@ -20,11 +25,6 @@
 <polygon fill="#e7d4e8" stroke="black" points="16,-118.74 16,-352.22 226,-352.22 226,-118.74 16,-118.74"/>
 <text text-anchor="middle" x="121" y="-337.02" font-family="Times,serif" font-size="14.00">Chunk Reference</text>
 <text text-anchor="middle" x="121" y="-322.02" font-family="Times,serif" font-size="14.00">(mutable)</text>
-</g>
-<g id="clust3" class="cluster">
-<title>cluster_worker</title>
-<polygon fill="#f7f7f7" stroke="black" points="242,-8 242,-211.48 478,-211.48 478,-8 242,-8"/>
-<text text-anchor="middle" x="360" y="-196.28" font-family="Times,serif" font-size="14.00">worker</text>
 </g>
 <!-- x -->
 <g id="node1" class="node">

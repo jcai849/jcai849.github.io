@@ -1,16 +1,23 @@
-.PHONY: all
-TEX-ALL-SRC != find src -maxdepth 1 -name '*.tex' -exec basename {} \;
-TEX-ALL-OUT = ${TEX-ALL-SRC:S/.tex/.html/g}
-PFLAGS = -c style/style.css -t html -s
-TL-PFLAGS = -f markdown --template src/template.html
+PFLAGS = -st html5 --template ../templates/template.html5 -c ../style/style.css
+PFLAGSMD = -F pandoc-crossref -NC --metadata-file=../templates/metadata.yaml ${PFLAGS}
+DOCS != find . -name '*.md' -exec basename {} \;
+OUT   = ${DOCS:S/.md/.html/g}
 
-all: ${TEX-ALL-OUT} index.html
+.PHONY: all clean
 
-index.html: ${TEX-ALL-OUT}
-	./bin/make-index ${.ALLSRC} | pandoc ${PFLAGS} ${TL-PFLAGS} >${.TARGET}
+all: ${OUT} index.html
 
-.for TEX-SRC in ${TEX-ALL-SRC}
-TEX-OUT = ${TEX-SRC:S/.tex/.html/g}
-${TEX-OUT}: src/${TEX-SRC}
-	cd src && ${MAKE} PFLAGS=${PFLAGS:Q} ${TEX-OUT} && mv ${TEX-OUT} ..
-.endfor
+index.html: ${OUT} ../templates/docs-index
+	printf "%s\n\n%s" "`cat ../templates/docs-index`" "`../bin/make-index ${OUT}`" |\
+	pandoc ${PFLAGS} -f markdown >${.TARGET}
+
+.SUFFIXES: .html .md .svg .gv .puml
+.md.html:
+	pandoc ${PFLAGSMD} ${.IMPSRC} >${.TARGET}
+.puml.svg: ../bin/plantuml.jar
+	java -jar ../bin/plantuml.jar ${.IMPSRC} -tsvg
+.gv.svg:
+	dot -Tsvg ${.IMPSRC} >${.TARGET}
+clean:
+	rm -f *.html
+	rm -f *.svg
