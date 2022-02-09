@@ -5,7 +5,7 @@ h1, h2 {
 }
 
 header h1 {
-    font-size: xxx-large;
+    font-size: -webkit-xxx-large;
 }
 
 body {
