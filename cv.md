@@ -3,7 +3,6 @@ title: Jason Cairns Curriculum Vitae
 ---
 
 * [Homepage](http://www.jason.cair.nz)
-* [LinkedIn](http://linkedin.com)
 
 ## Education
 

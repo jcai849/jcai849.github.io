@@ -32,6 +32,7 @@ $for(header-includes)$
 $endfor$
 </head>
 <body>
+<a href="../index.html">Home</a>
 $for(include-before)$
 $include-before$
 $endfor$
