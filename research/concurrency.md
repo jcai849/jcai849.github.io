@@ -11,7 +11,7 @@ date: 2021-11-29
 
 In a complex distributed system of coarse or fine grain, I/O by way of inter-node communication leads to major constraints on the individual nodes.
 Synchronous blocking I/O is more than just a speed bottleneck; it has the potential to lock and completely prevent essential sections of program execution.
-Distributed systems are invariable concurrent at a system-level.
+Distributed systems are invariably concurrent at a system-level.
 A concurrent system in the macro scale (inter-node) is well supported by concurrency in the micro scale (in-process).
 
 While not utterly essential, concurrency in R would be exceptionally useful in the implementation of the project distributed system.
@@ -286,18 +286,17 @@ This all lead to my grand realisation about cooperative multitasking (nothing ne
 Jumping in and out of a function at will is exactly what a coroutine offers.
 Surprisingly few languages possessed coroutines until recently, in spite of the clear need.
 I was actually familiar with coroutines as introduced by the Art of Computer Programming, but didn't quite recognise them in this context until late.
-Amusingly, Donald Knuth used a [constructed assemply language](https://www-cs-faculty.stanford.edu/~knuth/mmix.html) for his Art of Computer Programming series, with a major contributing factor to this choice being the lack of coroutines in higher-level languages[@knuth1].
-Perhaps if coroutines were more common at the time of writing, several decades of computer science research could have been spared, TAOCP would have been infinitely more readable and delivered in it's final form, along with the proof that $P=NP$.
+Amusingly, Donald Knuth used a [constructed assembly language](https://www-cs-faculty.stanford.edu/~knuth/mmix.html) for his Art of Computer Programming series, with a major contributing factor to this choice being the lack of coroutines in higher-level languages[@knuth1].
+Perhaps if coroutines were more common at the time of writing, several decades of computer science research could have been spared, TAOCP would have been infinitely more readable and delivered in it's final form, along with Knuth's proof of his belief that $P=NP$.
 
 # R will never be concurrent {#sec:no}
 
 So, is it fixable?
-Effectively...
+According to Simon Urbanek of the R core team, effectively...
 
 > No.
 
-The implementation of evaluation in R precludes any chance of re-entering contexts, and will remain that way unless there is a near-complete rewrite.
-According to Simon Urbanek of the R core team:
+The implementation of evaluation in R precludes any chance of re-entering contexts, and will remain that way unless there is a near-complete rewrite. Dr. Urbanek elaborates:
 
 > I had a quick look at R and having non-linear contexts is by definition (close to) impossible. The contexts contain many global variables that are stacks themselves, so they can only be unwound linearly down. Hence you cannot have "forks" in contexts due to the stack nature of many things in R (handlers stacks, promise stacks, byte-compiler stacks, ...). To make it even more fun, some are actually local C stack variables, so both R design and C stack is involved here. So allowing this would require some serious re-write of R internals... :/
 

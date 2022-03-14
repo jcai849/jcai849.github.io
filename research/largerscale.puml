@@ -1,0 +1,18 @@
+@startuml
+
+class Chunk {
+	-href : character
+	-generator_href : character
+	+remote_call() : Chunk
+	+pull() : <Any>
+}
+
+class Computation {
+	-procedure : function
+	-arguments : Chunk[]
+	-alignments : NULL
+	-href : character
+	-output_href : character
+}
+
+@enduml

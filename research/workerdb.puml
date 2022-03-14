@@ -1,0 +1,10 @@
+@startuml
+
+data_href ||--|| value
+fd }o--|{ data_href
+pending_computation_href }|--o{ unaccounted_prereq_href
+
+unaccounted_prereq_href ||--|| data_href
+pending_computation_href ||--|| data_href
+
+@enduml

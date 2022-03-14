@@ -1,0 +1,17 @@
+@startuml
+
+entity Node {
+	* node_href
+	--
+	* address
+	* port
+	loading
+}
+
+entity Data {
+	* data_href
+}
+
+Node }|--o{ Data
+
+@enduml
