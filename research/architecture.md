@@ -26,12 +26,13 @@ The level of encapsulation was also sufficient in the previous version that code
 # Bottom Layer: _orcv_
 
 The lowest layer is a self-contained package of mostly C descriptions of networking communication and thread-safe internal event queues.
-Communications are the core of this package and the main actors given are listeners and receiver.
-The listener is simply a standard `accept()`{.C} function that upon acceptance of a connection passes on the file descriptor to a thread pool of receivers.
-The receivers in turn fulfills the connection and reads, passing on whatever message is received to an event queue, along with a file descriptor of the connection socket, in order to allow for direct responses to messages.
+Communications are the core of this package and the main actors given are the listener and receivers.
+The listener is simply a standard `accept()`{.C}er that upon acceptance of a connection passes on the file descriptor to a thread pool of receivers by way of the thread-safe queue.
+The receiver that picks up the connection in turn reads from it, passing on whatever message is received to a shared event queue, along with a file descriptor of the connection socket, in order to allow for direct responses to messages.
 
 The event queue consists of a basic thread-safe queue complete with a file descriptor that has a byte written to it upon an `enqueue()`{.C}, and a byte read at a `dequeue()`{.C}.
 The inclusion of a file descriptor allows for efficient multiplexing on the queue via `poll()`{.C}ing.
+
 So orcv provides initial network communication capabilities, as well as event queues that can be monitored, with events themselves able to be replied to directly by way of their included file descriptor.
 Much of the package structure is related to existing work by Urbanek, with much of the networking architecture taking direct inspiration from Stevens[@stevens1997network] 
 
@@ -39,11 +40,12 @@ Much of the package structure is related to existing work by Urbanek, with much 
 
 The middle layer defines the nodes and interactions between them, using an emulated HTTP, with the lower orcv layer as its mechanism of communication.
 The three nodes defined by this layer are the client, the worker, and the locator.
+
 The client is the master node that the user interfaces with directly, and the main task of the client is to push individual chunks as data, to request remote calls on that data, and to pull the results of remote calls.
 In order to push, remote compute, and pull, it connects to worker nodes, relaying the message for them to work on.
 In order to connect to worker nodes, it has to know where they are located, given by their address and port.
 
-Managing the knowledge of locations is the role of the locator service, which serves as a remote database of addresses.
+Managing the knowledge of locations is the role of the locator service, which serves as a singular central database of addresses.
 Existence as a node in the distributed system is synonymous with having a location stored in the locator service.
 The locator service also performs the slightly orthogonal task of determining which chunks of data exist at what locations.
 
@@ -53,7 +55,7 @@ Communication among workers is dependent on the location service, in similar fas
 
 Both worker and locator nodes follow a similar architecture.
 They both follow the same basic pattern of first initialising, then running some initialisation function and endlessly repeating a check for the next event and handling that event.
-The point of checking for the next incoming event, as well as any response to the event, is the point of connection with the lower orcv layer.
+The check for the next incoming event, as well as any response to the event, is the point of connection with the lower orcv layer.
 The nodes differ only in their core database schema, as well as the handlers associated with the HTTP requests sent to them as events.
 
 The worker database schema is given in [@tbl:wstore;@tbl:wstage;@tbl:waudience] with an Entity Relationship Diagram given by [@fig:workerdb]
@@ -129,12 +131,13 @@ Chunks and computations on those chunks are represented as very simple S3 classe
 
 ![UML Diagram of Chunk and Computation classes](largerscale.svg){#fig:largerscale}
 
-Every chunk and computation has an identifier (href in HTTP-language) - this is a uuid that allows for unambiguous specification of objects within the system.
+Every chunk and computation has an identifier ("href" in HTTP-language) - this is a uuid that allows for unambiguous specification of objects within the system.
 Chunks contain an additional identifier of their generating process, that is, the identifier of the computation that is is the result of.
 Computations stored as data are typically a lot in a lot smaller than the data that results from them.
 This implies that every single computation that takes place in the system can be stored as data and replicated across several notes far more simply than their resulting data.
 What this leads to is that if a node unexpectedly crashes with some important data on it, the chunk referring to the data on that node maintains a reference to the generator of the data.
 This generator will hopefully exist on another that is still live, and thus can the data can be regenerated.
+Such regeneration is explored in more detail in the report, [Self-healing Data in Largerscale](recover.html)
 
 ## Worker operation in detail
 
