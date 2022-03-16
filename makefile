@@ -17,8 +17,9 @@ pandoc-crossref: pandoc
 	cabal install pandoc-crossref
 pandoc:
 	cabal install pandoc
-../bin/plantuml.jar:
+bin/plantuml.jar:
 	curl -s https://api.github.com/repos/plantuml/plantuml/releases/latest |\
 	jq -r .assets[].browser_download_url |\
-	tail -n1 |\
+	grep '[0-9].jar$'' |\
+	sed 1q |\
 	xargs curl -sLo bin/plantuml.jar

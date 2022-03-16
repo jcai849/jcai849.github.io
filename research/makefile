@@ -21,3 +21,5 @@ index.html: ${OUT} ../templates/research-index
 clean:
 	rm -f *.html
 	rm -f *.svg
+../bin/plantuml.jar:
+	cd .. && $(MAKE) bin/plantuml.jar
