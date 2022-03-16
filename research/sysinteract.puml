@@ -1,56 +1,57 @@
 @startuml
-skinparam monochrome true
 skinparam shadowing false
 skinparam style strictuml
 skinparam LifelineStrategy nosolid
-skinparam sequenceMessageAlign center
-title Concurrent Requests in New System
+skinparam sequenceMessageAlign direction
 
-participant Client as c
-participant "Worker 1" as w1  
-participant "Worker 2" as w2
-database "Location Service" as ls
+title Concurrent Requests in New LargeScaleR System
 
-note over w1: starting with data d0
-note over w2: starting with data d1
+actor Client as c #white
+participant "Worker 1\n----\nInitialised with d0" as w1 #white
+participant "Worker 2\n----\nInitialised with d1" as w2 #white
+database "Location Service" as ls #white
 
-c -> ls: GET /data/d1
-ls -> c: d1 @ w2
-c -> w2: PUT /computation/c1 (result=d2; prereq d1)
-c -> ls: POST /data/c1,d2 (w2)
-w2 -> w2: PUT /computation-ready/c1
-activate w2
+
+c --[#66c2a5]> ls: GET /data/d1
+rnote left #66c2a5: d2 <- remote_call(fun, args=list(d1))
+ls --[#66c2a5]> c: d1 @ Worker 2
+c -[#66c2a5]> w2: PUT /computation/c1 (result=d2; prereq d1)
+c -[#66c2a5]> ls: POST /data/c1,d2 (w2)
+w2 -[#66c2a5]> w2: PUT /computation-ready/c1
+activate w2 #66c2a5
+
+c --[#fc8d62]> ls: GET /data/d0
+rnote left #fc8d62: d3 <- remote_call(fun, args=list(d0, d2))
+ls --[#fc8d62]> c: d1 @ Worker 2
+c -[#fc8d62]> w1: PUT /computation/c2 (result=d3; prereq=d0,d2)
+c -[#fc8d62]> ls: POST /data/c2,d3 (w1)
+w1 --[#fc8d62]> ls: GET /data/d2
+ls --[#fc8d62]> w1: d2 @ Worker 2
+w1 -[#fc8d62]> w2: GET /data/d2
+
+c --[#8da0cb]> ls: GET /nodes
+rnote left #8da0cb: d2 <- remote_call(fun, args=list())
+ls --[#8da0cb]> c: Node List
+c -[#8da0cb]> w1: PUT /computation/c3 (result=d4; prereq=NULL)
+c -[#8da0cb]> ls: POST /data/c3,d4 (w1)
+w1 -[#8da0cb]> w1: PUT /computation-ready/c3
+activate w1 #8da0cb
 ...
-c -> ls: GET /data/d0
-ls -> c: d1 @ w2
-c -> w1: PUT /computation/c2 (result=d3; prereq=d0,d2)
-c -> ls: POST /data/c2,d3 (w1)
-w1 -> ls: GET /data/d2
-ls -> w1: d2 @ w2
-w1 -> w2: GET /data/d2
-...
-c -> ls: GET /nodes
-ls -> c: nodes
-c -> w1: PUT /computation/c3 (result=d4; prereq=NULL)
-c -> ls: POST /data/c3,d4 (w1)
-w1 -> w1: PUT /computation-ready/c3
-activate w1
-w2 -> w2: POST /data/d2
+w2 -[#66c2a5]> w2: POST /data/d2
 deactivate w2
-w2 -> w1: POST /data/d2
-...
-c -> ls: GET /data/d3
-ls -> c: d3 @ w1
-c -> w1: GET /data/d3
-activate c
-w1 -> w1: POST /data/d4
+w2 -[#fc8d62]> w1: POST /data/d2
+
+c --[#e78ac3]> ls: GET /data/d3
+rnote left #e78ac3: pull(d3)
+ls --[#e78ac3]> c: d3 @ Worker 1
+c -[#e78ac3]> w1: GET /data/d3
+w1 -[#8da0cb]> w1: POST /data/d4
 deactivate w1
-w1 -> w1: PUT /computation-ready/c2
-activate w1
+w1 -[#fc8d62]> w1: PUT /computation-ready/c2
+activate w1 #fc8d62
 ...
-w1 -> w1: POST /data/d3
+w1 -[#fc8d62]> w1: POST /data/d3
 deactivate w1
-w1 -> c: POST /data/d3
-deactivate c
+w1 -[#e78ac3]> c: POST /data/d3
 
 @enduml
