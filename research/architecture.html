@@ -237,8 +237,9 @@
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <h1 data-number="5" id="next-steps"><span class="header-section-number">5</span> Next Steps</h1>
-<p>The next steps for this system include the handling of alignment, and recovery. Both may take many different forms.</p>
+<p>The next steps for this system include the handling of alignment, authentication, and recovery. Both may take many different forms.</p>
 <p>Alignment refers specifically to the management of a situation where multiple distributed objects are be operated over in the same computation, where each of them may have chunks of different lengths or varied number of chunks. This is quite complex and will be a fairly significant task in itself to implement cleanly. The original system had alignment before, however this was not entirely functional, and was the minimal required to get basic alignment working. This can be built upon and used for comparison with the future alignment management.</p>
+<p>Authentication management is also essential to allow for use in real-world enterprise applications. It would allow for managment by YARN or other systems to handle firewall restrictions and the like.</p>
 <p>The next important piece for a serious distributed system is recovery from errors. The resiliance of a system is essential where nodes may crash, but the system must continue to work. This can be focused upon at the distributed object level as well as potentially more, such as enabling a pure peer-to-peer topology, with the location service itself distributed.</p>
 <h1 class="unnumbered" id="references">References</h1>
 <div id="refs" class="references csl-bib-body" role="doc-bibliography">
