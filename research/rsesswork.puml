@@ -1,29 +1,35 @@
 @startuml
+
+!include <logos/r-lang>
+
 skinparam style strictuml
 
 title Requests in Singular Serial R session
 
-actor "R Process\n----\nInitialised with d0, d1" as r #white
+actor "<$r-lang>\n----\nInitialised with d0, d1" as r #white
 
 r -[#66c2a5]> r
 rnote left #66c2a5: d2 <- do.call(fun, args=list(d1))
 activate r #66c2a5
+...
 r -[#66c2a5]> r
 deactivate r
 
 r -[#fc8d62]> r
 rnote left #fc8d62: d3 <- do.call(fun, args=list(d0, d2))
 activate r #fc8d62
+...
 r -[#fc8d62]> r
 deactivate r
 
 r -[#8da0cb]> r
 rnote left #8da0cb: d4 <- do.call(fun, args=list())
 activate r #8da0cb
+...
 r -[#8da0cb]> r
 deactivate r
 
-r -[#e78ac3]> r
+r --[#e78ac3]> r
 rnote left #e78ac3: print(d3)
 
 @enduml

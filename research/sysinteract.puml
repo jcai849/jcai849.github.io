@@ -1,7 +1,6 @@
 @startuml
-skinparam shadowing false
+
 skinparam style strictuml
-skinparam LifelineStrategy nosolid
 skinparam sequenceMessageAlign direction
 
 title Concurrent Requests in New LargeScaleR System

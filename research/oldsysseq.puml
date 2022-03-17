@@ -1,0 +1,57 @@
+@startuml
+
+!include <logos/redis>
+
+skinparam style strictuml
+skinparam sequenceMessageAlign direction
+skinparam ParticipantPadding 70
+
+title Concurrent Requests in Old LargeScaleR System
+
+actor "Client" as c #white
+participant "Worker 1\n----\nInitialised with d0" as w1 #white
+participant "Worker 2\n----\nInitialised with d1" as w2 #white
+queue "Message Service\n<$redis>" as ms #white
+
+w1 --> ms: BLPOP /, /w1, /d0 queues
+w2 --> ms: BLPOP /, /w2, /d1 queues
+
+c -[#66c2a5]> ms: PUSH /: COMPUTE fun(d1)
+rnote left #66c2a5: d2 <- do.ccall(fun, args=list(d1))
+ms -[#66c2a5]> w2: /: COMPUTE fun(d1)
+activate w2 #66c2a5
+
+c -[#fc8d62]> ms: PUSH /d2: RESOLUTION d2?
+rnote left #fc8d62: d3 <- do.ccall(fun, args=list(d0, d2))
+c -[#fc8d62]> ms: BLPOP /d2-res
+...
+w2 --> ms: BLPOP: /, /w2, /d1, /d2 queues
+deactivate w2
+ms -[#fc8d62]> w2: POPPED /d2: RESOLUTION d2?
+w2 -[#fc8d62]> ms: PUSH /d2-res: d2 RESOLVED
+w2 --> ms: BLPOP: /, /w2, /d1, /d2 queues
+ms -[#fc8d62]> c: POPPED /d2-res: RESOLVED d2
+
+c -[#fc8d62]> ms: PUSH /d0: COMPUTE fun(d0, d2)
+ms -[#fc8d62]> w1: POPPED /d0: COMPUTE fun(d0, d2)
+activate w1 #fc8d62
+
+c -[#8da0cb]> ms: PUSH /: COMPUTE fun()
+rnote left #8da0cb: d4 <- do.ccall(fun, args=list())
+ms -[#8da0cb]> w2: POPPED /: COMPUTE fun()
+activate w2 #8da0cb
+
+c -[#e78ac3]> ms: PUSH /d3: EMERGE d3
+rnote left #e78ac3: emerge(d3)
+c -[#e78ac3]> ms: BLPOP /d3-emerge
+...
+w2 --> ms: BLPOP: /, /w2, /d1, /d2, /d4 queues
+deactivate w2
+w1 --> ms: BLPOP: /, /w1, /d0, /d3 queues
+deactivate w1
+ms -[#e78ac3]> w1: POPPED /d3: EMERGE d3
+w1 -[#e78ac3]> ms: PUSH /d3-emerge: d3
+w1 --> ms: BLPOP: /, /w1, /d0, /d3 queues
+ms -[#e78ac3]> c: POPPED /d3-emerge: d3
+
+@enduml

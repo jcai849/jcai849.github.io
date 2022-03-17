@@ -1,30 +1,111 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="385px" preserveAspectRatio="none" style="width:327px;height:385px;background:#FFFFFF;" version="1.1" viewBox="0 0 327 385" width="327px" zoomAndPan="magnify"><defs/><g><rect height="26.2969" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="302" x="12.5" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="292" x="17.5" y="27.9951">Requests in Singular Serial R session</text><rect fill="#66C2A5" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="171.957"/><rect fill="#FC8D62" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="232.0898"/><rect fill="#8DA0CB" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="292.2227"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="248" x2="248" y1="144.8906" y2="378.4219"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="210.5" y="115.292">R Process</text><line style="stroke:none;stroke-width:1.0;" x1="171" x2="320" y1="123.5938" y2="123.5938"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143" x="174" y="141.5889">Initialised with d0, d1</text><ellipse cx="248.5" cy="50.7969" fill="#FFFFFF" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M248.5,58.7969 L248.5,85.7969 M235.5,66.7969 L261.5,66.7969 M248.5,85.7969 L235.5,100.7969 M248.5,85.7969 L261.5,100.7969 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><rect fill="#66C2A5" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="171.957"/><rect fill="#FC8D62" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="232.0898"/><rect fill="#8DA0CB" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="292.2227"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="248.5" x2="295.5" y1="158.957" y2="158.957"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="295.5" x2="295.5" y1="158.957" y2="171.957"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="254.5" x2="295.5" y1="171.957" y2="171.957"/><polygon fill="#66C2A5" points="264.5,167.957,254.5,171.957,264.5,175.957" style="stroke:#66C2A5;stroke-width:1.0;"/><rect fill="#66C2A5" height="23" style="stroke:#181818;stroke-width:0.5;" width="210" x="28" y="159.8906"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="202" x="32" y="175.9575">d2 &lt;- do.call(fun, args=list(d1))</text><line style="stroke:#66C2A5;stroke-width:1.0;" x1="253.5" x2="295.5" y1="199.0234" y2="199.0234"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="295.5" x2="295.5" y1="199.0234" y2="212.0234"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="248.5" x2="295.5" y1="212.0234" y2="212.0234"/><polygon fill="#66C2A5" points="258.5,208.0234,248.5,212.0234,258.5,216.0234" style="stroke:#66C2A5;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="248.5" x2="295.5" y1="219.0898" y2="219.0898"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="295.5" x2="295.5" y1="219.0898" y2="232.0898"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="254.5" x2="295.5" y1="232.0898" y2="232.0898"/><polygon fill="#FC8D62" points="264.5,228.0898,254.5,232.0898,264.5,236.0898" style="stroke:#FC8D62;stroke-width:1.0;"/><rect fill="#FC8D62" height="23" style="stroke:#181818;stroke-width:0.5;" width="234" x="5" y="220.0234"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="226" x="9" y="236.0903">d3 &lt;- do.call(fun, args=list(d0, d2))</text><line style="stroke:#FC8D62;stroke-width:1.0;" x1="253.5" x2="295.5" y1="259.1563" y2="259.1563"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="295.5" x2="295.5" y1="259.1563" y2="272.1563"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="248.5" x2="295.5" y1="272.1563" y2="272.1563"/><polygon fill="#FC8D62" points="258.5,268.1563,248.5,272.1563,258.5,276.1563" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="248.5" x2="295.5" y1="279.2227" y2="279.2227"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="295.5" x2="295.5" y1="279.2227" y2="292.2227"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="254.5" x2="295.5" y1="292.2227" y2="292.2227"/><polygon fill="#8DA0CB" points="264.5,288.2227,254.5,292.2227,264.5,296.2227" style="stroke:#8DA0CB;stroke-width:1.0;"/><rect fill="#8DA0CB" height="23" style="stroke:#181818;stroke-width:0.5;" width="194" x="44" y="280.1563"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="186" x="48" y="296.2231">d4 &lt;- do.call(fun, args=list())</text><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="253.5" x2="295.5" y1="319.2891" y2="319.2891"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="295.5" x2="295.5" y1="319.2891" y2="332.2891"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="248.5" x2="295.5" y1="332.2891" y2="332.2891"/><polygon fill="#8DA0CB" points="258.5,328.2891,248.5,332.2891,258.5,336.2891" style="stroke:#8DA0CB;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="248.5" x2="290.5" y1="344.3555" y2="344.3555"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="290.5" x2="290.5" y1="344.3555" y2="357.3555"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="249.5" x2="290.5" y1="357.3555" y2="357.3555"/><polygon fill="#E78AC3" points="259.5,353.3555,249.5,357.3555,259.5,361.3555" style="stroke:#E78AC3;stroke-width:1.0;"/><rect fill="#E78AC3" height="23" style="stroke:#181818;stroke-width:0.5;" width="63" x="180" y="340.2891"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55" x="184" y="356.356">print(d3)</text><!--MD5=[939ca4a4bc5fc74e425fc713403be49f]
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="491px" preserveAspectRatio="none" style="width:327px;height:491px;background:#FFFFFF;" version="1.1" viewBox="0 0 327 491" width="327px" zoomAndPan="magnify"><defs/><g><rect height="26.2969" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="302" x="12.5" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="292" x="17.5" y="27.9951">Requests in Singular Serial R session</text><rect fill="#66C2A5" height="16.0664" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="243.5" y="193.6602"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="193.6602" y2="209.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="193.6602" y2="209.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="193.6602" y2="193.6602"/><rect fill="#66C2A5" height="12" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="243.5" y="237.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="237.7266" y2="249.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="237.7266" y2="249.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="249.7266" y2="249.7266"/><rect fill="#FC8D62" height="16.0664" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="243.5" y="281.793"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="281.793" y2="297.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="281.793" y2="297.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="281.793" y2="281.793"/><rect fill="#FC8D62" height="12" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="243.5" y="325.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="325.8594" y2="337.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="325.8594" y2="337.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="337.8594" y2="337.8594"/><rect fill="#8DA0CB" height="16.0664" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="243.5" y="369.9258"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="369.9258" y2="385.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="369.9258" y2="385.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="369.9258" y2="369.9258"/><rect fill="#8DA0CB" height="12" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="243.5" y="413.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="413.9922" y2="425.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="413.9922" y2="425.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="425.9922" y2="425.9922"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="248" x2="248" y1="166.5938" y2="209.7266"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="248" x2="248" y1="209.7266" y2="237.7266"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="248" x2="248" y1="237.7266" y2="297.8594"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="248" x2="248" y1="297.8594" y2="325.8594"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="248" x2="248" y1="325.8594" y2="385.9922"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="248" x2="248" y1="385.9922" y2="413.9922"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="248" x2="248" y1="413.9922" y2="484.125"/><image height="38" width="51" x="220" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAAAmCAIAAADm2DRVAAACPElEQVR4XsWX0WHDIAwFs2RWyApZISt0ha7gFbJCVsgKVLWKLA4Bxmna+3SE3pkYjE/pKI/H4z5CajhsNyde6MLkGZZlYbsuu8wYMslSwYCIgRlD5qGUg2ElTTMmzEORBgzOxGYMmYThDT4zz+eTBrXZnhUXIgPDALkoP7WcjKWavMKMaSNClSEiSq+ML9vMGNvmlV3KI62o5uR+zOTumd/ARv4W5vSxYrf9Y8b8iK2Z43yIy+WCB0u1FL3ybUaFCN/Fw8x5rBXkdpnZ4BrmHMK6FWbDJ6y/ABlyFO1mZvJfnyhSUZoQJryANhSt28rArD9h6Q1mqjU2KzUC2D5zvV5ZmpL8R6xzaM3YTF8jZecAts+EZoLsFyzNaEHPbHu9vcFMNlKWZrQgNvNObzKT6yzNaMFmltb9jEaOonEF22daZqxzaIFqJd1p6VLi+9aw/VHk+UvrO7QwSy/IMeEo2k2cZLLv654wMNNTwNKWY8IhtJVq2WOwnc9CJ49Vehgyid0ztBLOtB0txRcrjNqHCSnqhEXD7wC6RPh6Zs6g3xyhVqrN0jpzdMnYWeAjn++YlvFJ/M0hSzLUSqGZQqlSy2BUBmH82aErsaZpltxHDnUczMnIZOhA3Z+u7a3/7E6Onp6ZIgch6jgYkhEzdTJY4bitWysYmxky7dDq5Hkze8ZZ5GDYlJlHLfeY+Q2CRSWu/TcHzQy2z4TLLbXrz9VS+GuzzsnxXE7bX5ul9hDFyv7BbOdS+Aez1B6laM0Xb69n4N6J78EAAAAASUVORK5CYII=" y="102.2969"/><line style="stroke:none;stroke-width:1.0;" x1="171" x2="320" y1="145.2969" y2="145.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143" x="174" y="163.292">Initialised with d0, d1</text><ellipse cx="248.5" cy="50.7969" fill="#FFFFFF" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M248.5,58.7969 L248.5,85.7969 M235.5,66.7969 L261.5,66.7969 M248.5,85.7969 L235.5,100.7969 M248.5,85.7969 L261.5,100.7969 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><rect fill="#66C2A5" height="16.0664" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="243.5" y="193.6602"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="193.6602" y2="209.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="193.6602" y2="209.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="193.6602" y2="193.6602"/><rect fill="#66C2A5" height="12" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="243.5" y="237.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="237.7266" y2="249.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="237.7266" y2="249.7266"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="249.7266" y2="249.7266"/><rect fill="#FC8D62" height="16.0664" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="243.5" y="281.793"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="281.793" y2="297.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="281.793" y2="297.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="281.793" y2="281.793"/><rect fill="#FC8D62" height="12" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="243.5" y="325.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="325.8594" y2="337.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="325.8594" y2="337.8594"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="337.8594" y2="337.8594"/><rect fill="#8DA0CB" height="16.0664" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="243.5" y="369.9258"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="369.9258" y2="385.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="369.9258" y2="385.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="369.9258" y2="369.9258"/><rect fill="#8DA0CB" height="12" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="243.5" y="413.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="243.5" y1="413.9922" y2="425.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="253.5" x2="253.5" y1="413.9922" y2="425.9922"/><line style="stroke:#181818;stroke-width:1.0;" x1="243.5" x2="253.5" y1="425.9922" y2="425.9922"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="248.5" x2="295.5" y1="180.6602" y2="180.6602"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="295.5" x2="295.5" y1="180.6602" y2="193.6602"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="254.5" x2="295.5" y1="193.6602" y2="193.6602"/><polygon fill="#66C2A5" points="264.5,189.6602,254.5,193.6602,264.5,197.6602" style="stroke:#66C2A5;stroke-width:1.0;"/><rect fill="#66C2A5" height="23" style="stroke:#181818;stroke-width:0.5;" width="210" x="28" y="181.5938"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="202" x="32" y="197.6606">d2 &lt;- do.call(fun, args=list(d1))</text><line style="stroke:#66C2A5;stroke-width:1.0;" x1="253.5" x2="295.5" y1="248.7266" y2="248.7266"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="295.5" x2="295.5" y1="248.7266" y2="261.7266"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="248.5" x2="295.5" y1="261.7266" y2="261.7266"/><polygon fill="#66C2A5" points="258.5,257.7266,248.5,261.7266,258.5,265.7266" style="stroke:#66C2A5;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="248.5" x2="295.5" y1="268.793" y2="268.793"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="295.5" x2="295.5" y1="268.793" y2="281.793"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="254.5" x2="295.5" y1="281.793" y2="281.793"/><polygon fill="#FC8D62" points="264.5,277.793,254.5,281.793,264.5,285.793" style="stroke:#FC8D62;stroke-width:1.0;"/><rect fill="#FC8D62" height="23" style="stroke:#181818;stroke-width:0.5;" width="234" x="5" y="269.7266"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="226" x="9" y="285.7935">d3 &lt;- do.call(fun, args=list(d0, d2))</text><line style="stroke:#FC8D62;stroke-width:1.0;" x1="253.5" x2="295.5" y1="336.8594" y2="336.8594"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="295.5" x2="295.5" y1="336.8594" y2="349.8594"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="248.5" x2="295.5" y1="349.8594" y2="349.8594"/><polygon fill="#FC8D62" points="258.5,345.8594,248.5,349.8594,258.5,353.8594" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="248.5" x2="295.5" y1="356.9258" y2="356.9258"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="295.5" x2="295.5" y1="356.9258" y2="369.9258"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="254.5" x2="295.5" y1="369.9258" y2="369.9258"/><polygon fill="#8DA0CB" points="264.5,365.9258,254.5,369.9258,264.5,373.9258" style="stroke:#8DA0CB;stroke-width:1.0;"/><rect fill="#8DA0CB" height="23" style="stroke:#181818;stroke-width:0.5;" width="194" x="44" y="357.8594"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="186" x="48" y="373.9263">d4 &lt;- do.call(fun, args=list())</text><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="253.5" x2="295.5" y1="424.9922" y2="424.9922"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="295.5" x2="295.5" y1="424.9922" y2="437.9922"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="248.5" x2="295.5" y1="437.9922" y2="437.9922"/><polygon fill="#8DA0CB" points="258.5,433.9922,248.5,437.9922,258.5,441.9922" style="stroke:#8DA0CB;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="248.5" x2="290.5" y1="450.0586" y2="450.0586"/><line style="stroke:#E78AC3;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="290.5" x2="290.5" y1="450.0586" y2="463.0586"/><line style="stroke:#E78AC3;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="249.5" x2="290.5" y1="463.0586" y2="463.0586"/><polygon fill="#E78AC3" points="259.5,459.0586,249.5,463.0586,259.5,467.0586" style="stroke:#E78AC3;stroke-width:1.0;"/><rect fill="#E78AC3" height="23" style="stroke:#181818;stroke-width:0.5;" width="63" x="180" y="445.9922"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55" x="184" y="462.0591">print(d3)</text><!--MD5=[2642c6f46289bf499970ffaa1feae2b3]
 @startuml
+
+!include <logos/r-lang>
+
 skinparam style strictuml
 
 title Requests in Singular Serial R session
 
-actor "R Process\n- - - -\nInitialised with d0, d1" as r #white
+actor "<$r-lang>\n- - - -\nInitialised with d0, d1" as r #white
 
 r -[#66c2a5]> r
 rnote left #66c2a5: d2 <- do.call(fun, args=list(d1))
 activate r #66c2a5
+...
 r -[#66c2a5]> r
 deactivate r
 
 r -[#fc8d62]> r
 rnote left #fc8d62: d3 <- do.call(fun, args=list(d0, d2))
 activate r #fc8d62
+...
 r -[#fc8d62]> r
 deactivate r
 
 r -[#8da0cb]> r
 rnote left #8da0cb: d4 <- do.call(fun, args=list())
 activate r #8da0cb
+...
 r -[#8da0cb]> r
 deactivate r
 
-r -[#e78ac3]> r
+r - -[#e78ac3]> r
+rnote left #e78ac3: print(d3)
+
+@enduml
+
+@startuml
+
+sprite $r-lang [51x38/16] {
+000000000000000000023333333333320000000000000000000
+000000000000000333333333333333333334000000000000000
+000000000000333333333333333333333444444000000000000
+000000000033333333333333333333334444444440000000000
+000000003333333333333333333333444444444444400000000
+000000033333333333333333333344444444444445551000000
+000002333333333333333333210000001244444555555400000
+000033333333333333331000000000000000002555555550000
+000333333333333332000000000000000000000003555555000
+001333333333333300000000000000000000000000055566200
+003333333333330000000AAAAAAAAAAAAAAAAAA940000666600
+033333333333300000000AAAAAAAAAAAAAAAAAAAAAA00066660
+033333333333000000000AAAAAAAAAAAAAAAAAAAAAAA0006660
+133333333331000000000AAAAAAAAAAAAAAAAAAAAAAAA006664
+333333333330000000000AAAAAAAAAAAAAAAAAAAAAAAAA00677
+333333333310000000000AAAAAAAAAAAAAAAAAAAAAAAAA00777
+333333333300000000000AAAAAAAA80000004AAAAAAAAA00777
+333333334400000000000AAAAAAAA800000009AAAAAAAA00777
+333333444400000000000AAAAAAAA800000002AAAAAAAA00777
+333344444400000000000AAAAAAAA800000008AAAAAAAA00777
+034444444440000000000AAAAAAAA80000000AAAAAAAAA00770
+044444444440000000000AAAAAAAAAAAAAAAAAAAAAAAA905770
+004444444444000000000AAAAAAAAAAAAAAAAAAAAAAAA007830
+004444444455400000000AAAAAAAAAAAAAAAAAAAAAAA0078800
+000444445555550000000AAAAAAAAAAAAAAAAAAAAA400788000
+000044455555555000000AAAAAAAAAAAAAAAAAA400008880000
+000005555555555550000AAAAAAAAAAAAAAAAAAAA2388800000
+000000455555555666600AAAAAAAA8000AAAAAAAAA988000000
+000000005555556666666AAAAAAAA80000AAAAAAAAA30000000
+000000000255666666666AAAAAAAA956778AAAAAAAAA0000000
+000000000001666666666AAAAAAAA977777AAAAAAAAA7000000
+000000000000003666667AAAAAAAA9777888AAAAAAAAA000000
+000000000000000000367AAAAAAAA9774000AAAAAAAAAA00000
+000000000000000000000AAAAAAAA80000000AAAAAAAAA30000
+000000000000000000000AAAAAAAA800000009AAAAAAAAA0000
+000000000000000000000AAAAAAAA800000000AAAAAAAAAA000
+000000000000000000000AAAAAAAA8000000008AAAAAAAAA000
+000000000000000000000AAAAAAAA8000000000AAAAAAAAAA00
+}
+
+skinparam style strictuml
+
+title Requests in Singular Serial R session
+
+actor "<$r-lang>\n- - - -\nInitialised with d0, d1" as r #white
+
+r -[#66c2a5]> r
+rnote left #66c2a5: d2 <- do.call(fun, args=list(d1))
+activate r #66c2a5
+...
+r -[#66c2a5]> r
+deactivate r
+
+r -[#fc8d62]> r
+rnote left #fc8d62: d3 <- do.call(fun, args=list(d0, d2))
+activate r #fc8d62
+...
+r -[#fc8d62]> r
+deactivate r
+
+r -[#8da0cb]> r
+rnote left #8da0cb: d4 <- do.call(fun, args=list())
+activate r #8da0cb
+...
+r -[#8da0cb]> r
+deactivate r
+
+r - -[#e78ac3]> r
 rnote left #e78ac3: print(d3)
 
 @enduml

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="887px" preserveAspectRatio="none" style="width:1022px;height:887px;background:#FFFFFF;" version="1.1" viewBox="0 0 1022 887" width="1022px" zoomAndPan="magnify"><defs/><g><rect height="26.2969" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="394" x="312.5" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="384" x="317.5" y="27.9951">Concurrent Requests in Old LargeScaleR System</text><rect fill="#FC8D62" height="132.5313" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="413.5" y="535.3203"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="413.5" y1="535.3203" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="423.5" x2="423.5" y1="535.3203" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="423.5" y1="535.3203" y2="535.3203"/><rect fill="#FC8D62" height="50.2656" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="413.5" y="695.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="413.5" y1="695.8516" y2="746.1172"/><line style="stroke:#181818;stroke-width:1.0;" x1="423.5" x2="423.5" y1="695.8516" y2="746.1172"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="423.5" y1="746.1172" y2="746.1172"/><rect fill="#66C2A5" height="70.2656" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="694.5" y="241.125"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="241.125" y2="311.3906"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="241.125" y2="311.3906"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="241.125" y2="241.125"/><rect fill="#66C2A5" height="21.1328" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="694.5" y="339.3906"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="339.3906" y2="360.5234"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="339.3906" y2="360.5234"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="360.5234" y2="360.5234"/><rect fill="#8DA0CB" height="70.2656" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="694.5" y="597.5859"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="597.5859" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="597.5859" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="597.5859" y2="597.5859"/><rect fill="#8DA0CB" height="21.1328" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="694.5" y="695.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="695.8516" y2="716.9844"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="695.8516" y2="716.9844"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="716.9844" y2="716.9844"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="250" x2="250" y1="118.5938" y2="311.3906"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="250" x2="250" y1="311.3906" y2="339.3906"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="250" x2="250" y1="339.3906" y2="667.8516"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="250" x2="250" y1="667.8516" y2="695.8516"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="250" x2="250" y1="695.8516" y2="880.6484"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="418" x2="418" y1="118.5938" y2="311.3906"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="418" x2="418" y1="311.3906" y2="339.3906"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="418" x2="418" y1="339.3906" y2="667.8516"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="418" x2="418" y1="667.8516" y2="695.8516"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="418" x2="418" y1="695.8516" y2="880.6484"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="699" x2="699" y1="118.5938" y2="311.3906"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="699" x2="699" y1="311.3906" y2="339.3906"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="699" x2="699" y1="339.3906" y2="667.8516"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="699" x2="699" y1="667.8516" y2="695.8516"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="699" x2="699" y1="695.8516" y2="880.6484"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="946" x2="946" y1="118.5938" y2="311.3906"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="946" x2="946" y1="311.3906" y2="339.3906"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="946" x2="946" y1="339.3906" y2="667.8516"/><line style="stroke:#A80036;stroke-width:1.0;stroke-dasharray:1.0,4.0;" x1="946" x2="946" y1="667.8516" y2="695.8516"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="946" x2="946" y1="695.8516" y2="880.6484"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="39" x="228" y="115.292">Client</text><ellipse cx="250.5" cy="50.7969" fill="#FFFFFF" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M250.5,58.7969 L250.5,85.7969 M237.5,66.7969 L263.5,66.7969 M250.5,85.7969 L237.5,100.7969 M250.5,85.7969 L263.5,100.7969 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><rect fill="#FFFFFF" height="56.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="131" x="353" y="61"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="62" x="387.5" y="80.9951">Worker 1</text><line style="stroke:#181818;stroke-width:1.0;" x1="353" x2="484" y1="89.2969" y2="89.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="360" y="107.292">Initialised with d0</text><rect fill="#FFFFFF" height="56.5938" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="131" x="634" y="61"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="62" x="668.5" y="80.9951">Worker 2</text><line style="stroke:#181818;stroke-width:1.0;" x1="634" x2="765" y1="89.2969" y2="89.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="641" y="107.292">Initialised with d1</text><path d="M883,48.2969 L1010,48.2969 C1015,48.2969 1015,83.4453 1015,83.4453 C1015,83.4453 1015,118.5938 1010,118.5938 L883,118.5938 C878,118.5938 878,83.4453 878,83.4453 C878,83.4453 878,48.2969 883,48.2969 " fill="#FFFFFF" style="stroke:#181818;stroke-width:0.5;"/><path d="M1010,48.2969 C1005,48.2969 1005,83.4453 1005,83.4453 C1005,118.5938 1010,118.5938 1010,118.5938 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="883" y="66.292">Message Service</text><image height="44" width="51" x="916" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAAAsCAIAAABHQxczAAACgklEQVR4Xq3Y0WHqMAyF4ezECl6BFViBFViBFViBFViBFViBGqtylF+yY9N+bzc+ck7pTRqyvP/J6XQ6qsvlwuV5Cw9MyiVqIe/5fHJg2PfN2KKLwwOmm9nfmj1x55/V7Xbjdm2jzfLvhecxmG40q5iO7Dfjrlv5I+RAwVzker1yzGg2y588d4qcz+fH48Fhdb/fORDhWBE049yw3fGU0uFw4FGVf0hbY22WP1tmux84o0XreFIHxYTxer3e0owrClVCnNmqhXyz3YoLD6jOp2VxzGCpArXyEY6ppbPGFk54b4NWM+YMSX6apXa5Y7kvyC++GrxsoZbjglEzqTarmJ2R7xG1Pdf2oEbyzQTnHFzhMHgbEzy3ipsJ7uGwkWIuwpM5S74Geczhrlt41OGyw90d2fD3TsvFCM+wJX9A+xcHd3Rq8tPM/p9gsKHmB3E+wpnWnZZzEc5EOBPhTJHkCuBhxT0inFHMRTijZHW9Nrlu1EzHbNJDLLhrcEIxN487KuaKoJngtGJuDHdRzBnNZoI7GYxGOGMwupWfkz/3Mx6OcGPFnGJOMReRW+z65Mj1yPYsq9lMi83zfsZsBCO7OO9woGjezzgd4cwW0xHOFLK08+S47tHGmW+njttBXpvMFsj8BbdWzPlmgnOKuRncSzGn4maCeyjm9nC+YMhZ8nMVjzncVTHncKBgyJEXg//w5MhcwVDBkGO/5G7ea4wMp8ZZOzgfwRfHd/jGJT+Gcy7C80c4E+HpVdCs4h4RdlHMOa0Xb1WvmRj5cpVMRS44g6+V95tVPMM87tg10UyMfCoedxkw3UzkJzuePDL1Mhu+bFaxi+q8vB3012bC/iHh2rd+ACsw2NDyBowbAAAAAElFTkSuQmCC" y="69.5938"/><rect fill="#FC8D62" height="132.5313" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="413.5" y="535.3203"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="413.5" y1="535.3203" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="423.5" x2="423.5" y1="535.3203" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="423.5" y1="535.3203" y2="535.3203"/><rect fill="#FC8D62" height="50.2656" style="stroke:#FC8D62;stroke-width:1.0;" width="10" x="413.5" y="695.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="413.5" y1="695.8516" y2="746.1172"/><line style="stroke:#181818;stroke-width:1.0;" x1="423.5" x2="423.5" y1="695.8516" y2="746.1172"/><line style="stroke:#181818;stroke-width:1.0;" x1="413.5" x2="423.5" y1="746.1172" y2="746.1172"/><rect fill="#66C2A5" height="70.2656" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="694.5" y="241.125"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="241.125" y2="311.3906"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="241.125" y2="311.3906"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="241.125" y2="241.125"/><rect fill="#66C2A5" height="21.1328" style="stroke:#66C2A5;stroke-width:1.0;" width="10" x="694.5" y="339.3906"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="339.3906" y2="360.5234"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="339.3906" y2="360.5234"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="360.5234" y2="360.5234"/><rect fill="#8DA0CB" height="70.2656" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="694.5" y="597.5859"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="597.5859" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="597.5859" y2="667.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="597.5859" y2="597.5859"/><rect fill="#8DA0CB" height="21.1328" style="stroke:#8DA0CB;stroke-width:1.0;" width="10" x="694.5" y="695.8516"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="694.5" y1="695.8516" y2="716.9844"/><line style="stroke:#181818;stroke-width:1.0;" x1="704.5" x2="704.5" y1="695.8516" y2="716.9844"/><line style="stroke:#181818;stroke-width:1.0;" x1="694.5" x2="704.5" y1="716.9844" y2="716.9844"/><polygon fill="#181818" points="934.5,145.7266,944.5,149.7266,934.5,153.7266" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="418.5" x2="940.5" y1="149.7266" y2="149.7266"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="158" x="425.5" y="144.6606">BLPOP /, /w1, /d0 queues</text><polygon fill="#181818" points="934.5,174.8594,944.5,178.8594,934.5,182.8594" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="699.5" x2="940.5" y1="178.8594" y2="178.8594"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="158" x="706.5" y="173.7935">BLPOP /, /w2, /d1 queues</text><polygon fill="#66C2A5" points="934.5,205.9922,944.5,209.9922,934.5,213.9922" style="stroke:#66C2A5;stroke-width:1.0;"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="250.5" x2="940.5" y1="209.9922" y2="209.9922"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="166" x="257.5" y="204.9263">PUSH /: COMPUTE fun(d1)</text><rect fill="#66C2A5" height="23" style="stroke:#181818;stroke-width:0.5;" width="217" x="28" y="191.8594"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="209" x="32" y="207.9263">d2 &lt;- do.ccall(fun, args=list(d1))</text><polygon fill="#66C2A5" points="715.5,237.125,705.5,241.125,715.5,245.125" style="stroke:#66C2A5;stroke-width:1.0;"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="709.5" x2="945.5" y1="241.125" y2="241.125"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="125" x="814.5" y="236.0591">/: COMPUTE fun(d1)</text><polygon fill="#FC8D62" points="934.5,268.2578,944.5,272.2578,934.5,276.2578" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="250.5" x2="940.5" y1="272.2578" y2="272.2578"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="178" x="257.5" y="267.1919">PUSH /d2: RESOLUTION d2?</text><rect fill="#FC8D62" height="23" style="stroke:#181818;stroke-width:0.5;" width="241" x="5" y="254.125"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="233" x="9" y="270.1919">d3 &lt;- do.ccall(fun, args=list(d0, d2))</text><polygon fill="#FC8D62" points="934.5,299.3906,944.5,303.3906,934.5,307.3906" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="250.5" x2="940.5" y1="303.3906" y2="303.3906"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="91" x="257.5" y="298.3247">BLPOP /d2-res</text><polygon fill="#181818" points="934.5,356.5234,944.5,360.5234,934.5,364.5234" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="699.5" x2="940.5" y1="360.5234" y2="360.5234"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190" x="706.5" y="355.4575">BLPOP: /, /w2, /d1, /d2 queues</text><polygon fill="#FC8D62" points="710.5,385.6563,700.5,389.6563,710.5,393.6563" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="704.5" x2="945.5" y1="389.6563" y2="389.6563"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="193" x="746.5" y="384.5903">POPPED /d2: RESOLUTION d2?</text><polygon fill="#FC8D62" points="934.5,414.7891,944.5,418.7891,934.5,422.7891" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="699.5" x2="940.5" y1="418.7891" y2="418.7891"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="183" x="706.5" y="413.7231">PUSH /d2-res: d2 RESOLVED</text><polygon fill="#181818" points="934.5,443.9219,944.5,447.9219,934.5,451.9219" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="699.5" x2="940.5" y1="447.9219" y2="447.9219"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190" x="706.5" y="442.856">BLPOP: /, /w2, /d1, /d2 queues</text><polygon fill="#FC8D62" points="261.5,473.0547,251.5,477.0547,261.5,481.0547" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="255.5" x2="945.5" y1="477.0547" y2="477.0547"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="198" x="741.5" y="471.9888">POPPED /d2-res: RESOLVED d2</text><polygon fill="#FC8D62" points="934.5,502.1875,944.5,506.1875,934.5,510.1875" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="250.5" x2="940.5" y1="506.1875" y2="506.1875"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="206" x="257.5" y="501.1216">PUSH /d0: COMPUTE fun(d0, d2)</text><polygon fill="#FC8D62" points="434.5,531.3203,424.5,535.3203,434.5,539.3203" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="428.5" x2="945.5" y1="535.3203" y2="535.3203"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="221" x="718.5" y="530.2544">POPPED /d0: COMPUTE fun(d0, d2)</text><polygon fill="#8DA0CB" points="934.5,562.4531,944.5,566.4531,934.5,570.4531" style="stroke:#8DA0CB;stroke-width:1.0;"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="250.5" x2="940.5" y1="566.4531" y2="566.4531"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="150" x="257.5" y="561.3872">PUSH /: COMPUTE fun()</text><rect fill="#8DA0CB" height="23" style="stroke:#181818;stroke-width:0.5;" width="201" x="44" y="548.3203"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="193" x="48" y="564.3872">d4 &lt;- do.ccall(fun, args=list())</text><polygon fill="#8DA0CB" points="715.5,593.5859,705.5,597.5859,715.5,601.5859" style="stroke:#8DA0CB;stroke-width:1.0;"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="709.5" x2="945.5" y1="597.5859" y2="597.5859"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="165" x="774.5" y="592.52">POPPED /: COMPUTE fun()</text><polygon fill="#E78AC3" points="934.5,624.7188,944.5,628.7188,934.5,632.7188" style="stroke:#E78AC3;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="250.5" x2="940.5" y1="628.7188" y2="628.7188"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="142" x="257.5" y="623.6528">PUSH /d3: EMERGE d3</text><rect fill="#E78AC3" height="23" style="stroke:#181818;stroke-width:0.5;" width="84" x="161" y="610.5859"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="76" x="165" y="626.6528">emerge(d3)</text><polygon fill="#E78AC3" points="934.5,655.8516,944.5,659.8516,934.5,663.8516" style="stroke:#E78AC3;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="250.5" x2="940.5" y1="659.8516" y2="659.8516"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="121" x="257.5" y="654.7856">BLPOP /d3-emerge</text><polygon fill="#181818" points="934.5,712.9844,944.5,716.9844,934.5,720.9844" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="699.5" x2="940.5" y1="716.9844" y2="716.9844"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="218" x="706.5" y="711.9185">BLPOP: /, /w2, /d1, /d2, /d4 queues</text><polygon fill="#181818" points="934.5,742.1172,944.5,746.1172,934.5,750.1172" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="418.5" x2="940.5" y1="746.1172" y2="746.1172"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190" x="425.5" y="741.0513">BLPOP: /, /w1, /d0, /d3 queues</text><polygon fill="#E78AC3" points="429.5,771.25,419.5,775.25,429.5,779.25" style="stroke:#E78AC3;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="423.5" x2="945.5" y1="775.25" y2="775.25"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="157" x="782.5" y="770.1841">POPPED /d3: EMERGE d3</text><polygon fill="#E78AC3" points="934.5,800.3828,944.5,804.3828,934.5,808.3828" style="stroke:#E78AC3;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="418.5" x2="940.5" y1="804.3828" y2="804.3828"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="140" x="425.5" y="799.3169">PUSH /d3-emerge: d3</text><polygon fill="#181818" points="934.5,829.5156,944.5,833.5156,934.5,837.5156" style="stroke:#181818;stroke-width:1.0;"/><line style="stroke:#181818;stroke-width:1.0;stroke-dasharray:2.0,2.0;" x1="418.5" x2="940.5" y1="833.5156" y2="833.5156"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="190" x="425.5" y="828.4497">BLPOP: /, /w1, /d0, /d3 queues</text><polygon fill="#E78AC3" points="261.5,858.6484,251.5,862.6484,261.5,866.6484" style="stroke:#E78AC3;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="255.5" x2="945.5" y1="862.6484" y2="862.6484"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="155" x="784.5" y="857.5825">POPPED /d3-emerge: d3</text><!--MD5=[22ff0cc65c64b55498dcffe45197cc61]
+@startuml
+
+!include <logos/redis>
+
+skinparam style strictuml
+skinparam sequenceMessageAlign direction
+skinparam ParticipantPadding 70
+
+title Concurrent Requests in Old LargeScaleR System
+
+actor "Client" as c #white
+participant "Worker 1\n- - - -\nInitialised with d0" as w1 #white
+participant "Worker 2\n- - - -\nInitialised with d1" as w2 #white
+queue "Message Service\n<$redis>" as ms #white
+
+w1 - -> ms: BLPOP /, /w1, /d0 queues
+w2 - -> ms: BLPOP /, /w2, /d1 queues
+
+c -[#66c2a5]> ms: PUSH /: COMPUTE fun(d1)
+rnote left #66c2a5: d2 <- do.ccall(fun, args=list(d1))
+ms -[#66c2a5]> w2: /: COMPUTE fun(d1)
+activate w2 #66c2a5
+
+c -[#fc8d62]> ms: PUSH /d2: RESOLUTION d2?
+rnote left #fc8d62: d3 <- do.ccall(fun, args=list(d0, d2))
+c -[#fc8d62]> ms: BLPOP /d2-res
+...
+w2 - -> ms: BLPOP: /, /w2, /d1, /d2 queues
+deactivate w2
+ms -[#fc8d62]> w2: POPPED /d2: RESOLUTION d2?
+w2 -[#fc8d62]> ms: PUSH /d2-res: d2 RESOLVED
+w2 - -> ms: BLPOP: /, /w2, /d1, /d2 queues
+ms -[#fc8d62]> c: POPPED /d2-res: RESOLVED d2
+
+c -[#fc8d62]> ms: PUSH /d0: COMPUTE fun(d0, d2)
+ms -[#fc8d62]> w1: POPPED /d0: COMPUTE fun(d0, d2)
+activate w1 #fc8d62
+
+c -[#8da0cb]> ms: PUSH /: COMPUTE fun()
+rnote left #8da0cb: d4 <- do.ccall(fun, args=list())
+ms -[#8da0cb]> w2: POPPED /: COMPUTE fun()
+activate w2 #8da0cb
+
+c -[#e78ac3]> ms: PUSH /d3: EMERGE d3
+rnote left #e78ac3: emerge(d3)
+c -[#e78ac3]> ms: BLPOP /d3-emerge
+...
+w2 - -> ms: BLPOP: /, /w2, /d1, /d2, /d4 queues
+deactivate w2
+w1 - -> ms: BLPOP: /, /w1, /d0, /d3 queues
+deactivate w1
+ms -[#e78ac3]> w1: POPPED /d3: EMERGE d3
+w1 -[#e78ac3]> ms: PUSH /d3-emerge: d3
+w1 - -> ms: BLPOP: /, /w1, /d0, /d3 queues
+ms -[#e78ac3]> c: POPPED /d3-emerge: d3
+
+@enduml
+
+@startuml
+
+sprite $redis [51x44/16] {
+0000000000000000000000009AAA70000000000000000000000
+0000000000000000000007AAAAAAAAA20000000000000000000
+0000000000000000000AAAAAAAAAAAAAAA00000000000000000
+00000000000000009AAAAAA0AAAA0AAAAAAA500000000000000
+00000000000002AAAAAAAAA000000AAAAAAAAAA000000000000
+00000000000AAAAAAAAAA90000000AAAAAAAAAAAA6000000000
+000000005AAAAAAAAAAAA83000000004AAAAAAAAAAAA0000000
+000000AAAAAAAAAAAAAAAAAAA00AAAAAAAAABCAAAAAAAA80000
+0006AAAAAA600000000AAAAAAA0AAAAAAABBBCCCAAAAAAAAA10
+0AAAAAAAA000000000000AAAAAAAAAABBBBBBCCCCCCAAAAAAAA
+AAAAAAAA6000000000000AAAAAAAAABBBBBBBCCCCCBAAAAAAAA
+BAAAAAAAA000000000009AAAAAAAAAAABBBBBCCCAAAAAAAAABB
+BBAAAAAAAAA9100005AAAAAAAAAAAAAAAAABBBAAAAAAAAABBBB
+BBBBBAAAAAAAAAAAAAAAAAAAA4000AAAAAAAAAAAAAAAABBBBBB
+BBBBBBBAAAAAAAAAAA80000000004AAAAAAAAAAAAAABBBBBBBB
+BBBBBBBBBAAAAAAAAAAA00000000AAAAAAAAAAAABBBBBBBBBBB
+6BBBBBBBBBBBAAAAAAAAAA20000AAAAAAAAAAABBBBBBBBBBB20
+00BBBBBBBBBBBBAAAAAAAAAA905AAAAAAAAABBBBBBBBBBBAAA0
+4AAABBBBBBBBBBBBBAAAAAAAAAAAAAAAABBBBBBBBBBBBAAAAAA
+AAAAAAABBBBBBBBBBBBAAAAAAAAAAAABBBBBBBBBBBBAAAAAAAB
+BAAAAAAAABBBBBBBBBBBBAAAAAAAABBBBBBBBBBBBAAAAAAAABB
+BBBAAAAAAAAABBBBBBBBBBBBAABBBBBBBBBBBBAAAAAAAABBBBB
+BBBBBBAAAAAAAABBBBBBBBBBBBBBBBBBBBBBAAAAAAAABBBBBBB
+BBBBBBBBAAAAAAAABBBBBBBBBBBBBBBBBBAAAAAAAABBBBBBBBB
+BBBBBBBBBBAAAAAAAAABBBBBBBBBBBBAAAAAAAAABBBBBBBBBB3
+0BBBBBBBBBBBBAAAAAAAABBBBBBBBAAAAAAAABBBBBBBBBBBB00
+0AABBBBBBBBBBBBAAAAAAAABBBBAAAAAAAABBBBBBBBBBBBAAAA
+AAAAABBBBBBBBBBBBAAAAAAAAAAAAAAAABBBBBBBBBBBAAAAAAA
+BAAAAAAABBBBBBBBBBBBAAAAAAAAAABBBBBBBBBBBBAAAAAAABB
+BBAAAAAAAABBBBBBBBBBBBAAAAAABBBBBBBBBBBBAAAAAAABBBB
+BBBBBAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBAAAAAAAABBBBBB
+BBBBBBBAAAAAAAABBBBBBBBBBBBBBBBBBBBAAAAAAAABBBBBBBB
+BBBBBBBBBAAAAAAAABBBBBBBBBBBBBBBBAAAAAAABBBBBBBBBBB
+9BBBBBBBBBBBAAAAAAAABBBBBBBBBBBAAAAAAABBBBBBBBBBB70
+00BBBBBBBBBBBBAAAAAAAABBBBBBBAAAAAAABBBBBBBBBBB6000
+0000ABBBBBBBBBBBBAAAAAAAAAAAAAAAABBBBBBBBBBBB100000
+0000002BBBBBBBBBBBBAAAAAAAAAAAABBBBBBBBBBBB00000000
+000000000BBBBBBBBBBBBAAAAAAAABBBBBBBBBBB90000000000
+000000000006BBBBBBBBBBBBAAABBBBBBBBBBB2000000000000
+00000000000000BBBBBBBBBBBBBBBBBBBBBB000000000000000
+0000000000000000ABBBBBBBBBBBBBBBBB00000000000000000
+0000000000000000003BBBBBBBBBBBB50000000000000000000
+000000000000000000000BBBBBBBB3000000000000000000000
+000000000000000000000009BBB000000000000000000000000
+}
+
+skinparam style strictuml
+skinparam sequenceMessageAlign direction
+skinparam ParticipantPadding 70
+
+title Concurrent Requests in Old LargeScaleR System
+
+actor "Client" as c #white
+participant "Worker 1\n- - - -\nInitialised with d0" as w1 #white
+participant "Worker 2\n- - - -\nInitialised with d1" as w2 #white
+queue "Message Service\n<$redis>" as ms #white
+
+w1 - -> ms: BLPOP /, /w1, /d0 queues
+w2 - -> ms: BLPOP /, /w2, /d1 queues
+
+c -[#66c2a5]> ms: PUSH /: COMPUTE fun(d1)
+rnote left #66c2a5: d2 <- do.ccall(fun, args=list(d1))
+ms -[#66c2a5]> w2: /: COMPUTE fun(d1)
+activate w2 #66c2a5
+
+c -[#fc8d62]> ms: PUSH /d2: RESOLUTION d2?
+rnote left #fc8d62: d3 <- do.ccall(fun, args=list(d0, d2))
+c -[#fc8d62]> ms: BLPOP /d2-res
+...
+w2 - -> ms: BLPOP: /, /w2, /d1, /d2 queues
+deactivate w2
+ms -[#fc8d62]> w2: POPPED /d2: RESOLUTION d2?
+w2 -[#fc8d62]> ms: PUSH /d2-res: d2 RESOLVED
+w2 - -> ms: BLPOP: /, /w2, /d1, /d2 queues
+ms -[#fc8d62]> c: POPPED /d2-res: RESOLVED d2
+
+c -[#fc8d62]> ms: PUSH /d0: COMPUTE fun(d0, d2)
+ms -[#fc8d62]> w1: POPPED /d0: COMPUTE fun(d0, d2)
+activate w1 #fc8d62
+
+c -[#8da0cb]> ms: PUSH /: COMPUTE fun()
+rnote left #8da0cb: d4 <- do.ccall(fun, args=list())
+ms -[#8da0cb]> w2: POPPED /: COMPUTE fun()
+activate w2 #8da0cb
+
+c -[#e78ac3]> ms: PUSH /d3: EMERGE d3
+rnote left #e78ac3: emerge(d3)
+c -[#e78ac3]> ms: BLPOP /d3-emerge
+...
+w2 - -> ms: BLPOP: /, /w2, /d1, /d2, /d4 queues
+deactivate w2
+w1 - -> ms: BLPOP: /, /w1, /d0, /d3 queues
+deactivate w1
+ms -[#e78ac3]> w1: POPPED /d3: EMERGE d3
+w1 -[#e78ac3]> ms: PUSH /d3-emerge: d3
+w1 - -> ms: BLPOP: /, /w1, /d0, /d3 queues
+ms -[#e78ac3]> c: POPPED /d3-emerge: d3
+
+@enduml
+
+PlantUML version 1.2022.2(Sun Mar 06 05:30:19 NZDT 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NZ
+--></g></svg>
