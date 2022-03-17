@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="385px" preserveAspectRatio="none" style="width:327px;height:385px;background:#FFFFFF;" version="1.1" viewBox="0 0 327 385" width="327px" zoomAndPan="magnify"><defs/><g><rect height="26.2969" style="stroke:#00000000;stroke-width:1.0;fill:none;" width="302" x="12.5" y="10"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="292" x="17.5" y="27.9951">Requests in Singular Serial R session</text><rect fill="#66C2A5" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="171.957"/><rect fill="#FC8D62" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="232.0898"/><rect fill="#8DA0CB" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="292.2227"/><line style="stroke:#181818;stroke-width:0.5;stroke-dasharray:5.0,5.0;" x1="248" x2="248" y1="144.8906" y2="378.4219"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="210.5" y="115.292">R Process</text><line style="stroke:none;stroke-width:1.0;" x1="171" x2="320" y1="123.5938" y2="123.5938"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="143" x="174" y="141.5889">Initialised with d0, d1</text><ellipse cx="248.5" cy="50.7969" fill="#FFFFFF" rx="8" ry="8" style="stroke:#181818;stroke-width:0.5;"/><path d="M248.5,58.7969 L248.5,85.7969 M235.5,66.7969 L261.5,66.7969 M248.5,85.7969 L235.5,100.7969 M248.5,85.7969 L261.5,100.7969 " fill="none" style="stroke:#181818;stroke-width:0.5;"/><rect fill="#66C2A5" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="171.957"/><rect fill="#FC8D62" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="232.0898"/><rect fill="#8DA0CB" height="28.0664" style="stroke:#181818;stroke-width:1.0;" width="10" x="243.5" y="292.2227"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="248.5" x2="295.5" y1="158.957" y2="158.957"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="295.5" x2="295.5" y1="158.957" y2="171.957"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="254.5" x2="295.5" y1="171.957" y2="171.957"/><polygon fill="#66C2A5" points="264.5,167.957,254.5,171.957,264.5,175.957" style="stroke:#66C2A5;stroke-width:1.0;"/><rect fill="#66C2A5" height="23" style="stroke:#181818;stroke-width:0.5;" width="210" x="28" y="159.8906"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="202" x="32" y="175.9575">d2 &lt;- do.call(fun, args=list(d1))</text><line style="stroke:#66C2A5;stroke-width:1.0;" x1="253.5" x2="295.5" y1="199.0234" y2="199.0234"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="295.5" x2="295.5" y1="199.0234" y2="212.0234"/><line style="stroke:#66C2A5;stroke-width:1.0;" x1="248.5" x2="295.5" y1="212.0234" y2="212.0234"/><polygon fill="#66C2A5" points="258.5,208.0234,248.5,212.0234,258.5,216.0234" style="stroke:#66C2A5;stroke-width:1.0;"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="248.5" x2="295.5" y1="219.0898" y2="219.0898"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="295.5" x2="295.5" y1="219.0898" y2="232.0898"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="254.5" x2="295.5" y1="232.0898" y2="232.0898"/><polygon fill="#FC8D62" points="264.5,228.0898,254.5,232.0898,264.5,236.0898" style="stroke:#FC8D62;stroke-width:1.0;"/><rect fill="#FC8D62" height="23" style="stroke:#181818;stroke-width:0.5;" width="234" x="5" y="220.0234"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="226" x="9" y="236.0903">d3 &lt;- do.call(fun, args=list(d0, d2))</text><line style="stroke:#FC8D62;stroke-width:1.0;" x1="253.5" x2="295.5" y1="259.1563" y2="259.1563"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="295.5" x2="295.5" y1="259.1563" y2="272.1563"/><line style="stroke:#FC8D62;stroke-width:1.0;" x1="248.5" x2="295.5" y1="272.1563" y2="272.1563"/><polygon fill="#FC8D62" points="258.5,268.1563,248.5,272.1563,258.5,276.1563" style="stroke:#FC8D62;stroke-width:1.0;"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="248.5" x2="295.5" y1="279.2227" y2="279.2227"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="295.5" x2="295.5" y1="279.2227" y2="292.2227"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="254.5" x2="295.5" y1="292.2227" y2="292.2227"/><polygon fill="#8DA0CB" points="264.5,288.2227,254.5,292.2227,264.5,296.2227" style="stroke:#8DA0CB;stroke-width:1.0;"/><rect fill="#8DA0CB" height="23" style="stroke:#181818;stroke-width:0.5;" width="194" x="44" y="280.1563"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="186" x="48" y="296.2231">d4 &lt;- do.call(fun, args=list())</text><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="253.5" x2="295.5" y1="319.2891" y2="319.2891"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="295.5" x2="295.5" y1="319.2891" y2="332.2891"/><line style="stroke:#8DA0CB;stroke-width:1.0;" x1="248.5" x2="295.5" y1="332.2891" y2="332.2891"/><polygon fill="#8DA0CB" points="258.5,328.2891,248.5,332.2891,258.5,336.2891" style="stroke:#8DA0CB;stroke-width:1.0;"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="248.5" x2="290.5" y1="344.3555" y2="344.3555"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="290.5" x2="290.5" y1="344.3555" y2="357.3555"/><line style="stroke:#E78AC3;stroke-width:1.0;" x1="249.5" x2="290.5" y1="357.3555" y2="357.3555"/><polygon fill="#E78AC3" points="259.5,353.3555,249.5,357.3555,259.5,361.3555" style="stroke:#E78AC3;stroke-width:1.0;"/><rect fill="#E78AC3" height="23" style="stroke:#181818;stroke-width:0.5;" width="63" x="180" y="340.2891"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="55" x="184" y="356.356">print(d3)</text><!--MD5=[939ca4a4bc5fc74e425fc713403be49f]
+@startuml
+skinparam style strictuml
+
+title Requests in Singular Serial R session
+
+actor "R Process\n- - - -\nInitialised with d0, d1" as r #white
+
+r -[#66c2a5]> r
+rnote left #66c2a5: d2 <- do.call(fun, args=list(d1))
+activate r #66c2a5
+r -[#66c2a5]> r
+deactivate r
+
+r -[#fc8d62]> r
+rnote left #fc8d62: d3 <- do.call(fun, args=list(d0, d2))
+activate r #fc8d62
+r -[#fc8d62]> r
+deactivate r
+
+r -[#8da0cb]> r
+rnote left #8da0cb: d4 <- do.call(fun, args=list())
+activate r #8da0cb
+r -[#8da0cb]> r
+deactivate r
+
+r -[#e78ac3]> r
+rnote left #e78ac3: print(d3)
+
+@enduml
+
+PlantUML version 1.2022.2(Sun Mar 06 05:30:19 NZDT 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NZ
+--></g></svg>

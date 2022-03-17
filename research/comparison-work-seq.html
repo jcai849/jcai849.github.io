@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../img/favicon-16x16.png">
+  <link rel="manifest" href="../site.webmanifest">
+  <meta name="author" content="Jason Cairns" />
+  <meta name="dcterms.date" content="2022-03-17" />
+  <title>A Comparison of Work Sequences</title>
+  <link rel="stylesheet" href="../style/style.css" />
+</head>
+<body>
+<a href="../index.html">Home</a>
+<header id="title-block-header">
+<h1 class="title">A Comparison of Work Sequences</h1>
+<p class="author">Jason Cairns</p>
+<p class="date">2022-03-17</p>
+</header>
+<h1 data-number="1" id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>This is an expansion of the previous report demonstrating a standard sequence of work that may take place in the system. The sequence is compared with it’s equivalents in a single session in serial, as well as the previous version of largescaler, and SNOW. The work sequence consists of three calls and an examination.</p>
+<p>A topologically sorted graph of arguments for the calls is given in fig. <a href="#fig:workseq">1</a>.</p>
+<figure>
+<img src="workseq.svg" id="fig:workseq" alt="Figure 1: Graph of call dependencies. d0 and d1 are given, and d4 has no prerequisites, but will be executed after calling d3 in these examples" /><figcaption aria-hidden="true">Figure 1: Graph of call dependencies. <code>d0</code> and <code>d1</code> are given, and <code>d4</code> has no prerequisites, but will be executed after calling <code>d3</code> in these examples</figcaption>
+</figure>
+<h1 data-number="2" id="single-serial-r-session"><span class="header-section-number">2</span> Single, serial R session</h1>
+<figure>
+<img src="rsesswork.svg" id="fig:rsesswork" alt="Figure 2: Sequence diagram of example session in serial R" /><figcaption aria-hidden="true">Figure 2: Sequence diagram of example session in serial R</figcaption>
+</figure>
+<h1 data-number="3" id="snow"><span class="header-section-number">3</span> SNOW</h1>
+<figure>
+<img src="snowseq.svg" id="fig:snowseq" alt="Figure 3: Sequence diagram of example session in SNOW" /><figcaption aria-hidden="true">Figure 3: Sequence diagram of example session in SNOW</figcaption>
+</figure>
+<h1 data-number="4" id="previous-largescaler"><span class="header-section-number">4</span> Previous largescaler</h1>
+<h1 data-number="5" id="new-largescaler"><span class="header-section-number">5</span> New largescaler</h1>
+<figure>
+<img src="sysinteract.svg" id="fig:sysinteract" alt="Figure 4: Sequence diagram of example interaction between client, workers, a nd locator" /><figcaption aria-hidden="true">Figure 4: Sequence diagram of example interaction between client, workers, a nd locator</figcaption>
+</figure>
+</body>
+</html>

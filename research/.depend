@@ -4,3 +4,4 @@ mutability.md: modifyref.svg modifyrefprop.svg
 general.md: ls-obj.svg
 comm-model.md: node-init.svg comm-la.svg comm-lp.svg comm-ep.svg largerscale-class.svg
 architecture.md: largerscale.svg locatordb.svg workerdb.svg workerops.svg sysinteract.svg
+comparison-work-seq.md: workseq.svg rsesswork.svg snowseq.svg sysinteract.svg

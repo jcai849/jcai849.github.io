@@ -1,0 +1,16 @@
+digraph calls {
+	rankdir="LR";
+	node[colorscheme="set24",style="filled"] ;
+	
+	d0;
+	d1;
+	d2[fillcolor=1];
+	d3[fillcolor=2];
+	d4[fillcolor=3];
+	e[label="Examine d3",fillcolor=4];
+
+	d1 -> d2;
+	d0, d2 -> d3;
+	d4;
+	d3 -> e;
+}

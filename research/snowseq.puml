@@ -1,0 +1,40 @@
+@startuml
+skinparam style strictuml
+skinparam sequenceMessageAlign direction
+
+title Concurrent Requests in SNOW
+
+actor "Master\n----\nInitialised with d0, d1" as m #white
+participant "Worker 1" as w1 #white
+participant "Worker 2" as w2 #white
+
+m -[#66c2a5]> w1: fun, d1[split 1]
+rnote left #66c2a5: d2 <- parLapply(cl, d1, fun)
+activate w1 #66c2a5
+m -[#66c2a5]> w2: fun, d1[split 2]
+activate w2 #66c2a5
+w1 -[#66c2a5]> m: d2[split 1]
+deactivate w1
+w2 -[#66c2a5]> m: d2[split 2]
+deactivate w2
+
+m -[#fc8d62]> w1: fun, d2[split 1]
+rnote left #fc8d62: "d3 <- do.call(clusterMap,\n\t\t\tc(list(cl, fun),\n\t\t\tclusterSplit(cl, d2),\n\t\t\tclusterSplit(cl, d0))"
+activate w1 #fc8d62 
+m -[#fc8d62]> w2: fun, d2[split 2]
+activate w2 #fc8d62
+w1 -[#fc8d62]> m: d3[split 1]
+deactivate w1
+w2 -[#fc8d62]> m: d3[split 2]
+deactivate w2
+
+m -[#8da0cb]> w1: fun
+rnote left #8da0cb: d3 <- clusterCall(cl[1], fun)
+activate w1 #8da0cb 
+w1 -[#8da0cb]> m: d4
+deactivate w1
+
+m --[#e78ac3]> m
+rnote left #e78ac3: print(d3)
+
+@enduml

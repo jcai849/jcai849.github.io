@@ -16,7 +16,7 @@ c --[#66c2a5]> ls: GET /data/d1
 rnote left #66c2a5: d2 <- remote_call(fun, args=list(d1))
 ls --[#66c2a5]> c: d1 @ Worker 2
 c -[#66c2a5]> w2: PUT /computation/c1 (result=d2; prereq d1)
-c -[#66c2a5]> ls: POST /data/c1,d2 (w2)
+c -[#66c2a5]> ls: POST /data/c1,d2 (@ Worker 2)
 w2 -[#66c2a5]> w2: PUT /computation-ready/c1
 activate w2 #66c2a5
 
@@ -24,16 +24,16 @@ c --[#fc8d62]> ls: GET /data/d0
 rnote left #fc8d62: d3 <- remote_call(fun, args=list(d0, d2))
 ls --[#fc8d62]> c: d1 @ Worker 2
 c -[#fc8d62]> w1: PUT /computation/c2 (result=d3; prereq=d0,d2)
-c -[#fc8d62]> ls: POST /data/c2,d3 (w1)
+c -[#fc8d62]> ls: POST /data/c2,d3 (@ Worker 1)
 w1 --[#fc8d62]> ls: GET /data/d2
 ls --[#fc8d62]> w1: d2 @ Worker 2
 w1 -[#fc8d62]> w2: GET /data/d2
 
 c --[#8da0cb]> ls: GET /nodes
-rnote left #8da0cb: d2 <- remote_call(fun, args=list())
+rnote left #8da0cb: d4 <- remote_call(fun, args=list())
 ls --[#8da0cb]> c: Node List
 c -[#8da0cb]> w1: PUT /computation/c3 (result=d4; prereq=NULL)
-c -[#8da0cb]> ls: POST /data/c3,d4 (w1)
+c -[#8da0cb]> ls: POST /data/c3,d4 (@ Worker 1)
 w1 -[#8da0cb]> w1: PUT /computation-ready/c3
 activate w1 #8da0cb
 ...
