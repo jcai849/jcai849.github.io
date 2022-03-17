@@ -69,6 +69,8 @@ Furthermore, workers communicate almost entirely amongst themselves in order to 
 
 An example session is given in [@fig:sysinteract].
 The session demonstrates overlap and delay in computations, as well as data transferred in peer fashion among worker nodes.
+There is significant back-and-forth between the client and locator service for the purpose of locating the addresses of chunks - this only reflects the reality of the current system; it is conceivably cached away, making most of the communication unnecessary.
+The diagram has these points of communication shown with dotted lines to illuminate this point.
 The demonstration is also non-optimal in order to show the data transfer; if the `d3` computation was sent to Worker 2 instead of worker 1, there would be no delay, and the computations would be completed in the most efficient order possible.
 This does hint at some degree of synthesis with the previous largescaler, for scheduling optimisation.
 
