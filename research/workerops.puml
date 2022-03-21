@@ -1,11 +1,13 @@
 @startuml
 start
-while (loop forever)
+while (loop while alive)
 switch (request)
 case (PUT /computation/*)
 (A)
+(E)
 case (POST /data/*)
 (B)
+(E)
 case (PUT /computation-ready/*)
 (C)
 case (GET /data/*)
@@ -26,31 +28,27 @@ else (no)
 :locate and issue request for prerequisite data (send GET /data/* request);
 endif
 endwhile (yes)
-if (all prerequisites marked as locally available?) then (yes)
-:set computation ready (send PUT /computation-ready/* to self);
-else (no)
-endif
 end group
 stop
 
 (B)
 :store data;
-group Check if data is prerequisite to computation
-if (data marked as prerequisite) then (yes)
-:mark prerequisite available;
-if (all prerequisites now accounted for) then (yes)
-:set computation ready (send PUT /computation-ready/* to self);
-else (no)
-endif
-else (no)
-endif
-end group
+fork
 group Check if data has associated audience
 if (data has associated audience) then (yes)
 :send to audience;
 else (no)
 endif
 end group
+fork again
+group Check if data is prerequisite to computation
+if (data marked as prerequisite) then (yes)
+:mark prerequisite available;
+else (no)
+endif
+end group
+end fork
+
 stop
 
 (C)
@@ -65,6 +63,13 @@ if (data locally available?) then (yes)
 :Return data to requester;
 else (no)
 :Add requester to audience for data;
+endif
+stop
+
+(E)
+if (all prerequisites for computation marked as locally available?) then (yes)
+:set computation ready (send PUT /computation-ready/* to self);
+else (no)
 endif
 stop
 
