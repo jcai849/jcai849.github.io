@@ -179,16 +179,21 @@ For instance, `summary()`{.R} follows a basic pattern of running a distributed c
 This works for transitive functions such as `min()`{.R} and `max()`{.R}, though isn't accurate for `median()`{.R} or other non-transitive functions.
 This is effectively a map reduce operation and this is just one of many higher-level operations that is enabled through doing a distributed call and then pulling, then running some summary function over the implicitly combined emerged values.
 
-As a demonstration of the power granted by the primitives given by this layer, the full implementation of Math and Summary methods for distributed objects is given in [@lst:mathsum]
+As a demonstration of the power granted by the primitives given by this layer, the full implementation of Math and Summary methods for distributed objects is given in [@lst:mathsum]. Here, Summary is a degenerate Map Reduce, with the implementation of the higher-order `map_reduce` function given as well. The definition of `Summary` automatically grants the functions `all`, `any`, `sum`, `prod`, `min`, `max`, `range`. 
 
-```{#lst:mathsum .R caption="Math and Summary methods defined by largescaler primitives"}
+```{#lst:mathsum .R caption="Math and Summary methods defined by largescaler primitives, as well as map_reduce"}
 Math.DistributedObject <- function(x, ...)
         do.dcall(.Generic, c(list(x=x), list(...)))
 
-Summary.DistributedObject <- function(..., na.rm = FALSE) {
-        mapped <- emerge(do.dcall(.Generic, c(list(...), list(na.rm=na.rm))))
-        do.call(.Generic, c(list(mapped), list(na.rm=na.rm)))
+map_reduce <- function(map, reduce) {
+        function(..., addl_map_args, addl_reduce_args) {
+                mapped <- emerge(do.dcall(map, c(list(...), addl_map_args)))
+                do.call(reduce, c(list(mapped), addl_reduce_args)) # reduced
+        }
 }
+
+Summary.DistributedObject <- function(..., na.rm = FALSE)  
+        map_reduce(.Generic, .Generic)(..., addl_map_args=list(na.rm=na.rm), addl_reduce_args=list(na.rm=na.rm)) 
 ```
 
 # Next Steps
