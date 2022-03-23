@@ -10,35 +10,32 @@ hygiene: bathing toiletry oral-hygiene
 
 energy: nutrition sleep
 core-temperature: clothing shelter
-bathing: bath-water bath-tub soap wash-cloth shelter hot-bath-water
-toiletry: toilet-rinse toilet-wipe toilet shelter hand-washing
+bathing: bath-tub bath-water hot-bath-water soap wash-cloth
+toiletry: toilet toilet-rinse hand-washing
 oral-hygiene: drinking-water toothbrush floss salt-rinse
 
 nutrition: drinking-water food
-sleep: shelter blanket bed bed-sheets pillow
-clothing: garments footwear
-shelter: flooring walls door roof heating lighting
-bath-water: rain-water-capture-system bath-plumbing
+sleep: bed bed-sheet duvet blanket pillow
+clothing: garment footwear
+shelter: flooring walls roof door heating lighting
+bath-water: washing-water bath-plumbing
 bath-tub: bath-tub-creation bath-tub-maintenance
 soap: rendered-fat lye pot firepit container
 wash-cloth: fabric scissors needle thread
-hot-bath-water: back-boiler back-boiler-plumbing 
-toilet-rinse: lota
-toilet-wipe: fabric
+hot-bath-water: boiler boiler-plumbing 
+toilet-rinse: lota towel
 toilet: toilet-creation toilet-maintanance
-hand-washing: basin soap
-drinking-water: drinking-water-source drinking-cups drinking-water-plumbing water-purification
-toothbrush: brush
-floss: fibre container bin
-salt-rinse: cup drinking-water salt
+hand-washing: wash-basin soap towel
+drinking-water: drinking-water-source drinking-water-plumbing water-purification cup
+toothbrush: container brush wash-basin
+floss: string container bin
+salt-rinse: wash-basin cup salt
 
-food: base-and-essence-main side-dishes snacks
+food: main-dish side-dish snack
 lighting: window candle
-bath-tub-creation: barrel bath-plumbing
+bath-tub-creation: tub bath-plumbing
 bath-tub-maintenance: toilet-maintenance squeegee
 blanket: wool-yarn loom
-high-direct-heat: stove firepit
-high-indirect-heat: oven
 rendered-fat: pot water firepit container
 hammer: hammer-handle wedge  hammer-head
 woodworking-chisel: woodworking-chisel-head woodworking-chisel-handle sharpening
@@ -46,29 +43,38 @@ lye: lye-barrel hardwood-ash straw gravel container
 fabric: fabric-creation fabric-maintenance
 toilet-creation: ceramic-glaze toilet-plumbing
 toilet-maintenance: cleaning-brush soap water bucket mop-cloth
+garment: fabric needle thread mangle-board rolling-pin fabric-washing
+heating: tiled-stove
+flooring: broom
 
+broom: twigs rope broomstick
 candle: beeswax wick wax-pot double-boiler high-direct-heat knife drying-stick
-barrel: wooden-staves gimlets dowel saw iron-hoop rivet bung mallet
+tub: wooden-stave gimlets dowel saw iron-hoop rivet bung mallet
 hammer-handle woodworking-chisel-handle: wood gouge chisel hammer saw
-base-and-essence-main: bread-and-cooked-meat bread-and-cooked-egg pasta-meat-sauce crackers-and-cheese 
+main-dish: main-base main-essence sauce
+main-base: bread pasta crepe waffle cracker
+main-essence: cooked-meat  cooked-egg cheese
+sauce: roux stock milk cream butter
 stove: masonry-blocks mortar fire sweep pan
 firepit: masonry-blocks fire sweep pan
 sharpening: grind-wheel sharpening-stones honing-strop 
+fabric-washing: cauldron firepit lye-water washing-water wash-tub washing-bat table drying-line
 
-wooden-staves: coopers-side-axe draw-knife draw-bench jointing-plane
+wooden-stave: coopers-side-axe draw-knife draw-bench jointing-plane
+butter: cream churn
+cream: pancheon milk skim
 
-cooked-meat-and-bread: cooked-meat bread salt
-
+churn: plunger churn-lid barrel
 salt: seawater-brine briquetage saltern-fire
 cooked-meat: grilled-meat baked-meat
 
-grilled-meat: pan stove oil raw-meat
-baked-meat: tray oven oil raw-meat
-bread: flour water salt yeast oven proving-basket bread-mixing-bowl dutch oven
-	@forkish2012fwsy
+grilled-meat: pan stove oil butchered-meat
+baked-meat: tray oven oil butchered-meat
+bread: flour water salt yeast oven proving-basket dough-trough dutch oven
 
 fire: tinderbox kindling firewood
 
+tinderbox: steel flint scorched-linen
 flour: wheat mill flour-container
 yeast: flour water levain-container
 
@@ -76,3 +82,12 @@ roof: timber shingles walls
 
 walls: timber infill foundations
 
+
+thread: yarn
+fabric: loom yarn
+yarn: spindle  wool-batt
+leader-yarn: yarn
+wool-batt: cards wool
+wool: sheep
+
+spindle: shaft hook whorl distaff
