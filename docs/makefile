@@ -11,7 +11,7 @@ index.html: ${OUT} ../templates/docs-index
 	printf "%s\n\n%s" "`cat ../templates/docs-index`" "`../bin/make-index ${OUT}`" |\
 	pandoc ${PFLAGS} -f markdown >${.TARGET}
 
-.SUFFIXES: .html .md .svg .gv .puml
+.SUFFIXES: .html .md .svg .gv .puml .mk
 .md.html:
 	pandoc ${PFLAGSMD} ${.IMPSRC} >${.TARGET}
 .puml.svg: ../bin/plantuml.jar
@@ -21,3 +21,5 @@ index.html: ${OUT} ../templates/docs-index
 clean:
 	rm -f *.html
 	rm -f *.svg
+.mk.gv:
+	gmake -Bnd -k -f ${.IMPSRC} 2>/dev/null | ../bin/makefile2graph/make2graph >${.TARGET}

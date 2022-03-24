@@ -6,7 +6,7 @@ PFLAGS = -st html5 -fmarkdown+hard_line_breaks
 .PHONY: all research docs cv clean pandoc pandoc-crossref
 
 all: research cv docs
-research docs: bin/plantuml.jar
+research docs: bin/plantuml.jar bin/makefile2graph/make2graph
 	cd ${.TARGET} && $(MAKE)
 cv: cv.html
 clean:
@@ -23,3 +23,5 @@ bin/plantuml.jar:
 	grep '[0-9].jar$'' |\
 	sed 1q |\
 	xargs curl -sLo bin/plantuml.jar
+bin/makefile2graph/make2graph:
+	cd bin/makefile2graph && gmake
