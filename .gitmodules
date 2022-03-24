@@ -1,0 +1,3 @@
+[submodule "bin/makefile2graph"]
+	path = bin/makefile2graph
+	url = ssh://git@github.com/lindenb/makefile2graph
