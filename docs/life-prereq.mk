@@ -1,4 +1,8 @@
-health: homeostasis hygiene
+# more on sanitation
+# reorder file with awk | tsort | awk
+# how many cords, bushels, litres reqd?
+
+person: homeostasis hygiene
 
 homeostasis: energy core-temperature
 hygiene: bathing toiletry oral-hygiene
@@ -12,11 +16,10 @@ oral-hygiene: drinking-water toothbrush floss salt-rinse
 nutrition: drinking-water food
 sleep: bed bed-sheet duvet blanket pillow
 clothing: garment footwear
-shelter: flooring walls roof door heating lighting
+shelter: flooring wall roof door heating lighting
 bath-water: washing-water bath-plumbing
 bath-tub: bath-tub-creation bath-tub-maintenance
 soap: rendered-fat lye pot firepit container
-hot-bath-water: boiler boiler-plumbing 
 toilet-rinse: lota towel
 toilet: toilet-creation toilet-maintanance
 hand-washing: wash-basin soap towel
@@ -25,7 +28,8 @@ toothbrush: container brush wash-basin
 floss: string container bin
 salt-rinse: wash-basin cup salt
 
-food: main-dish side-dish snack dining-set
+food: main-dish side-dish snack dining-set cake
+cake: milk eggs honey flour
 lighting: window candle
 bath-tub-creation: tub bath-plumbing
 bath-tub-maintenance: scrubbing squeegee
@@ -38,7 +42,7 @@ lye: lye-barrel hardwood-ash straw gravel container
 fabric: fabric-creation fabric-maintenance
 toilet-creation: ceramic-glaze toilet-plumbing
 scrubbing: cleaning-brush soap washing-water bucket mop-cloth
-garment: fabric-pattern hand-threading leather-strip iron ironing-board tailors-ham fabric-washing
+garment: fabric-pattern hand-threading leather-strip clothes-iron ironing-board tailors-ham fabric-washing
 hand-threading: pin needle thread thimble thread-snip seam-ripper
 heating: tiled-stove
 flooring: broom
@@ -57,8 +61,6 @@ joined-wood-work: trued-wood wood-work-bench saw chisel mallet holdfast
 trued-wood: wood-plane sized-wood
 sized-wood: timber saw
 timber: hewn-lumber
-hewn-lumber: felled-lumber adze
-felled-lumber: woodlot
 
 dining-set: table chair cutlery crockery salt
 fabric-pattern: pattern-design tailor-shears pin
@@ -88,7 +90,8 @@ wick: yarn beeswax
 wax-pot double-boiler: pottery
 beeswax: beehive
 crockery: plate bowl
-plate bowl cup: pottery
+plate bowl: pottery
+cup: glass
 cutlery: knife fork spoon
 knife: blacksmithing sharpening
 spoon: pottery
@@ -98,8 +101,7 @@ anvil dipper tong: blacksmithing
 ceramic-glaze: pottery
 steel-ingot: iron-billet charcoal furnace
 iron-billet: furnace charcoal iron-bloom
-iron-bloom: iron-ore furnace charcoal
-iron-ore: bog-iron
+iron-ore: bog-iron iron-sand
 
 forge: masonry bellows
 wooden-stave: coopers-side-axe draw-knife draw-bench jointing-plane
@@ -130,7 +132,6 @@ hulled-wheat: winnowed-wheat
 winnowed-wheat: threshed-wheat
 threshed-wheat: harvested-wheat
 harvested-wheat: wheat-crop sickle
-straw: harvested-wheat
 
 wheat-crop: soil wheat-seed
 
@@ -138,9 +139,6 @@ soil: topsoil subsoil
 
 topsoil: soil-analysis
 subsoil: percolation-test
-roof: timber shingles walls
-
-walls: timber infill foundations
 
 thread: yarn
 fabric: loom yarn
@@ -161,3 +159,92 @@ harvested-linen: linen-crop
 linen-crop: soil linen-seed
 
 spindle: shaft hook whorl distaff
+
+produce-bed: soil soil-amendment rake
+bed-row: produce-bed twine stake
+sowed-vegetable: seed hoe bed-row
+sowed-wheat: produce-bed rake
+contacted-seed: plank roller sowed-vegetable sowed-wheat
+flowered-wheat: contacted-seed
+tillered-wheat: flowered-wheat roller
+ripe-wheat: tillered-wheat
+reaped-wheat: sickle scythe cradle ripe-wheat
+windrow: reaped-wheat
+scythe: snath scythe-blade
+sheave: windrow chord # spelled sheaf?
+stook: sheave cheesecloth
+wheat-soil: sandy-loam
+soil-amendment: bonemeal kelp
+
+straw: straw-chaff
+threshed-wheat straw-chaff: stook flail straw-chaff threshing-floor
+flail: handle leather-thong flail-head
+winnowed-wheat grain-chaff: winnowing-fan threshed-wheat
+dried-wheat: drying-floor winnowed-wheat grain-turner
+wheat-berry: granary dried-wheat
+flour: sieve milled-grain
+
+milled-grain: wheat-berry mill
+
+access-road: stone-paving
+
+irrigation-water: stream pond
+pond: spillway embankment
+drinking-water: well springhouse ceramic-filter potability-test
+springhouse: spring structure
+stream: above-building-site
+shelter: leeward-rise access-road
+access-road: horse harness fresno-scraper buck-scraper
+laid-out-site: cleared-site corner-stake batter-board tape plumb-bob
+excavated-site: shovel bracing-board ladder
+foundation: excavated-site footing masonry-block perimeter
+
+felled-log: axe saw tree
+tree: woodlot
+board: pit saw
+seasoned-lumber: lumber drying-shed wax
+lumber: felled-log horse sledge saw sawpit
+debarked-log: felled-log drawknife spud
+shake shingle: billet froe lumber maul mallet
+billet: seasoned-lumber
+hewn-lumber: lumber utility-axe broadaxe adze
+beam: hewn-lumber
+
+window: flashing caulk lintel sash jamb shutter curtain
+flooring: subfloor finish-floor joist girder sill foundation
+subfloor: tongue-groove-plank insulation
+roof: wall shingle gutter
+rainwater: cistern rainwater-plumbing
+rainwater-plumbing: gutter pipe
+insulation: wool
+front-Door: vestibule
+wall: wooden-wall stone-wall insulation wooden-peg
+wooden-wall: framing infill plaster siding
+framing: post beam
+stone-wall: masonry
+masonry: stone shim chisel sledge hammer trowel
+mortar: lime clay
+
+livestock: barn fence
+fence: wattle
+barn: bent braces roof
+bent: beam
+firewood: stacked-firewood
+stacked-firewood: shelter split-firewood
+split-firewood: axe bucked-wood
+bucked-wood: saw felled-log
+bellows: leather wood copper-tube casein nail tack
+mill: millstone bedstone hopper rotary-source
+rotary-source: water-wheel
+water-wheel: pit-wheel spindle spur-wheel pinion undershot-wheel
+window: broad-sheet-glass clay
+broad-sheet-glass: tube blowpipe shears iron-plate glass
+glass: sand flux calcium crucible kiln charcoal
+flux: potash
+calcium: limestone
+
+iron-bloom: iron-ore bloomery charcoal
+smelted-iron: bloomery iron-ore charcoal
+lye: ash-hopper ash lye-container # http://journeytoforever.org/biodiesel_ashlye.html
+
+drainage: u-bend pipe waste-vent
