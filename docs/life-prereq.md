@@ -1,5 +1,5 @@
 ---
-title: Autarky From Scratch
+title: An Autarky From Scratch
 date: 2022-03-25
 ---
 
