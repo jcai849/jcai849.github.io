@@ -38,8 +38,12 @@ Most individuals would have had far greater success in self-sufficiency if the t
 A key aspect to the success of self-sufficiency, at both an individual and national level, is a reduction in social complexity.
 Solar panels do not play a part in this - the complexity to manufacture and supply such an assembly, as well as all of the electrical equipment that it powers, is far beyond any acceptable notion of self-sufficiency - certainly more complex than a pencil.
 Social complexity is one of the key drivers for this desire of self-sufficiency, and continued patronisation of inherently complex networks serves to perfectly counter the desired escape from a system perceived to collapse.
+Improperly managed complexity always leads to greater complexity, as increasingly complex solutions are required to fill in the holes created by an already complex system.
+The following is a misquote removed from it's original context, but can be applied most vigorously to any overcomplex system:
 
-The perceptions of collapse are worth considering, contra system-proponents.
+> You wanted a banana but what you got was a gorilla holding the banana and the entire jungle.[@seibel2009-ja]
+
+The perceptions of collapse as mentioned above are also worth considering, contra system-proponents.
 As written above, there have already been supply chain breakdowns, though these have been far milder than a zombie apocalypse scenario.
 Tainter describes the social collapses that have occurred many times throughout history as having common causes, most generally due to a social overreach in complexity, going past the point of diminishing returns.
 His 1988 book, *The Collapse of Complex Societies*, has many interesting discussions and graphs, including an analysis of modern societies, with one graph of particular amusement to me being the rising ratio of administrative staff to researchers and lecturers at Universities in the US.
@@ -81,7 +85,7 @@ They rallied against their own unemployment brought about by industrialisation a
 They validly feared the increased vulnerability that comes with economic displacement.
 Similar movements included the Swing Riots against agricultural mechanisation.
 Their only fallacy was underestimation of just how bad life could get for them following technological progress.
-While social measures may have generally improved, the specific demographics voicing concern who weren't shipped off to Australia, filled up the Victorian poorhouses - those who could get another job often had to handle soul-numbing and dangerous work in a factory, mill, or mine, a far cry from their previous existance.
+An eloquent illustration of the poverty of spiritual life among those centred in the industrial revolution is given by Carlyle's Condition of England Question, elucidated in [Signs of the Times](https://archive.org/details/s5id13297330/page/490/mode/2up), and [Chartism](https://archive.org/details/chartism00carlrich).
 Most of the horrors of employment in service to Victorian Industry were only corrected in the mid Twentieth Century, following the Second World War (itself dependent on industrialisation).
 
 Interestingly, only in the past several years has there been any meaningful movement to a remote style of work that was more common to pre-industrial times.
@@ -128,6 +132,10 @@ The tradition of building from scratch has continued in possibly the most artful
 [Minecraft](https://minecraft.fandom.com/wiki/Minecraft_Wiki) -- indisputibly the greatest video game of all time, as well as best-selling --  has as one of it's core mechanics the construction of tools, items and structures from scratch.
 Beyond the Minecraft clones, [Little Alchemy](http://littlealchemy.com/) is another unique game of combining raw ingredients to compose others, building, again, from scratch.
 
+To the economically minded, a greater case for the "from-scratch" philosphy is given in the microeconomic concept of [vertical integration](https://en.wikipedia.org/wiki/Vertical_integration).
+While not always appropriate, it is in many cases advantageous to vertically integrate - my argument is that actual communities gain in nearly every respect when vertically integrating themselves with their subsistence.
+A fun example of commercial vertical integration, which I had only recently learned, is that of [Rolex, as presented by Forbes](https://www.forbes.com/sites/arieladams/2013/12/05/inside-rolex-understanding-the-worlds-most-impressive-watch-maker/), who own suprisingly many components leading to manufacture of their watches.
+
 My vision of a "from-scratch" way of living is given by a listing of prerequisites.
 In this, I demand more than [a life just-worth living](https://plato.stanford.edu/entries/repugnant-conclusion/) - like Glaucon, I insist on sweets.
 Everything has it's requirements however, and this insistence on sweets must be tempered with the aversion to take a society away from self-sufficiency and into over-complexity.
@@ -147,8 +155,5 @@ The enemy is not complexity, but an inappropriate level of complexity.
 Neither too constrained and therefore unpleasant to work with, and not over-complex and unwieldy.
 
 ![[Graph of prerequisites to self sufficiency](life-prereq.svg)](life-prereq.svg){#fig:life-prereq}
-
-Immportant to note is that the listing is far from complete.
-If you are knowledgeable in any of the relevant areas, particularly decentralised sanitation, please write to me so that I can consider and include your contributions -- no man is an island when it comes to self-sufficiency after all.
 
 # References
