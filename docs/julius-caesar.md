@@ -3,8 +3,6 @@ title: Julius Caesar is Not About Julius Caesar
 date: 2022-05-04
 ---
 
-<!-- @shakespeare2016-jc -->
-
 > There is but one truly serious philosophical problem and that is suicide.[@camus1991]
 
 Shakespeare's Julius Caesar is more about suicide than murder. The death of Caesar is equally the deaths of the conspirators.
@@ -60,5 +58,7 @@ And their emphases on equivalence of self with the other bears this ambiguity in
 
 The removal of the head of the republic by the republic's own supporters was the very death of the republic.
 And in the final three scenes of the final act, the republican conspirator's self-deaths, with the aid of their own supporters.
+
+<div class="invisible" style="visibility:hidden"> @shakespeare2016-jc </div>
 
 # References

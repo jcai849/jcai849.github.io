@@ -3,8 +3,6 @@ title: Notes on The Book of Disquiet
 date: 2022-05-04
 ---
 
-<!-- @pessoa2002 -->
-
 Pessoa/Soares verges on solipsism throughout the book.
 Maybe he believes in the exterior world.
 It doesn't "matter" to him, however, as the world out there still needs to find it's way in to his mind in order to be an object of consideration.
@@ -26,5 +24,6 @@ While in denial about the death of a loved one I find myself extending such deni
 If abstract mathematical objects are to exist independently of mind, mind seems equally capable of existing in it's own right.
 His description is a poetic equivalent of a Euclidean definition.
 Consideration of such points to something that remains true irrespective of anything, including whether they have ever existed.
+<div class="invisible" style="visibility:hidden"> @pessoa2002 </div>
 
 # References
