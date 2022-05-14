@@ -3,9 +3,12 @@ title: Julius Caesar is Not About Julius Caesar
 date: 2022-05-04
 ---
 
-> There is but one truly serious philosophical problem and that is suicide.[@camus1991]
+> There is but one truly serious philosophical problem and that is suicide.
+> - Albert Camus, *Myth of Sisyphus* [@camus1991]
 
-Shakespeare's Julius Caesar is more about suicide than murder. The death of Caesar is equally the deaths of the conspirators.
+Shakespeare's Julius Caesar has death as a dominant theme.
+The form of death is not as obvious - I claim that it speaks more to suicide than murder.
+The death of Caesar is equally the deaths of the conspirators.
 
 > I had as lief not be as live to be
 > In awe of such a thing as I myself.
