@@ -134,7 +134,7 @@ Beyond the Minecraft clones, [Little Alchemy](http://littlealchemy.com/) is anot
 
 To the economically minded, a greater case for the "from-scratch" philosphy is given in the microeconomic concept of [vertical integration](https://en.wikipedia.org/wiki/Vertical_integration).
 While not always appropriate, it is in many cases advantageous to vertically integrate - my argument is that actual communities gain in nearly every respect when vertically integrating themselves with their subsistence.
-A fun example of commercial vertical integration, which I had only recently learned, is that of [Rolex, as presented by Forbes](https://www.forbes.com/sites/arieladams/2013/12/05/inside-rolex-understanding-the-worlds-most-impressive-watch-maker/), who own suprisingly many components leading to manufacture of their watches.
+A fun example of commercial vertical integration, which I had only recently learned from [Jonty](https://jontycg.github.io/), is that of [Rolex, as presented by Forbes](https://www.forbes.com/sites/arieladams/2013/12/05/inside-rolex-understanding-the-worlds-most-impressive-watch-maker/), who own suprisingly many components leading to manufacture of their watches.
 
 My vision of a "from-scratch" way of living is given by a listing of prerequisites.
 In this, I demand more than [a life just-worth living](https://plato.stanford.edu/entries/repugnant-conclusion/) - like Glaucon, I insist on sweets.
