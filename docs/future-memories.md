@@ -9,14 +9,24 @@ date: 2022-05-15
 
 A meaningful experience of the world necessitates memory in order to provide context.
 Without any memory, experience is one eternal still-life; a description of one frame after another is nonsensical, as there is no notion of succession without memory.
-
-Re-memberance is always such - a "re", as moments themselves are experienced in a present form of memory.
+Re-memberance is always such - a "*re*" (latin: again), as moments themselves are experienced in a "present" form of memory.
 The world exists as memory to the inhabitant then, and without memory there is no world.
-If memory is bodily, ethereal existence is already ineffable on this one point.
-And at the moment of transition to a purely ethereal existence, there is no memory, and no meaningful experience of the world.
+To experience is to remember.
+But remembrance is itself an experience.
+Remembrance must therefore be experienced as a memory itself.
+An infinite chain arises.
+In such a chain, an experiencer can't possibly disappear - it is needed in order to eternally remember, in order to experience.
+Further questions envelope the subject;
+Is it even myself that is needed in this memory?
+If not, who is the one that is engaging in this reflection?
+Where in time and space does this being exist?
+And how can such memorial experience ever take place, as an infinite chain cannot be completed?
 
-If memories be fallible, as any other method of perception, let them be.
-Remember and experience whatever you allow for - it is your entirely unique perception as it is in itself, unable to be assigned truth value.
+If memory is bodily, then a purely ethereal existence is already ineffable on this one point.
+And at the moment of transition to an entirely ethereal existence, there is no memory, and no meaningful experience of the world.
 
-He, who can't, wanders freely amidst my memories following the inability to.
+And if memories be fallible, as are any of the other methods of perception, let them be.
+Remember and experience whatever you allow for - it is your entirely unique and private perception as it is in itself, unable to be assigned truth value.
+
+He, who can't, wanders freely amidst my memories, following his inability to.
 Interposes himself where he was not - I welcome him, though for now it makes his absence ever recent, and bears it continuously parallel to the present.
