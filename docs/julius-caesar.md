@@ -10,11 +10,11 @@ Shakespeare's Julius Caesar has death as a dominant theme.
 The form of death is not as obvious - I claim that it speaks more to suicide than murder.
 The death of Caesar is equally the deaths of the conspirators.
 
-> I had as lief not be as live to be
-> In awe of such a thing as I myself.
-> I was born free as Caesar; so were you;
-> We both have fed as well, and we can both
-> Endure the winter's cold as well as he
+> I had as lief not be as live to be  
+> In awe of such a thing as I myself.  
+> I was born free as Caesar; so were you;  
+> We both have fed as well, and we can both  
+> Endure the winter's cold as well as he  
 
 Cassius' disgust at Caesars all-too-human humanity is equally applicable to his own as well as any other conspirator, with Ligarius being a particularly ironic example of such.
 Yes, they're saying that he's no God and shouldn't be treated as such, but they're also saying far more.
@@ -24,37 +24,37 @@ When they kill Caesar, they kill their identical.
 
 Cassius specifically equates even the name-reference of "Caesar" to "Brutus".
 
-> "Brutus" and "Caesar": what should be in that "Caesar"?
-> Why should that name be sounded more than yours?
-> Write them together, yours is as fair a name;
-> Sound them, it doth become the mouth as well;
-> Weigh them, it is as heavy; conjure with 'em,
-> "Brutus" will start a spirit as soon as "Caesar."
+> "Brutus" and "Caesar": what should be in that "Caesar"?  
+> Why should that name be sounded more than yours?  
+> Write them together, yours is as fair a name;  
+> Sound them, it doth become the mouth as well;  
+> Weigh them, it is as heavy; conjure with 'em,  
+> "Brutus" will start a spirit as soon as "Caesar."  
 
 The purposive ambiguity of many statements furthers this identity of the object of death with the self.
 
-> But life, being weary of these worldly bars,
-> Never lacks power to dismiss itself.
-> If I know this, know all the world besides,
-> That part of tyranny that I do bear
-> I can shake off at pleasure.
+> But life, being weary of these worldly bars,  
+> Never lacks power to dismiss itself.  
+> If I know this, know all the world besides,  
+> That part of tyranny that I do bear  
+> I can shake off at pleasure.  
 
-> So can I:
-> So every bondman in his own hand bears
-> The power to cancel his captivity.
+> So can I:  
+> So every bondman in his own hand bears  
+> The power to cancel his captivity.  
 
 This can be directed equally at master or self
 
-> Fates, we will know your pleasures.
-> That we shall die, we know; 'tis but the time
-> And drawing days out, that men stand upon.
+> Fates, we will know your pleasures.  
+> That we shall die, we know; 'tis but the time  
+> And drawing days out, that men stand upon.  
 
-> Why, he that cuts off twenty years of life
-> Cuts off so many years of fearing death.
+> Why, he that cuts off twenty years of life  
+> Cuts off so many years of fearing death.  
 
-> Grant that, and then is death a benefit:
-> So are we Caesar's friends, that have abridg'd
-> His time of fearing death.
+> Grant that, and then is death a benefit:  
+> So are we Caesar's friends, that have abridg'd  
+> His time of fearing death.  
 
 Again, equivalent to self or other.
 And their emphases on equivalence of self with the other bears this ambiguity in the direction of self.
