@@ -6,20 +6,41 @@ date: 2022-06-02
 One of the greatest forms of social capital and source of human meaning lies with the construct known as the family.
 This element of social order is severely eroded, having been reduced in the common understanding to refer only to nuclear family, and faces further deconstruction beyond that.
 
-A significant wedge in the crevice is likely found in a lack of general social concern for marriage.
+Marriage in legal and social forms provide support for the structure of a family over the lifetime of it's constituent members.
+Any change in the structure supporting family changes the family itself.
+As such, a significant wedge in the crevice for family is likely found in a lack of general social concern for marriage, shown in it's general decline in both numbers and quality.
 
-This is due in turn to the non-concern over sexuality and it's concomitant ethics.
-Rather than being held in tension to virtues such as duty and chastity, sexuality is an action and a state of being, simultaneously everywhere and nowhere.
+Unique among contracts is the sexual aspect to marriage.
+While the actuality of sexuality may vary, the tokens and rituals that are informed by it end up defining much of what makes a marriage.
+The telos of marriage necessitates sexuality; to claim sexuality as irrelevant to marriage is to extend such a claim to it's associations, and fundamentally strike at the core of marriage.
+Ignorance of sexuality in marriage is equally a breakdown in any understanding of marriage.
+ 
+Indeed there remains a non-concern over sexuality and it's concomitant ethics.
+Rather than being held in tension to virtues such as duty and chastity, sexuality is an action and a state of being ("bodies and pleasure"), simultaneously everywhere and nowhere.
 Intercourse is just another act, but a special case that holds broad public taboo.
 Public reference to sexuality is strictly indirect.
 In recent decades, the gay pride movement has provided some of the most powerful arguments in support of the institution of marriage - yet this very movement distances itself publicly from explicit sexuality, with proponents placing most of their emphasis on love, which is ironically something which has not had anywhere near as much social censure as actual sexuality.
 Perhaps this is an exploitation of "love" being such an overloaded term in English compared with, e.g. Ancient Greek in [ἀγάπη](https://en.wikipedia.org/wiki/Agape), [ἔρως](https://en.wikipedia.org/wiki/Eros_(concept)), [φιλία](https://en.wikipedia.org/wiki/Philia), [στοργή](https://en.wikipedia.org/wiki/Storge), etc.. 
 Privately, sexuality in general pervades far more than is publicly referenced, between daily rituals of "swiping right" and the "private tab".
 
+Sexuality influences and is influenced by social relations generally.
+Any change in one necessitates a change in the other.
+Sexuality is the foremost of any relation, at a fundamental psychological level providing impetus to human action despite it's typical burial under some alternative, bowlderised, rationalisation for action.
+Attachment likewise is a well-understood physiological process as a side effect for those who aren't numbed to it.
+It is the most raw form of sociality, rendering one utterly bare.
+Foucault[@foucault2019history] and Scruton[@scruton2006sexual] shared at the very least a conviction in the importance of sexuality, placing it one step above the shrug of the shoulders that the mass mind has been conditioned to express, this expression likely being a subverted puritan relic.
+Scruton did a better job of relating the importance of it to formal recognition, in marriage, though they both agreed on the formation of social relations possessing close ties to sexual relations.
+
 The lack of concern for sexuality is grounded in a denial of it's formation of social relations, which ultimately stems from a lack of concern for social relations in general.
 Social relations of friendship in particular sees friends as just another form of entertainment, possibly becoming outmoded by newer forms of pleasure.
 
-This is due to a lack of interdependence between people in situ, where no "bonds" exist to hold them together as a physical community.
+When forced to depend on another, bonds are always created.
+Certain situations in modern times forge these bonds, with military comraderie being a notable example.
+In "village times", survival of the more mundane form also required close co-operation.
+Dependence is sufficient, but not necessary, for sociality.
+Independence therefore has a chance at undoing sociality, in the case where dependence is all that holds a community together.
+
+As such, a lack of concern for sociality may be due to a lack of interdependence between people in situ, where no "bonds" exist to hold them together as a physical community.
 Of course, another irony is that people are more dependent than ever, just not on anyone that they know personally.
 
 My breaking-off point is to question where such local independence stems from.
