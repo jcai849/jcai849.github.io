@@ -12,6 +12,6 @@ The ironic man does so to show confidence, satire; a shrug of the shoulders. Wha
 The genuinely sincere man possesses an "inner child", so sweet, and should probably be kept away from children.
 Neither act like a man of common sense.
 
-The rejection of the conversation is a form of sincerity itself, and, ironically, with transgression now entrenched as orthodoxy, the refusal to transgress "common sense" is in itself a transgression.
+The rejection of the conversation is a form of sincerity itself, and, ironically, with transgression entrenched as orthodoxy, the refusal to transgress "common sense" is in itself a transgression.
 
 # References
