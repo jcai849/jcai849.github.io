@@ -36,7 +36,7 @@ No man is an island, and it would be better in these cases to interpret the "sel
 Most individuals would have had far greater success in self-sufficiency if the tasks of a resiliant community were actually spread among a community.
 
 A key aspect to the success of self-sufficiency, at both an individual and national level, is a reduction in social complexity.
-Solar panels do not play a part in this - the complexity to manufacture and supply such an assembly, as well as all of the electrical equipment that it powers, is far beyond any acceptable notion of self-sufficiency - certainly more complex than a pencil.
+Solar panels do not play a part in this - the complexity to manufacture and supply such an assembly, as well as all of the electrical equipment that it powers, is far beyond any acceptable notion of self-sufficiency - certainly more complex than a [pencil](https://fee.org/resources/i-pencil/).
 Social complexity is one of the key drivers for this desire of self-sufficiency, and continued patronisation of inherently complex networks serves to perfectly counter the desired escape from a system perceived to collapse.
 Improperly managed complexity always leads to greater complexity, as increasingly complex solutions are required to fill in the holes created by an already complex system.
 The following is a misquote removed from it's original context, but can be applied most vigorously to any overcomplex system:
@@ -153,6 +153,8 @@ When presented with the graph, ironically the first response is that it is compl
 This is correct.
 The enemy is not complexity, but an inappropriate level of complexity.
 Neither too constrained and therefore unpleasant to work with, and not over-complex and unwieldy.
+Clearly there is a capacity for some complexity.
+Best to take the complexity that struggles to supply a good life, get that completely managed (as shown here), and use the surplus capacity for complexity to solve health and space travel.
 
 ![[Graph of prerequisites to self sufficiency](life-prereq.svg)](life-prereq.svg){#fig:life-prereq}
 

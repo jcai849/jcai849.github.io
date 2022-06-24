@@ -10,6 +10,7 @@ Shakespeare's Julius Caesar has death as a dominant theme.
 The form of death is not as obvious - I claim that it speaks more to suicide than murder.
 The death of Caesar is equally the deaths of the conspirators.
 
+> CASSIUS.
 > I had as lief not be as live to be  
 > In awe of such a thing as I myself.  
 > I was born free as Caesar; so were you;  
@@ -24,6 +25,7 @@ When they kill Caesar, they kill their identical.
 
 Cassius specifically equates even the name-reference of "Caesar" to "Brutus".
 
+> CASSIUS.
 > "Brutus" and "Caesar": what should be in that "Caesar"?  
 > Why should that name be sounded more than yours?  
 > Write them together, yours is as fair a name;  
@@ -33,25 +35,30 @@ Cassius specifically equates even the name-reference of "Caesar" to "Brutus".
 
 The purposive ambiguity of many statements furthers this identity of the object of death with the self.
 
+> CASSIUS.
 > But life, being weary of these worldly bars,  
 > Never lacks power to dismiss itself.  
 > If I know this, know all the world besides,  
 > That part of tyranny that I do bear  
 > I can shake off at pleasure.  
-
+>
+> CASCA.
 > So can I:  
 > So every bondman in his own hand bears  
 > The power to cancel his captivity.  
 
 This can be directed equally at master or self
 
+> BRUTUS.
 > Fates, we will know your pleasures.  
 > That we shall die, we know; 'tis but the time  
 > And drawing days out, that men stand upon.  
-
+>
+> CASCA.
 > Why, he that cuts off twenty years of life  
 > Cuts off so many years of fearing death.  
-
+>
+> BRUTUS.
 > Grant that, and then is death a benefit:  
 > So are we Caesar's friends, that have abridg'd  
 > His time of fearing death.  

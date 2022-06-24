@@ -41,7 +41,8 @@ chisel: chisel-head chisel-handle sharpening
 lye: lye-barrel hardwood-ash straw gravel container
 fabric: fabric-creation fabric-maintenance
 toilet-creation: ceramic-glaze toilet-plumbing
-scrubbing: cleaning-brush soap washing-water bucket mop-cloth
+scrubbing: cleaning-brush soap washing-water bucket mop
+mop: mop-nail rag
 garment: fabric-pattern hand-threading leather-strip clothes-iron ironing-board tailors-ham fabric-washing
 hand-threading: pin needle thread thimble thread-snip seam-ripper
 heating: tiled-stove
@@ -213,7 +214,7 @@ beam: hewn-lumber
 window: flashing caulk lintel sash jamb shutter curtain
 flooring: subfloor finish-floor joist girder sill foundation
 subfloor: tongue-groove-plank insulation
-roof: wall shingle gutter
+roof: wall shingle gutter rafter
 rainwater: cistern rainwater-plumbing
 rainwater-plumbing: gutter pipe
 insulation: wool
