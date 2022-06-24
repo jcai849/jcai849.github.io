@@ -6,14 +6,14 @@ date: 2022-06-02
 One of the greatest forms of social capital and source of human meaning lies with the construct known as the family.
 This element of social order is severely eroded, having been reduced in the common understanding to refer only to nuclear family, and faces further deconstruction beyond that.
 
-A significant wedge in the crevice that is the idea of family is likely found in a lack of general social concern for marriage.
+A significant wedge in the crevice is likely found in a lack of general social concern for marriage.
 
-This is due in turn to the non-concern over sexuality.
-Sexuality, rather than being afforded tight regulation, is simultaneously everywhere and nowhere.
-Intercourse is just another act, but one that holds broad public taboo.
+This is due in turn to the non-concern over sexuality and it's concomitant ethics.
+Rather than being held in tension to virtues such as duty and chastity, sexuality is an action and a state of being, simultaneously everywhere and nowhere.
+Intercourse is just another act, but a special case that holds broad public taboo.
 Public reference to sexuality is strictly indirect.
-In recent decades, the gay pride movement has provided some of the most powerful arguments in support of the institution of marriage - yet this movement distances itself publicly from explicit sexuality, with proponents placing most of their emphasis on love, which is ironically something which has not had anywhere near as much social censure as actual sexuality.
-Perhaps this is an exploitation of "love" being such an overloaded term in English compared with, e.g. Attic Greek in [ἀγάπη](https://en.wikipedia.org/wiki/Agape), [ἔρως](https://en.wikipedia.org/wiki/Eros_(concept)), [φιλία](https://en.wikipedia.org/wiki/Philia), [στοργή](https://en.wikipedia.org/wiki/Storge), [φιλαυτία](https://en.wikipedia.org/wiki/Self-love), [ξενία](https://en.wikipedia.org/wiki/Xenia_(Greek)), etc..
+In recent decades, the gay pride movement has provided some of the most powerful arguments in support of the institution of marriage - yet this very movement distances itself publicly from explicit sexuality, with proponents placing most of their emphasis on love, which is ironically something which has not had anywhere near as much social censure as actual sexuality.
+Perhaps this is an exploitation of "love" being such an overloaded term in English compared with, e.g. Ancient Greek in [ἀγάπη](https://en.wikipedia.org/wiki/Agape), [ἔρως](https://en.wikipedia.org/wiki/Eros_(concept)), [φιλία](https://en.wikipedia.org/wiki/Philia), [στοργή](https://en.wikipedia.org/wiki/Storge), etc.. 
 Privately, sexuality in general pervades far more than is publicly referenced, between daily rituals of "swiping right" and the "private tab".
 
 The lack of concern for sexuality is grounded in a denial of it's formation of social relations, which ultimately stems from a lack of concern for social relations in general.
@@ -42,6 +42,7 @@ This is effectively the top-level problem that is being investigated in this ver
 Hillbilly Elegy implicitly ties the destruction rooted in familial breakdown as the cause of independence: after involvement with destructive people, greater independence from people is naturally sought, as depicted in [@fig:non-concern].
 A vicious circularity entails.
 More questions arise: how can such a cycle be broken and returned from? How can it be prevented?
+I offer a [partial answer at a subject level](coldness.html), but it still remains insufficient.
 
 ![Trail of Non-Concern](non-concern.svg){#fig:non-concern}
 

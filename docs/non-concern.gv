@@ -1,9 +1,11 @@
 digraph G {
+	destructivity [label="☠️"];
+
 	family -> marriage;
 	marriage -> sexuality;
 	sexuality -> sociality;
 	sociality -> interdependence;
-	interdependence -> destructivity [label="?"];
-	destructivity -> interdependence [label="?"];
-	destructivity -> family [label="?"];
+	interdependence -> destructivity;
+	destructivity -> interdependence;
+	destructivity -> family;
 }
