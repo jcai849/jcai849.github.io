@@ -1,10 +1,22 @@
 ---
-title: Trail of non-Concern
+title: Trail of Non-Concern
 date: 2022-06-02
 ---
 
 One of the greatest forms of social capital and source of human meaning lies with the construct known as the family.
 This element of social order is severely eroded, having been reduced in the common understanding to refer only to nuclear family, and faces further deconstruction beyond that.
+
+Here I'm laying out my model that seeks to capture some explanation for familial breakdown in the large.
+I'm saying that it has deep roots, with supporting entities broken down on the way, and in turn their support all breaks based on general non-concern.
+I claim that family and marriage are interrelated, and that marital breakdown can lead to family breakdown.
+That this is equally so in the conceptual realm.
+If sexuality breaks down then so too can marriage.
+Social breakdown damages the concept of sexuality.
+And a drive for independence often leads to social breakdown.
+I describe what it means for each concept to be broken down, and I link these in theory, based on my experience in the world.
+If these entities can be seen to be supporting their respective concepts, and that they are all in fact broken, and that it is observed that non-concern for each breaks their higher supported entity, then there may be something of value to this model.
+And experience does seem to validate precisely that.
+Continuing:
 
 Marriage in legal and social forms provide support for the structure of a family over the lifetime of it's constituent members.
 Any change in the structure supporting family changes the family itself.
@@ -28,7 +40,7 @@ Any change in one necessitates a change in the other.
 Sexuality is the foremost of any relation, at a fundamental psychological level providing impetus to human action despite it's typical burial under some alternative, bowlderised, rationalisation for action.
 Attachment likewise is a well-understood physiological process as a side effect for those who aren't numbed to it.
 It is the most raw form of sociality, rendering one utterly bare.
-Foucault[@foucault2019history] and Scruton[@scruton2006sexual] shared at the very least a conviction in the importance of sexuality, placing it one step above the shrug of the shoulders that the mass mind has been conditioned to express, this expression likely being a subverted puritan relic.
+Foucault[@foucault2019history] and Scruton[@scruton2006sexual] shared at the very least a conviction in the importance of sexuality, placing it one step above the shrug of the shoulders that the mass mind has been conditioned to express -- this expression likely being a subverted puritan relic.
 Scruton did a better job of relating the importance of it to formal recognition, in marriage, though they both agreed on the formation of social relations possessing close ties to sexual relations.
 
 The lack of concern for sexuality is grounded in a denial of it's formation of social relations, which ultimately stems from a lack of concern for social relations in general.
@@ -36,7 +48,7 @@ Social relations of friendship in particular sees friends as just another form o
 
 When forced to depend on another, bonds are always created.
 Certain situations in modern times forge these bonds, with military comraderie being a notable example.
-In "village times", survival of the more mundane form also required close co-operation.
+In "village times", survival of the more mundane form also required close co-operation, thereby fostering exceptionally tight communal bonds.
 Dependence is sufficient, but not necessary, for sociality.
 Independence therefore has a chance at undoing sociality, in the case where dependence is all that holds a community together.
 
@@ -56,11 +68,11 @@ The formation of attitudes around social bonds reflects this, with Etymonline pr
 Irrespectively, this discussion of a single word serves only as a potential hint, and the above questions regarding the increased direct social independence remain in serious need of answer.
 
 Looking at truly broken communities may give a more illustrative answer, as an example of the absurdem reached further along the trajectory of familial and social breakdown.
-In Hillbilly Elegy[@vance2016], J.D. Vance relates the cultural dissolution of the Scots-Irish "hillbillies" who compose a large share of the American Appalachian population.
+In *Hillbilly Elegy*[@vance2016], J.D. Vance relates the cultural dissolution of the Scots-Irish "hillbillies" who compose a large share of the American Appalachian population.
 The story of his own family is offered as a characterisation of the destruction in the larger scale, and a remark from his sister is telling: "you just can't depend on people".
 After families break down, their members become increasingly destructive to themselves and each other.
 This is effectively the top-level problem that is being investigated in this very document.
-Hillbilly Elegy implicitly ties the destruction rooted in familial breakdown as the cause of independence: after involvement with destructive people, greater independence from people is naturally sought, as depicted in [@fig:non-concern].
+Vance implicitly ties the destruction rooted in familial breakdown as the cause of independence: after involvement with destructive people, greater independence from people is naturally sought, as depicted in [@fig:non-concern].
 A vicious circularity entails.
 More questions arise: how can such a cycle be broken and returned from? How can it be prevented?
 I offer a [partial answer at a subject level](coldness.html), but it still remains insufficient.
