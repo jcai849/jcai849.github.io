@@ -7,27 +7,7 @@
 		<h1>Jason Cairns Curriculum Vitae</h1>
 		<h2>Work Experience</h2>
 		<h2>Education</h2>
-		<table><TR><TH>Qualification</TH>
-<TH>Title</TH>
-<TH>Institution</TH>
-<TH>Date Range</TH>
-</TR>
-<TR><TD>Ph.D. Candidate</TD>
-<TD>A Platform for Large-Scale Statistical Modelling Using R</TD>
-<TD>University of Auckland</TD>
-<TD>2020-2024</TD>
-</TR>
-<TR><TD>Bachelor of Science (Honours I)</TD>
-<TD>&lt;a href=&quot;https://github.com/jcai849/stats-781&quot;&gt;Enabling Text Analytics&lt;/a&gt;</TD>
-<TD>University of Auckland</TD>
-<TD>2019</TD>
-</TR>
-<TR><TD>Bachelor of Science</TD>
-<TD>Statistics and Logic &amp; Computation</TD>
-<TD>University of Auckland</TD>
-<TD>2016-2018</TD>
-</TR>
-</table>
+		<table>undivert(`education.html.tab')</table>
 		<h3>Academic Awards</h3>
 		<ul>
 		<li>University of Auckland Doctoral Scholarship</li>
