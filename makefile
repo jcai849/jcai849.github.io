@@ -1,14 +1,16 @@
-.SUFFIXES: .csv .html.tab .html .html.m4
+.SUFFIXES: .html .html.m4 .svg .svg.vcf
 .PHONY: clean
 
 all: index.html
-index.html: education.html.tab
 
-.csv.html.tab:
-	(echo .import --csv "$<" tmp; echo 'select * from tmp;' ) | sqlite3 -header -html >"$@"
+index.html: contact.html work.html skills.html awards.html education.tab.html
+contact.html: vcard.svg
 
+.svg.vcf.svg:
+	qrencode -tsvg -r"$<" >"$@"
 .html.m4.html:
 	m4 "$<" >"$@"
 
 clean:
-	rm -rf *.html
+	rm -rf index.html
+	rm -rf *.svg
