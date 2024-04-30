@@ -1,0 +1,23 @@
+BASE <httpschema://jcai849.github.io>
+PREFIX schema: <httpschema://schema.org/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX doac: <https://www.edatasoft.com/en/doac/01/>
+PREFIX : <.>
+
+<.> a schema:ProfilePage ;
+	schema:about <jason> ;
+	schema:mainEntity <jason> .
+
+:jason a schema:Person, foaf:Person ;
+	schema:name "Jason Cairns" ;
+	foaf:firstName "Jason" ;
+	foaf:surname "Cairns" ;
+	doac:education [ a doac:Education ;
+		doac:title "Bachelor of Science" ;
+		foaf:organization "University of Auckland" ;
+	]
+	doac:education _:bachelors ;
+	doac:education _:bachelors ;
+	
+
+]

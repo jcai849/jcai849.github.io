@@ -3,7 +3,7 @@
 
 all: index.html
 
-index.html: contact.html work.html skills.html awards.html education.tab.html
+index.html: contact.html positions.html skills.html awards.html qualifications.html
 contact.html: vcard.svg
 
 .svg.vcf.svg:
@@ -13,4 +13,6 @@ contact.html: vcard.svg
 
 clean:
 	rm -rf index.html
+	rm -rf awards.html
+	rm -rf positions.html
 	rm -rf *.svg
