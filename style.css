@@ -1,8 +1,12 @@
-table {
-  border-collapse: collapse;
+* {
+	box-sizing: border-box;
 }
 
-td, th {
-  padding: 0.5rem;
-  text-align: left;
+body {
+	max-width: 600px;
+	margin: 0 auto;
+}
+
+.picture img {
+	max-width: 300px;
 }

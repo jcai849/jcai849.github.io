@@ -9,7 +9,7 @@ contact.html: vcard.svg
 .svg.vcf.svg:
 	qrencode -tsvg -r"$<" >"$@"
 .html.xq.html:
-	basex "$<" >"$@"
+	basex -w -s method=html "$<" >"$@"
 
 clean:
 	rm -rf index.html
