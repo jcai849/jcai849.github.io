@@ -1,12 +1,40 @@
 * {
 	box-sizing: border-box;
+	font-family: system-ui;
+}
+
+@media (prefers-color-scheme: light) {
+	body {
+		background-color: #FCFAF9;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	body {
+		background-color: #1b1b1b;
+		color: #fff;
+	}
 }
 
 body {
-	max-width: 600px;
+	width: min(600px, 95%);
 	margin: 0 auto;
+	font-size: 100%;
 }
 
-.picture img {
-	max-width: 300px;
+.picture img, .details {
+	max-width: 250px;
+	margin: 1em;
+}
+
+.vcard img {
+	width: 80%;
+}
+
+.personal {
+	display: flex;
+}
+
+.role {
+	font-weight: bold;
 }

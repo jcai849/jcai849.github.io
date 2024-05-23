@@ -2,15 +2,16 @@ let $cal := "https://www.calendar.auckland.ac.nz/en/courses"
 let $statcal := $cal || "/faculty-of-science/statistics.html"
 
 return
+<div class="all-positions">
 <ol class="positions">
 	<li class="position">
 		<div class="role">Senior Data Scientist</div>
 		<div class="organisation"><a href="https://www.airnewzealand.com/">Air New Zealand</a></div>
-		<div class="interval"><time>2022</time>-<time>2024</time></div>
+		<div class="interval"><time>2022</time>-<time>present</time></div>
 		<p class="description">
 			Versatile role involving responsibilities including:
 			<ul>
-				<li>Leading the re-engineer of legacy $6M/a Data Science Software</li>
+				<li>Leading the re-engineer of legacy $12M/a Data Science Software</li>
 				<li>Engagement with vendors of varying scale for projects valued $40K-$5M/a</li>
 				<li>Business analysis and probabilistic modelling with a particular focus on Revenue Management in Air Cargo</li>
 				<li>Design and implementation of new MLOps patterns, shared libraries, Data Science process improvement</li>
@@ -33,6 +34,9 @@ return
 			Explanatory and predictive analysis of varied datasets relating to internal and client work, involving statistical modelling and reporting.
 		</p>
 	</li>
+</ol>
+<details><summary>Prior Positions</summary>
+<ol class="positions">
 	<li class="position">
 		<div class="role">Teaching Assistant</div>
 		<div class="organisation"><a href="https://www.auckland.ac.nz/en.html">University of Auckland</a></div>
@@ -42,3 +46,5 @@ return
 		</p>
 	</li>
 </ol>
+</details>
+</div>
