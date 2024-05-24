@@ -9,7 +9,7 @@ declare option db:parser "html";
 <body>
 	<header>
 		<h1>Jason Cairns Curriculum Vitæ</h1>
-		Last updated: <time>2024-05-19</time>
+		<div class="last-updated">Last updated: <time>2024-05-19</time></div>
 		<div class="personal">
 		<div class="picture">
 			<a href="jc-portrait.jpg"><img src="jc-portrait.jpg" alt="Portrait photo of Jason Cairns"/></a>

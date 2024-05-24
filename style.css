@@ -38,3 +38,26 @@ body {
 .role {
 	font-weight: bold;
 }
+
+.positions, .qualifications {
+	list-style-type: none;
+	padding: 0;
+}
+
+.qualification {
+	margin-top: 1em;
+
+}
+
+a:link {
+	color: #0069c2;
+}
+
+a:visited {
+	color: #551a8b;
+}
+
+.last-updated {
+	font-size: 75%;
+	opacity: 0.75;
+}
