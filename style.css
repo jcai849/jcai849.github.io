@@ -17,13 +17,13 @@
 }
 
 body {
-	width: min(600px, 95%);
+	width: min(79rch, 80%);
 	margin: 0 auto;
 	font-size: 100%;
 }
 
 .picture img, .details {
-	max-width: 250px;
+	max-width: 30rch;
 	margin: 1em;
 }
 
