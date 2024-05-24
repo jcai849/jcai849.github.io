@@ -17,18 +17,18 @@
 }
 
 body {
-	width: min(79rch, 80%);
+	width: min(79ch, 80%);
 	margin: 0 auto;
 	font-size: 100%;
 }
 
 .picture img, .details {
-	max-width: 30rch;
+	max-width: 30ch;
 	margin: 1em;
 }
 
 .vcard img {
-	width: 80%;
+	width: 30ch;
 }
 
 .personal {
